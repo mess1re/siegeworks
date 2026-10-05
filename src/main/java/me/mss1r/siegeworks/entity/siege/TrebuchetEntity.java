@@ -106,8 +106,16 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
     private static final Vec3 SLING_PIVOT = new Vec3(0.0D, 114.0D / 16.0D, -253.0D / 16.0D);
     private static final Vec3 LOAD_CENTER = new Vec3(0.0D, 114.0D / 16.0D, -367.0D / 16.0D);
     private static final double LOADED_SLING_ANGLE = -157.5D;
-    /** Size of the block a load is rendered as in the sling. */
-    private static final double LOAD_DRAWN_SIZE = 1.44D * 0.5D;
+    /**
+     * Scale of a pot in the sling pouch. The pouch is 12 px across; at this scale the pot body is 11 px, so it sits
+     * inside the pouch walls instead of on them.
+     */
+    public static final float POT_IN_SLING_SCALE = 1.1F;
+    /** Shift of the pot toward the pouch bottom, in pot-model blocks, so its base rests on the bottom. */
+    public static final double POT_SLING_OFFSET = 0.12D;
+    /** Wick tip and wick base, in pixels of the pot model. */
+    private static final double WICK_TIP_PIXELS = 17.0D;
+    private static final double WICK_BASE_PIXELS = 14.0D;
     private static final ScalarAnimationCurve RELOAD_ARM = ScalarAnimationCurve.of(
             key(0.0F, 90.0D), key(280.0F, -3.0D), key(320.0F, -22.5D),
             key(RELOAD_ANIMATION_TICKS, -22.5D));
@@ -195,7 +203,7 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
     public InteractionResult handleSiegeInteraction(Player player, InteractionHand hand, ServerLevel serverLevel) {
         if (continueLoadingAction(player)) return showLoadingProgress(player);
         if (getCooldown() > 0) return showCooldownProgress(player);
-        if (pot.light(player, hand, potPoint(IncendiaryFuse.WICK_TIP * LOAD_DRAWN_SIZE))) {
+        if (pot.light(player, hand, potPoint(alongPot(WICK_TIP_PIXELS)))) {
             return InteractionResult.SUCCESS;
         }
 
@@ -497,8 +505,8 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
             captureCollisionPose();
             // Mid-swing the pot follows the sling; sparks continue on the projectile after release.
             if (pot.isLit() && getShootAnimationTick() < 0) {
-                pot.sparkle(level(), potPoint(IncendiaryFuse.WICK_TIP * LOAD_DRAWN_SIZE),
-                        potPoint(IncendiaryFuse.WICK_BASE * LOAD_DRAWN_SIZE));
+                pot.sparkle(level(), potPoint(alongPot(WICK_TIP_PIXELS)),
+                        potPoint(alongPot(WICK_BASE_PIXELS)));
             }
             return;
         }
@@ -509,13 +517,18 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
     }
 
     /**
-     * World position of a point on a pot in the sling, {@code along} blocks from its centre toward the wick. The sling
-     * is upside down on the ground, so the pot is rendered flipped and stands upright.
+     * Distance from the load centre toward the arm of a pot-model height, matching the renderer: the pot lies along the
+     * sling with its base on the pouch bottom and its wick toward the arm.
      */
+    private static double alongPot(double modelPixels) {
+        return POT_IN_SLING_SCALE * (modelPixels / 16.0D - 0.25D - POT_SLING_OFFSET);
+    }
+
+    /** World position {@code along} blocks from the load centre toward the arm, with the sling at rest. */
     public Vec3 potPoint(double along) {
         CollisionPose armPose = authoredRotation(GeneratedCollisionShapes.TREBUCHET_ARM.pivot(), getCollisionArmAngle());
         CollisionPose slingPose = authoredRotation(SLING_PIVOT, LOADED_SLING_ANGLE).then(armPose);
-        return collisionTransform().toWorld(slingPose.toStructure(LOAD_CENTER.add(0.0D, -along, 0.0D)));
+        return collisionTransform().toWorld(slingPose.toStructure(LOAD_CENTER.add(0.0D, 0.0D, along)));
     }
 
     private void captureCollisionPose() {

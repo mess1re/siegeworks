@@ -328,8 +328,10 @@ public final class IncendiaryFuseGameTests {
         double reach = pot.horizontalDistance();
         helper.assertTrue(height > 0.0D && height < 2.0D && reach > 4.0D,
                 "The loaded pot is not low in the sling behind the frame: " + pot);
+        // The pot lies along the sling, which rests flat on the ground, with its fuse toward the arm.
         Vec3 fuse = trebuchet.potPoint(1.0D).subtract(trebuchet.potPoint(0.0D));
-        helper.assertTrue(fuse.y > 0.99D, "The loaded pot does not stand with its fuse up: " + fuse);
+        helper.assertTrue(Math.abs(fuse.y) < 0.2D && fuse.horizontalDistance() > 0.98D,
+                "The loaded pot does not lie along the sling: " + fuse);
         helper.succeed();
     }
 

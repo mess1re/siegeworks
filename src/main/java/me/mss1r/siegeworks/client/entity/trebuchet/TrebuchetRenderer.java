@@ -55,14 +55,17 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
                                               float partialTick, int packedLight, int packedOverlay) {
                 boolean grapeshot = SiegeAmmo.isGrapeshotAmmoKey(trebuchet.getAmmoLoaded());
                 poseStack.pushPose();
-                float scale = grapeshot ? LOADED_GRAPESHOT_SCALE : LOADED_STONE_SCALE;
+                boolean pot = SiegeAmmo.isFireAmmoKey(trebuchet.getAmmoLoaded());
+                float scale = pot ? TrebuchetEntity.POT_IN_SLING_SCALE
+                        : grapeshot ? LOADED_GRAPESHOT_SCALE : LOADED_STONE_SCALE;
                 if (grapeshot) {
                     poseStack.translate(0.0D, LOADED_GRAPESHOT_Y_OFFSET, 0.0D);
                 }
                 poseStack.scale(scale, scale, scale);
-                if (SiegeAmmo.isFireAmmoKey(trebuchet.getAmmoLoaded())) {
-                    // The loaded sling is upside down on the ground, so the pot is flipped to stand upright.
-                    poseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
+                if (pot) {
+                    // Lay the pot along the sling: base on the pouch bottom (+z), wick toward the arm.
+                    poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
+                    poseStack.translate(0.0D, -TrebuchetEntity.POT_SLING_OFFSET, 0.0D);
                     TrebuchetProjectileRenderer.renderFirePot(poseStack, state, bufferSource, packedLight, packedOverlay);
                 } else {
                     super.renderBlockForBone(poseStack, bone, state, trebuchet, bufferSource,

@@ -193,7 +193,23 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
             }
             return true;
         }
+        // The click is left to the item, so blocks can still be placed against a pot.
+        if (hand == InteractionHand.MAIN_HAND && !level.isClientSide) {
+            hint(player, filling);
+        }
         return false;
+    }
+
+    /** What the pot needs next, shown for a click with an empty hand or an item that does not go in. */
+    private static void hint(Player player, PotFilling filling) {
+        PotFillingProfile profile = PotFillingProfile.current();
+        Component wick = PotFillingProfile.name(profile.wick());
+        Component message = !filling.hasBase() ? Component.translatable("siege.pot.needs_base",
+                        PotFilling.names(filling.missingBase()))
+                : filling.canLight() ? Component.translatable("siege.pot.hint.light")
+                : filling.additives().size() >= profile.additiveSlots() ? Component.translatable("siege.pot.hint.seal", wick)
+                : Component.translatable("siege.pot.hint.add_or_seal", wick);
+        player.displayClientMessage(message, true);
     }
 
     private static void consume(Player player, ItemStack held) {
