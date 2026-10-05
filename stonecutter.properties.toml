@@ -1,6 +1,6 @@
 mod.id = "siegeworks"
 mod.name = "Siegeworks"
-mod.version = "0.1.0-beta.7"
+mod.version = "0.1.0-beta.8"
 mod.group = "me.mss1r"
 mod.authors = "mss1r"
 mod.license = "LGPL-3.0-only (code); custom terms (assets)"

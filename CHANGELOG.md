@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.0-beta.8
+
+### Notes
+
+- Requires Axiomata 0.1.0-beta.7.
+- Siege ladders are no longer drawn: craft a ladder base and build it up with the construction hammer. Drawn ladder blueprints from earlier versions can no longer be used.
+
+### Added
+
+- Incendiary pots: craft a clay pot, fill it by hand, seal it with a wick and light it before the throw; nearby fire and explosions set pots off. See the [Ammunition Guide](https://github.com/mess1re/siegeworks/wiki/Ammunition-Guide#incendiary-pot).
+- Siege ladders can be carried in both hands, and a ladder build can be finished after any section. See [Siege Ladder](https://github.com/mess1re/siegeworks/wiki/Siege-Ladder).
+
+### Changed
+
+- Engines are built and repaired with any logs and planks; dismantling gives back oak.
+- Engines roll to a stop when nothing drives them.
+- Any player riding one of a team's mounts holds the reins.
+- Siege engines no longer freeze, drown or take potion effects; cannon balls and grapeshot are mined with a pickaxe.
+- Datapacks override Siegeworks files on every loader. Pot ingredients are set by a datapack profile; see the [Data Pack Reference](https://github.com/mess1re/siegeworks/wiki/Data-Pack-Reference).
+
+### Fixed
+
+- Hammer blows count only on the highlighted section of an engine being built.
+- Ammunition blocks are shown properly in hands and item frames.
+
 ## 0.1.0-beta.7
 
 ### Added
