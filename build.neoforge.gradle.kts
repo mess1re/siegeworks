@@ -44,6 +44,11 @@ configurations.named(gameTestSourceSet.runtimeOnlyConfigurationName) {
 }
 
 repositories {
+    // The release workflow builds the pinned Axiomata into the local repository, so a release does not depend on
+    // JitPack building it.
+    mavenLocal {
+        content { includeGroup("com.github.mess1re.axiomata") }
+    }
     mavenCentral()
     maven("https://jitpack.io") {
         name = "JitPack"
