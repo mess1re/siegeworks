@@ -1,6 +1,7 @@
 package me.mss1r.siegeworks.gameplay.maintenance;
 
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition;
+import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinitions;
 import me.mss1r.siegeworks.entity.siege.SiegeLadderEntity;
 import me.mss1r.siegeworks.entity.siege.SiegeTowerEntity;
@@ -10,13 +11,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Repair and dismantle costs, derived from the blueprint as loaded by Axiomata. Tag materials count as the tag's first
- * item.
+ * Repair and dismantle costs, derived from the blueprint as loaded by Axiomata. A tag material is paid with any item of
+ * the tag and refunded as the item the blueprint names for it in {@code returns}.
  */
 public final class SiegeMaintenanceData {
     private static final int HITS_PER_RESOURCE = 4;
@@ -46,71 +49,75 @@ public final class SiegeMaintenanceData {
 
         // A ladder only cost its base and the sections it has.
         int stages = siege instanceof SiegeLadderEntity ladder ? 1 + ladder.getSections() : Integer.MAX_VALUE;
-        Map<ResourceLocation, Integer> ingredients = collectIngredients(recipe, stages);
+        Map<String, Material> ingredients = collectIngredients(recipe, stages);
         int authoredHits = collectConstructionHits(recipe, stages);
         int totalHits = authoredHits > 0
                 ? authoredHits
-                : Math.max(1, ingredients.values().stream().mapToInt(Integer::intValue).sum()
-                        * HITS_PER_RESOURCE);
+                : Math.max(1, total(List.copyOf(ingredients.values())) * HITS_PER_RESOURCE);
         if (siege instanceof SiegeTowerEntity tower) {
-            tower.getLeatherMaterials().forEach(
-                    (item, count) -> ingredients.merge(item, count, Integer::sum));
+            tower.getLeatherMaterials().forEach((item, count) -> add(ingredients, Material.ofItem(item, count)));
         }
-        return new MaintenanceRecipe(ingredients, totalHits);
+        return new MaintenanceRecipe(List.copyOf(ingredients.values()), totalHits);
     }
 
-    public static Map<ResourceLocation, Integer> repairCost(AbstractSiegeEntity siege) {
+    public static List<Material> repairCost(AbstractSiegeEntity siege) {
         MaintenanceRecipe recipe = forSiege(siege);
         if (recipe.isEmpty()) {
-            return Map.of();
+            return List.of();
         }
 
         float missingRatio = 1.0F - Math.max(0.0F, Math.min(1.0F, siege.getHealth() / siege.getMaxHealth()));
         if (missingRatio <= 0.001F) {
-            return Map.of();
+            return List.of();
         }
 
-        Map<ResourceLocation, Integer> result = new LinkedHashMap<>();
-        recipe.ingredients().forEach((item, count) -> result.put(item, Math.max(1, (int) Math.ceil(count * missingRatio))));
+        List<Material> result = new ArrayList<>();
+        for (Material material : recipe.ingredients()) {
+            result.add(material.withCount(Math.max(1, (int) Math.ceil(material.count() * missingRatio))));
+        }
         return result;
     }
 
-    public static Map<ResourceLocation, Integer> dismantleRefund(AbstractSiegeEntity siege) {
+    public static List<Material> dismantleRefund(AbstractSiegeEntity siege) {
         MaintenanceRecipe recipe = forSiege(siege);
         if (recipe.isEmpty()) {
-            return Map.of();
+            return List.of();
         }
 
         float healthRatio = Math.max(0.0F, Math.min(1.0F, siege.getHealth() / siege.getMaxHealth()));
-        Map<ResourceLocation, Integer> result = new LinkedHashMap<>();
-        recipe.ingredients().forEach((item, count) -> {
-            int refund = (int) Math.floor(count * healthRatio * 0.5F);
+        List<Material> result = new ArrayList<>();
+        for (Material material : recipe.ingredients()) {
+            int refund = (int) Math.floor(material.count() * healthRatio * 0.5F);
             if (refund > 0) {
-                result.put(item, refund);
+                result.add(material.withCount(refund));
             }
-        });
+        }
         return result;
     }
 
-    public static String formatItems(Map<ResourceLocation, Integer> items) {
-        if (items.isEmpty()) {
-            return "";
-        }
-
+    /** One line per material: its name, or "any of" for a tag, and the count. */
+    public static String formatItems(List<Material> materials) {
         StringBuilder builder = new StringBuilder();
-        items.forEach((id, count) -> {
+        for (Material material : materials) {
             if (!builder.isEmpty()) {
                 builder.append('\n');
             }
-            Item item = BuiltInRegistries.ITEM.get(id);
-            String name = item == null ? id.toString() : item.getDefaultInstance().getHoverName().getString();
-            builder.append(name).append(" x").append(count);
-        });
+            builder.append(material.displayName().getString()).append(" x").append(material.count());
+        }
         return builder.toString();
     }
 
+    /** Count of a material, by its key ({@code minecraft:oak_log} or {@code #minecraft:logs}), in a list. */
+    public static int count(List<Material> materials, String key) {
+        return materials.stream().filter(material -> material.key().equals(key)).mapToInt(Material::count).sum();
+    }
+
     public static int countResources(AbstractSiegeEntity siege) {
-        return forSiege(siege).ingredients().values().stream().mapToInt(Integer::intValue).sum();
+        return total(forSiege(siege).ingredients());
+    }
+
+    private static int total(List<Material> materials) {
+        return materials.stream().mapToInt(Material::count).sum();
     }
 
     public static int dismantleRequiredHits(AbstractSiegeEntity siege) {
@@ -139,15 +146,17 @@ public final class SiegeMaintenanceData {
         return null;
     }
 
-    private static Map<ResourceLocation, Integer> collectIngredients(BlueprintDefinition recipe, int stages) {
-        Map<ResourceLocation, Integer> result = new LinkedHashMap<>();
+    /** Materials of the first {@code stages} stages, merged by key. */
+    private static Map<String, Material> collectIngredients(BlueprintDefinition recipe, int stages) {
+        Map<String, Material> result = new LinkedHashMap<>();
         for (BlueprintDefinition.Stage stage : recipe.stages().subList(0, Math.min(stages, recipe.stageCount()))) {
-            for (BlueprintDefinition.Material material : stage.materials()) {
-                Item shown = material.displayStack().getItem();
-                result.merge(BuiltInRegistries.ITEM.getKey(shown), material.count(), Integer::sum);
-            }
+            stage.materials().forEach(material -> add(result, material));
         }
         return result;
+    }
+
+    private static void add(Map<String, Material> materials, Material material) {
+        materials.merge(material.key(), material, (existing, more) -> existing.withCount(existing.count() + more.count()));
     }
 
     private static int collectConstructionHits(BlueprintDefinition recipe, int stages) {
@@ -157,9 +166,9 @@ public final class SiegeMaintenanceData {
                 .sum();
     }
 
-    public record MaintenanceRecipe(Map<ResourceLocation, Integer> ingredients, int requiredHits) {
+    public record MaintenanceRecipe(List<Material> ingredients, int requiredHits) {
         private static MaintenanceRecipe empty() {
-            return new MaintenanceRecipe(Map.of(), 0);
+            return new MaintenanceRecipe(List.of(), 0);
         }
 
         public boolean isEmpty() {

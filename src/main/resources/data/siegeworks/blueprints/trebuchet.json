@@ -1,16 +1,17 @@
 {
   "formatVersion": 3,
   "result": { "item": "siegeworks:trebuchet_spawner", "entity": "siegeworks:trebuchet" },
+  "returns": { "#minecraft:logs": "minecraft:oak_log", "#minecraft:planks": "minecraft:oak_planks" },
   "stages": [
     { "section": "base_stage_1", "hits": 28,
-      "materials": { "minecraft:oak_log": 36, "minecraft:oak_planks": 24, "minecraft:iron_nugget": 32 } },
+      "materials": { "#minecraft:logs": 36, "#minecraft:planks": 24, "minecraft:iron_nugget": 32 } },
     { "section": "base_stage_2", "hits": 26,
-      "materials": { "minecraft:oak_log": 28, "minecraft:oak_planks": 16, "minecraft:iron_nugget": 24 } },
+      "materials": { "#minecraft:logs": 28, "#minecraft:planks": 16, "minecraft:iron_nugget": 24 } },
     { "section": "base_stage_3", "hits": 22,
-      "materials": { "minecraft:oak_log": 16, "minecraft:oak_planks": 8, "minecraft:iron_nugget": 16 } },
+      "materials": { "#minecraft:logs": 16, "#minecraft:planks": 8, "minecraft:iron_nugget": 16 } },
     { "section": "mechanism_stage_1", "hits": 26,
-      "materials": { "minecraft:oak_log": 24, "minecraft:iron_ingot": 8, "minecraft:iron_nugget": 16, "minecraft:leather": 8, "siegeworks:rope": 12 } },
+      "materials": { "#minecraft:logs": 24, "minecraft:iron_ingot": 8, "minecraft:iron_nugget": 16, "minecraft:leather": 8, "siegeworks:rope": 12 } },
     { "section": "mechanism_stage_2", "hits": 24,
-      "materials": { "minecraft:oak_planks": 16, "minecraft:cobblestone": 32, "minecraft:leather": 8, "siegeworks:rope": 16 } }
+      "materials": { "#minecraft:planks": 16, "minecraft:cobblestone": 32, "minecraft:leather": 8, "siegeworks:rope": 16 } }
   ]
 }

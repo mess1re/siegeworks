@@ -1,82 +1,50 @@
 package me.mss1r.siegeworks.gameplay.maintenance;
 
+import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
+import me.mss1r.axiomata.blueprint.internal.construction.MaterialAllocation;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+/** Checks, takes and returns maintenance materials. A tag material accepts any item of the tag. */
 final class MaintenanceMaterials {
     private MaintenanceMaterials() {
     }
 
-    static boolean has(ServerPlayer player, Map<ResourceLocation, Integer> items) {
-        for (Map.Entry<ResourceLocation, Integer> entry : items.entrySet()) {
-            Item item = BuiltInRegistries.ITEM.get(entry.getKey());
-            if (item == null || count(player, item) < entry.getValue()) {
-                return false;
-            }
-        }
-        return true;
+    static boolean has(ServerPlayer player, List<Material> materials) {
+        return MaterialAllocation.shortfall(carried(player), materials).isEmpty();
     }
 
-    static boolean has(Container container, Map<ResourceLocation, Integer> items) {
-        for (Map.Entry<ResourceLocation, Integer> entry : items.entrySet()) {
-            Item item = BuiltInRegistries.ITEM.get(entry.getKey());
-            if (item == null || count(container, item) < entry.getValue()) {
-                return false;
-            }
-        }
-        return true;
+    static boolean has(Container container, List<Material> materials) {
+        return MaterialAllocation.shortfall(slots(container), materials).isEmpty();
     }
 
-    static void consume(ServerPlayer player, Map<ResourceLocation, Integer> items) {
-        for (Map.Entry<ResourceLocation, Integer> entry : items.entrySet()) {
-            Item item = BuiltInRegistries.ITEM.get(entry.getKey());
-            if (item != null) {
-                consume(player.getInventory().items, item,
-                        consume(player.getInventory().offhand, item, entry.getValue()));
-            }
-        }
+    static void consume(ServerPlayer player, List<Material> materials) {
+        MaterialAllocation.take(carried(player), materials);
+        player.getInventory().setChanged();
     }
 
-    static void consume(Container container, Map<ResourceLocation, Integer> items) {
-        for (Map.Entry<ResourceLocation, Integer> entry : items.entrySet()) {
-            Item item = BuiltInRegistries.ITEM.get(entry.getKey());
-            if (item == null) {
-                continue;
-            }
-            int remaining = entry.getValue();
-            for (int slot = 0; slot < container.getContainerSize() && remaining > 0; slot++) {
-                ItemStack stack = container.getItem(slot);
-                if (stack.isEmpty() || !stack.is(item)) {
-                    continue;
-                }
-                int removed = Math.min(stack.getCount(), remaining);
-                stack.shrink(removed);
-                remaining -= removed;
-            }
-        }
+    static void consume(Container container, List<Material> materials) {
+        MaterialAllocation.take(slots(container), materials);
         container.setChanged();
     }
 
+    /** Returns a material to {@code target}, dropping what does not fit; a tag returns its blueprint's return item. */
     static void returnOrDrop(AbstractSiegeEntity siege, ServerLevel level, @Nullable Container target,
-                             ResourceLocation itemId, int count) {
-        Item item = BuiltInRegistries.ITEM.get(itemId);
-        if (item == null || count <= 0) {
+                             Material material) {
+        ItemStack remaining = material.returnStack();
+        remaining.setCount(material.count());
+        if (remaining.isEmpty()) {
             return;
         }
-
-        ItemStack remaining = new ItemStack(item, count);
         if (target != null) {
             remaining = insert(target, remaining);
         }
@@ -90,44 +58,19 @@ final class MaintenanceMaterials {
         }
     }
 
-    private static int count(ServerPlayer player, Item item) {
-        int count = 0;
-        for (ItemStack stack : player.getInventory().items) {
-            if (!stack.isEmpty() && stack.is(item)) {
-                count += stack.getCount();
-            }
-        }
-        for (ItemStack stack : player.getInventory().offhand) {
-            if (!stack.isEmpty() && stack.is(item)) {
-                count += stack.getCount();
-            }
-        }
-        return count;
+    /** Main inventory plus off hand. */
+    private static List<ItemStack> carried(ServerPlayer player) {
+        List<ItemStack> stacks = new ArrayList<>(player.getInventory().items);
+        stacks.addAll(player.getInventory().offhand);
+        return stacks;
     }
 
-    private static int count(Container container, Item item) {
-        int count = 0;
+    private static List<ItemStack> slots(Container container) {
+        List<ItemStack> stacks = new ArrayList<>(container.getContainerSize());
         for (int slot = 0; slot < container.getContainerSize(); slot++) {
-            ItemStack stack = container.getItem(slot);
-            if (!stack.isEmpty() && stack.is(item)) {
-                count += stack.getCount();
-            }
+            stacks.add(container.getItem(slot));
         }
-        return count;
-    }
-
-    private static int consume(List<ItemStack> stacks, Item item, int count) {
-        for (ItemStack stack : stacks) {
-            if (!stack.isEmpty() && stack.is(item)) {
-                int removed = Math.min(stack.getCount(), count);
-                stack.shrink(removed);
-                count -= removed;
-                if (count <= 0) {
-                    return 0;
-                }
-            }
-        }
-        return count;
+        return stacks;
     }
 
     private static ItemStack insert(Container target, ItemStack stack) {

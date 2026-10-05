@@ -1452,9 +1452,9 @@ public final class SiegeworksGameTests {
         helper.assertTrue(restored.getLeatherMaterials().getOrDefault(leatherId, 0) == 88,
                 "Tower covering materials did not survive NBT persistence");
         restored.setHealth(restored.getMaxHealth() - 50.0F);
-        helper.assertTrue(SiegeMaintenanceData.repairCost(restored).getOrDefault(leatherId, 0) == 11,
+        helper.assertTrue(SiegeMaintenanceData.count(SiegeMaintenanceData.repairCost(restored), leatherId.toString()) == 11,
                 "Tower covering materials were not included in its repair cost");
-        helper.assertTrue(SiegeMaintenanceData.dismantleRefund(restored).getOrDefault(leatherId, 0) == 38,
+        helper.assertTrue(SiegeMaintenanceData.count(SiegeMaintenanceData.dismantleRefund(restored), leatherId.toString()) == 38,
                 "Tower covering materials were not included in its dismantling refund");
 
         restored.setHealth(restored.getMaxHealth());
@@ -1599,7 +1599,7 @@ public final class SiegeworksGameTests {
         SimpleContainer materials = new SimpleContainer(64);
         for (BlueprintConstructionPlan.Stage stage : machine.buildProgress().plan().stages()) {
             for (me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material material : stage.materials()) {
-                materials.addItem(material.displayStack().copyWithCount(64));
+                materials.addItem(material.returnStack().copyWithCount(64));
             }
         }
 
@@ -1639,7 +1639,7 @@ public final class SiegeworksGameTests {
                 "The dismantling test engine was not registered exactly once against its original owner: "
                         + registeredDeployments);
 
-        java.util.Map<ResourceLocation, Integer> expectedRefund =
+        java.util.List<me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material> expectedRefund =
                 SiegeMaintenanceData.dismantleRefund(mantlet);
         int requiredHits = SiegeMaintenanceData.dismantleRequiredHits(mantlet);
         helper.assertTrue(!expectedRefund.isEmpty() && requiredHits > 0,
@@ -1656,10 +1656,10 @@ public final class SiegeworksGameTests {
             helper.assertTrue(mantlet.isRemoved(), "Automated dismantling did not remove the engine");
             helper.assertTrue(SiegeDeploymentLimits.check(level, mantlet.getType(), deployment).current() == 0,
                     "Dismantling by another entity did not release the original owner's deployment slot");
-            expectedRefund.forEach((itemId, expectedCount) -> helper.assertTrue(
-                    refundTarget.countItem(BuiltInRegistries.ITEM.get(itemId)) == expectedCount,
-                    "Dismantling refund mismatch for " + itemId + ": expected=" + expectedCount
-                            + ", actual=" + refundTarget.countItem(BuiltInRegistries.ITEM.get(itemId))));
+            expectedRefund.forEach(material -> helper.assertTrue(
+                    refundTarget.countItem(material.returnStack().getItem()) == material.count(),
+                    "Dismantling refund mismatch for " + material.key() + ": expected=" + material.count()
+                            + ", actual=" + refundTarget.countItem(material.returnStack().getItem())));
             helper.succeed();
         });
     }

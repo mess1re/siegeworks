@@ -1,6 +1,7 @@
 package me.mss1r.siegeworks.gametest;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import me.mss1r.axiomata.blueprint.api.ConstructionStarters;
 import me.mss1r.axiomata.blueprint.api.construction.BlueprintConstructionPlan;
@@ -23,10 +24,12 @@ import me.mss1r.siegeworks.registry.SiegeworksItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -83,7 +86,7 @@ public final class LadderConstructionGameTests {
                 "The ladder build did not begin with its base standing");
         BlueprintConstructionPlan.Stage section = built.buildProgress().currentStage();
         helper.assertTrue(section != null && section.hits() == 12 && section.materials().size() == 2
-                        && section.materials().get(0).key().equals("minecraft:oak_log")
+                        && section.materials().get(0).key().equals("#minecraft:logs")
                         && section.materials().get(0).count() == 4
                         && section.materials().get(1).key().equals("minecraft:stick")
                         && section.materials().get(1).count() == 3,
@@ -105,6 +108,33 @@ public final class LadderConstructionGameTests {
                 "Ending the ladder build did not finish it");
         helper.assertTrue(ladder.getSections() == 2,
                 "The finished ladder does not stand as tall as its two built sections: " + ladder.getSections());
+        succeed(helper, ladder);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20, batch = BATCH)
+    public static void undoneSectionGivesBackThePaidLogsOrOakOnceBuilt(GameTestHelper helper) {
+        SiegeLadderEntity ladder = deploy(helper, new ItemStack(SiegeworksItems.SIEGE_LADDER_SPAWNER.get()));
+        SimpleContainer materials = new SimpleContainer(9);
+        materials.addItem(new ItemStack(Items.BIRCH_LOG, 4));
+        materials.addItem(new ItemStack(Items.STICK, 3));
+        helper.assertTrue(ConstructionWork.strike(ladder, materials).worked()
+                        && materials.countItem(Items.BIRCH_LOG) == 0,
+                "A ladder section was not paid with birch logs");
+        CompoundTag saved = new CompoundTag();
+        ladder.buildProgress().save(saved);
+        ladder.buildProgress().load(saved);
+        ConstructionWork.dismantle(ladder, materials);
+        helper.assertTrue(materials.countItem(Items.BIRCH_LOG) == 4 && materials.countItem(Items.STICK) == 3,
+                "Undoing a started section did not give back the birch logs paid for it: birch "
+                        + materials.countItem(Items.BIRCH_LOG) + ", dark oak " + materials.countItem(Items.DARK_OAK_LOG));
+
+        while (ladder.buildProgress().stage() < 2) {
+            ConstructionWork.strike(ladder, materials);
+        }
+        ConstructionWork.dismantle(ladder, materials);
+        helper.assertTrue(materials.countItem(Items.OAK_LOG) == 4 && materials.countItem(Items.BIRCH_LOG) == 0,
+                "Taking down a built section did not give back oak logs: oak " + materials.countItem(Items.OAK_LOG)
+                        + ", dark oak " + materials.countItem(Items.DARK_OAK_LOG));
         succeed(helper, ladder);
     }
 
@@ -164,9 +194,9 @@ public final class LadderConstructionGameTests {
             ConstructionWork.strike(ladder, null);
         }
         ConstructionWork.endHere(ladder, null);
-        Map<ResourceLocation, Integer> resources = SiegeMaintenanceData.forSiege(ladder).ingredients();
-        int logs = resources.getOrDefault(ResourceLocation.tryParse("minecraft:oak_log"), 0);
-        int sticks = resources.getOrDefault(ResourceLocation.tryParse("minecraft:stick"), 0);
+        List<Material> resources = SiegeMaintenanceData.forSiege(ladder).ingredients();
+        int logs = SiegeMaintenanceData.count(resources, "#minecraft:logs");
+        int sticks = SiegeMaintenanceData.count(resources, "minecraft:stick");
         helper.assertTrue(logs == 14 && sticks == 9,
                 "A two-section ladder is reckoned at " + logs + " logs and " + sticks + " sticks, not 14 and 9");
         succeed(helper, ladder);
@@ -183,8 +213,13 @@ public final class LadderConstructionGameTests {
             helper.assertTrue(old.valid(), "The old " + id + " no longer reads: " + old.errors());
             BlueprintDefinition loaded = BlueprintDefinitions.get(id);
             helper.assertTrue(loaded != null, "Blueprint " + id + " did not load");
-            String expected = BlueprintFormat.write(old.definition()).toString();
-            String actual = BlueprintFormat.write(loaded).toString();
+            // Since the conversion, oak logs and planks are taken as any logs and planks.
+            String expected = BlueprintFormat.write(old.definition()).toString()
+                    .replace("\"minecraft:oak_log\"", "\"#minecraft:logs\"")
+                    .replace("\"minecraft:oak_planks\"", "\"#minecraft:planks\"");
+            JsonObject written = BlueprintFormat.write(loaded);
+            written.remove("returns");
+            String actual = written.toString();
             helper.assertTrue(expected.equals(actual),
                     "Blueprint " + id + " changed in the new format:\n was " + expected + "\n now " + actual);
         }

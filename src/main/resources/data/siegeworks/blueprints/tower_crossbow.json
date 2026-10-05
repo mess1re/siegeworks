@@ -1,12 +1,13 @@
 {
   "formatVersion": 3,
   "result": { "item": "siegeworks:tower_crossbow_spawner", "entity": "siegeworks:tower_crossbow" },
+  "returns": { "#minecraft:logs": "minecraft:oak_log", "#minecraft:planks": "minecraft:oak_planks" },
   "stages": [
     { "section": "base_stage_1", "hits": 8,
-      "materials": { "minecraft:oak_log": 2, "minecraft:oak_planks": 2, "minecraft:iron_ingot": 2 } },
+      "materials": { "#minecraft:logs": 2, "#minecraft:planks": 2, "minecraft:iron_ingot": 2 } },
     { "section": "base_stage_2", "hits": 16,
-      "materials": { "minecraft:oak_log": 8, "minecraft:oak_planks": 8, "minecraft:iron_ingot": 8 } },
+      "materials": { "#minecraft:logs": 8, "#minecraft:planks": 8, "minecraft:iron_ingot": 8 } },
     { "section": "mechanism", "hits": 12,
-      "materials": { "minecraft:oak_log": 1, "siegeworks:rope": 10, "minecraft:iron_ingot": 4, "minecraft:iron_nugget": 1 } }
+      "materials": { "#minecraft:logs": 1, "siegeworks:rope": 10, "minecraft:iron_ingot": 4, "minecraft:iron_nugget": 1 } }
   ]
 }

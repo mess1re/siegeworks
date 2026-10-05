@@ -1,12 +1,13 @@
 {
   "formatVersion": 3,
   "result": { "item": "siegeworks:hwacha_spawner", "entity": "siegeworks:hwacha" },
+  "returns": { "#minecraft:logs": "minecraft:oak_log", "#minecraft:planks": "minecraft:oak_planks" },
   "stages": [
     { "section": "wheels", "hits": 6,
-      "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "minecraft:oak_log": 1 } },
+      "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
     { "section": "base_stage_1", "hits": 12,
-      "materials": { "minecraft:oak_log": 5, "minecraft:oak_planks": 4, "minecraft:iron_ingot": 2, "minecraft:iron_nugget": 4 } },
+      "materials": { "#minecraft:logs": 5, "#minecraft:planks": 4, "minecraft:iron_ingot": 2, "minecraft:iron_nugget": 4 } },
     { "section": "base_stage_2", "hits": 10,
-      "materials": { "minecraft:oak_log": 2, "minecraft:oak_planks": 6, "minecraft:iron_ingot": 2, "siegeworks:rope": 6 } }
+      "materials": { "#minecraft:logs": 2, "#minecraft:planks": 6, "minecraft:iron_ingot": 2, "siegeworks:rope": 6 } }
   ]
 }

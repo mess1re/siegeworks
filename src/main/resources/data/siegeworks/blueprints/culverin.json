@@ -1,13 +1,14 @@
 {
   "formatVersion": 3,
   "result": { "item": "siegeworks:culverin_spawner", "entity": "siegeworks:culverin" },
+  "returns": { "#minecraft:logs": "minecraft:oak_log", "#minecraft:planks": "minecraft:oak_planks" },
   "stages": [
     { "section": "wheels", "hits": 6,
-      "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "minecraft:oak_log": 1 } },
+      "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
     { "section": "base_stage_1", "hits": 10,
-      "materials": { "minecraft:oak_log": 6, "minecraft:oak_planks": 6 } },
+      "materials": { "#minecraft:logs": 6, "#minecraft:planks": 6 } },
     { "section": "base_stage_2", "hits": 10,
-      "materials": { "minecraft:oak_log": 4, "minecraft:oak_planks": 4, "minecraft:iron_ingot": 2 } },
+      "materials": { "#minecraft:logs": 4, "#minecraft:planks": 4, "minecraft:iron_ingot": 2 } },
     { "section": "barrel", "hits": 8,
       "materials": { "siegeworks:barrel": 2, "minecraft:iron_nugget": 4 } }
   ]

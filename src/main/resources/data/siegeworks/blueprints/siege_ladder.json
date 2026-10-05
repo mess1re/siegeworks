@@ -1,22 +1,23 @@
 {
   "formatVersion": 3,
   "result": { "item": "siegeworks:siege_ladder_spawner", "entity": "siegeworks:siege_ladder", "data": { "Sections": 4 } },
+  "returns": { "#minecraft:logs": "minecraft:oak_log" },
   "minStages": 1,
   "starter": { "item": "siegeworks:siege_ladder_spawner" },
   "stages": [
     { "section": "baza", "hits": 8,
-      "materials": { "minecraft:oak_log": 6, "minecraft:stick": 3 } },
+      "materials": { "#minecraft:logs": 6, "minecraft:stick": 3 } },
     { "section": "section_1", "hits": 12,
-      "materials": { "minecraft:oak_log": 4, "minecraft:stick": 3 },
+      "materials": { "#minecraft:logs": 4, "minecraft:stick": 3 },
       "adds": { "Sections": 1 } },
     { "section": "section_2", "hits": 12,
-      "materials": { "minecraft:oak_log": 4, "minecraft:stick": 3 },
+      "materials": { "#minecraft:logs": 4, "minecraft:stick": 3 },
       "adds": { "Sections": 1 } },
     { "section": "section_3", "hits": 12,
-      "materials": { "minecraft:oak_log": 4, "minecraft:stick": 3 },
+      "materials": { "#minecraft:logs": 4, "minecraft:stick": 3 },
       "adds": { "Sections": 1 } },
     { "section": "section_4", "hits": 12,
-      "materials": { "minecraft:oak_log": 4, "minecraft:stick": 3 },
+      "materials": { "#minecraft:logs": 4, "minecraft:stick": 3 },
       "adds": { "Sections": 1 } }
   ]
 }

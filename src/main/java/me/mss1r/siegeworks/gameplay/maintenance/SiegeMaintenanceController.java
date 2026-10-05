@@ -1,5 +1,6 @@
 package me.mss1r.siegeworks.gameplay.maintenance;
 
+import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.event.SiegeMaintenanceCheckEvent;
 import me.mss1r.siegeworks.event.SiegeMaintenanceCompletedEvent;
@@ -25,7 +26,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.List;
 
 public final class SiegeMaintenanceController {
     private static final int HIT_COOLDOWN_TICKS = 5;
@@ -136,7 +137,7 @@ public final class SiegeMaintenanceController {
             return false;
         }
 
-        Map<ResourceLocation, Integer> cost = SiegeMaintenanceData.repairCost(siege);
+        List<Material> cost = SiegeMaintenanceData.repairCost(siege);
         if (cost.isEmpty() || !MaintenanceMaterials.has(materials, cost)) {
             return false;
         }
@@ -186,7 +187,7 @@ public final class SiegeMaintenanceController {
             return;
         }
 
-        Map<ResourceLocation, Integer> cost = SiegeMaintenanceData.repairCost(siege);
+        List<Material> cost = SiegeMaintenanceData.repairCost(siege);
         if (cost.isEmpty()) {
             player.displayClientMessage(Component.translatable("message.siegeworks.maintenance.no_recipe"), true);
             return;
@@ -292,8 +293,8 @@ public final class SiegeMaintenanceController {
     private void completeDismantling(ServerLevel serverLevel, LivingEntity worker,
                                      @Nullable Container refundTarget) {
         AbstractSiegeEntity siege = siege();
-        SiegeMaintenanceData.dismantleRefund(siege).forEach((itemId, count) ->
-                MaintenanceMaterials.returnOrDrop(siege, serverLevel, refundTarget, itemId, count));
+        SiegeMaintenanceData.dismantleRefund(siege).forEach(material ->
+                MaintenanceMaterials.returnOrDrop(siege, serverLevel, refundTarget, material));
         serverLevel.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
                 siege.getX(), siege.getY() + siege.getBbHeight() * 0.5D, siege.getZ(),
                 16, 0.8D, 0.8D, 0.8D, 0.02D);
