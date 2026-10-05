@@ -1,5 +1,6 @@
 package me.mss1r.siegeworks.integration.recruits.network;
 
+import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.platform.Platform;
 import me.mss1r.siegeworks.integration.recruits.RecruitsCommandStates;
@@ -9,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,9 @@ public final class RecruitsCommandStatesPayloads {
     private static final int MAX_GROUPS = 64;
     private static final int MAX_STATES = 256;
     private static final int MAX_TYPES = 32;
+    private static final int QUERY_COOLDOWN_TICKS = 10;
+    private static final Map<UUID, Long> LAST_ANSWER = new HashMap<>();
+    private static final Map<UUID, Query> PENDING = new HashMap<>();
 
     private RecruitsCommandStatesPayloads() {
     }
@@ -58,13 +63,48 @@ public final class RecruitsCommandStatesPayloads {
         public static void handle(Query query, NetworkManager.PacketContext context) {
             context.queue(() -> {
                 if (context.getPlayer() instanceof ServerPlayer sender && Platform.isModLoaded("recruits")) {
-                    RecruitsCommandStates.States states = RecruitsCommandStates.compute(
-                            sender, query.groupIds, query.targetEntityId, query.targetPos);
-                    RecruitsNetworking.sendToPlayer(sender, new Answer(query.queryId,
-                            states.typeNames(), states.refusals()));
+                    long now = sender.serverLevel().getGameTime();
+                    Long last = LAST_ANSWER.get(sender.getUUID());
+                    if (last != null && now >= last && now - last < QUERY_COOLDOWN_TICKS) {
+                        PENDING.put(sender.getUUID(), query);
+                    } else {
+                        PENDING.remove(sender.getUUID());
+                        answer(sender, query, now);
+                    }
                 }
             });
         }
+    }
+
+    /** Answers the latest query held back by the cooldown once the pause is over. */
+    public static void register() {
+        TickEvent.SERVER_POST.register(server -> {
+            if (PENDING.isEmpty()) {
+                return;
+            }
+            PENDING.entrySet().removeIf(entry -> {
+                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+                if (player == null) {
+                    LAST_ANSWER.remove(entry.getKey());
+                    return true;
+                }
+                long now = player.serverLevel().getGameTime();
+                Long last = LAST_ANSWER.get(entry.getKey());
+                if (last != null && now >= last && now - last < QUERY_COOLDOWN_TICKS) {
+                    return false;
+                }
+                answer(player, entry.getValue(), now);
+                return true;
+            });
+        });
+    }
+
+    private static void answer(ServerPlayer player, Query query, long now) {
+        LAST_ANSWER.put(player.getUUID(), now);
+        RecruitsCommandStates.States states = RecruitsCommandStates.compute(
+                player, query.groupIds, query.targetEntityId, query.targetPos);
+        RecruitsNetworking.sendToPlayer(player, new Answer(query.queryId,
+                states.typeNames(), states.refusals()));
     }
 
     /** States keyed by button; a null refusal means the button may be used. */
