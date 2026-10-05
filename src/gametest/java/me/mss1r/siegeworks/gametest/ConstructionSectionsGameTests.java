@@ -44,7 +44,7 @@ public final class ConstructionSectionsGameTests {
             if (!id.getNamespace().equals(Siegeworks.MOD_ID)) {
                 continue;
             }
-            JsonObject sections = read("/assets/siegeworks/construction/" + id.getPath() + ".json");
+            JsonObject sections = read("/data/siegeworks/construction/" + id.getPath() + ".json");
             if (sections == null) {
                 continue;
             }

@@ -100,6 +100,42 @@ public abstract class SiegeConstructionRenderer<T extends AbstractSiegeEntity & 
 
     @Override
     //? if forge {
+    /*public void renderRecursively(PoseStack poseStack, T entity, GeoBone bone, RenderType renderType,
+                                  MultiBufferSource buffers, VertexConsumer buffer, boolean isReRender,
+                                  float partialTick, int packedLight, int packedOverlay,
+                                  float red, float green, float blue, float alpha) {
+    *///?} else {
+    public void renderRecursively(PoseStack poseStack, T entity, GeoBone bone, RenderType renderType,
+                                  MultiBufferSource buffers, VertexConsumer buffer, boolean isReRender,
+                                  float partialTick, int packedLight, int packedOverlay, int packedColor) {
+    //?}
+        var previous = building ? bone.saveSnapshot() : null;
+        if (building) {
+            // Construction hit cubes are exported in the authored pose, not a loading animation.
+            var initial = bone.getInitialSnapshot();
+            bone.updateRotation(initial.getRotX(), initial.getRotY(), initial.getRotZ());
+            bone.updatePosition(initial.getOffsetX(), initial.getOffsetY(), initial.getOffsetZ());
+            bone.updateScale(initial.getScaleX(), initial.getScaleY(), initial.getScaleZ());
+        }
+        try {
+            //? if forge {
+            /*super.renderRecursively(poseStack, entity, bone, renderType, buffers, buffer, isReRender,
+                    partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+            *///?} else {
+            super.renderRecursively(poseStack, entity, bone, renderType, buffers, buffer, isReRender,
+                    partialTick, packedLight, packedOverlay, packedColor);
+            //?}
+        } finally {
+            if (previous != null) {
+                bone.updateRotation(previous.getRotX(), previous.getRotY(), previous.getRotZ());
+                bone.updatePosition(previous.getOffsetX(), previous.getOffsetY(), previous.getOffsetZ());
+                bone.updateScale(previous.getScaleX(), previous.getScaleY(), previous.getScaleZ());
+            }
+        }
+    }
+
+    @Override
+    //? if forge {
     /*public void renderCubesOfBone(PoseStack poseStack, GeoBone bone, VertexConsumer buffer,
                                   int packedLight, int packedOverlay,
                                   float red, float green, float blue, float alpha) {
@@ -116,8 +152,15 @@ public abstract class SiegeConstructionRenderer<T extends AbstractSiegeEntity & 
             return;
         }
 
+        if (bone.isHidden()) {
+            return;
+        }
+
         List<GeoCube> cubes = bone.getCubes();
         for (int index = 0; index < cubes.size(); index++) {
+            if (sectionOf(bone.getName(), index) == null) {
+                continue;
+            }
             boolean built = isBuilt(bone.getName(), index);
             poseStack.pushPose();
             if (built) {

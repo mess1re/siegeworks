@@ -6,6 +6,7 @@ import me.mss1r.siegeworks.api.SiegeAmmunitionMode;
 import me.mss1r.siegeworks.api.SiegeBallistics;
 import me.mss1r.siegeworks.api.SiegeOperationState;
 import me.mss1r.axiomata.blueprint.api.BlueprintTags;
+import me.mss1r.axiomata.blueprint.api.visual.BlueprintConstructionVisuals;
 import me.mss1r.siegeworks.config.SiegeworksServerConfig;
 import me.mss1r.siegeworks.debug.SiegeworksDebug;
 import me.mss1r.siegeworks.gameplay.collision.SiegeTerrainCollision;
@@ -925,6 +926,11 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     @Override
     public BuildProgress buildProgress() {
         return construction.progress();
+    }
+
+    public BlueprintConstructionVisuals.State constructionVisualState() {
+        return BlueprintConstructionVisuals.state(
+                buildBlueprintId(), builtSections());
     }
 
     @Override
