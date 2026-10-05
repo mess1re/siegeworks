@@ -42,7 +42,9 @@ import java.util.Map;
 public final class LadderCarry {
     private static final String TAG_CARRIED = "SiegeworksCarriedLadder";
     /** Hand position: height above the feet and distance in front of the body. */
-    private static final double HANDS_HEIGHT = 1.8D;
+    private static final double HANDS_HEIGHT = 1.9D;
+    /** How much lower the hands are while crouching: the drop of a player's eyes from standing to crouching. */
+    private static final double CROUCH_DROP = 1.62D - 1.27D;
     private static final double HANDS_FORWARD = 0.25D;
     /** Ladders with this many sections or fewer are carried level overhead; longer ones drag their foot. */
     public static final int OVERHEAD_SECTIONS = 2;
@@ -76,7 +78,8 @@ public final class LadderCarry {
         float yaw = carrier instanceof LivingEntity living ? living.yBodyRot : carrier.getYRot();
         double yawRadians = Math.toRadians(yaw);
         Vec3 forward = new Vec3(-Math.sin(yawRadians), 0.0D, Math.cos(yawRadians));
-        Vec3 hands = carrier.position().add(0.0D, HANDS_HEIGHT, 0.0D).add(forward.scale(HANDS_FORWARD));
+        double handsHeight = HANDS_HEIGHT - (carrier.isCrouching() ? CROUCH_DROP : 0.0D);
+        Vec3 hands = carrier.position().add(0.0D, handsHeight, 0.0D).add(forward.scale(HANDS_FORWARD));
         double grip;
         double lean;
         if (sections <= OVERHEAD_SECTIONS) {
@@ -85,7 +88,7 @@ public final class LadderCarry {
         } else {
             grip = length * GRIP_SHARE;
             // Tilt so the foot, below and behind the hands, touches the ground.
-            lean = Math.acos(Mth.clamp(HANDS_HEIGHT / grip, 0.0D, 1.0D));
+            lean = Math.acos(Mth.clamp(handsHeight / grip, 0.0D, 1.0D));
         }
         Vec3 foot = hands.subtract(forward.scale(grip * Math.sin(lean))).subtract(0.0D, grip * Math.cos(lean), 0.0D);
         return new Pose(foot, yaw, Math.toDegrees(lean));

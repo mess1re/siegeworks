@@ -108,6 +108,26 @@ public final class LadderConstructionGameTests {
         succeed(helper, ladder);
     }
 
+    @GameTest(template = "empty", timeoutTicks = 20, batch = BATCH)
+    public static void ladderBuiltToTheTopHasEverySection(GameTestHelper helper) {
+        SiegeLadderEntity ladder = deploy(helper, new ItemStack(SiegeworksItems.SIEGE_LADDER_SPAWNER.get()));
+        while (!ladder.isFullyBuilt()) {
+            ConstructionWork.strike(ladder, null);
+        }
+        helper.assertTrue(ladder.getSections() == SiegeLadderEntity.MAX_SECTIONS,
+                "A ladder built to the top has " + ladder.getSections() + " sections");
+        succeed(helper, ladder);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20, batch = BATCH)
+    public static void fullLadderItemStartedWithTheHammerKeepsEverySection(GameTestHelper helper) {
+        SiegeLadderEntity ladder = deploy(helper, SiegeLadderDeploymentItem.withSections(
+                new ItemStack(SiegeworksItems.SIEGE_LADDER_SPAWNER.get()), SiegeLadderEntity.MAX_SECTIONS));
+        helper.assertTrue(ladder.isFullyBuilt() && ladder.getSections() == SiegeLadderEntity.MAX_SECTIONS,
+                "A full ladder item set down with the hammer has " + ladder.getSections() + " sections");
+        succeed(helper, ladder);
+    }
+
     @GameTest(template = "empty", timeoutTicks = 60, batch = BATCH)
     public static void ladderBeingBuiltStandsStillAndOnlyItsBuiltPartsCollide(GameTestHelper helper) {
         SiegeLadderEntity ladder = deploy(helper, new ItemStack(SiegeworksItems.SIEGE_LADDER_SPAWNER.get()));

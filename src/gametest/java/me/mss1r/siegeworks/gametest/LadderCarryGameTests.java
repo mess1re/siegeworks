@@ -38,7 +38,7 @@ public final class LadderCarryGameTests {
         helper.assertTrue(carrier.getAttributeValue(Attributes.MOVEMENT_SPEED) < walking,
                 "Carrying a ladder did not slow its carrier");
         helper.runAfterDelay(2, () -> {
-            helper.assertTrue(ladder.getY() > carrier.getY() + 1.5D,
+            helper.assertTrue(ladder.getY() > carrier.getY() + 1.83D,
                     "A short ladder is not carried over the head: " + (ladder.getY() - carrier.getY()));
             helper.assertTrue(ladder.getLeanAngleDegrees() > 80.0F,
                     "A short ladder is not carried level: " + ladder.getLeanAngleDegrees());
