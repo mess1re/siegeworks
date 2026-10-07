@@ -3,10 +3,6 @@ package me.mss1r.siegeworks.client;
 import me.mss1r.siegeworks.Siegeworks;
 import me.mss1r.siegeworks.client.aim.SiegeAimOverlay;
 import me.mss1r.siegeworks.client.projectile.StuckBoltLayer;
-import me.mss1r.siegeworks.client.particle.FragmentParticle;
-import me.mss1r.siegeworks.client.particle.ImpactSmokePlumeParticle;
-import me.mss1r.siegeworks.client.particle.MuzzlePlumeParticle;
-import me.mss1r.siegeworks.client.particle.SiegeSmokeParticle;
 import me.mss1r.siegeworks.particle.SiegeworksParticles;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.world.entity.EntityType;
@@ -106,15 +102,7 @@ public final class SiegeworksClientModEvents {
    @SubscribeEvent
    public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
       Siegeworks.LOG.info("Registering Siegeworks particle providers");
-      event.registerSpriteSet(SiegeworksParticles.SIEGE_SMOKE.get(),
-              sprites -> new SiegeSmokeParticle.Provider(sprites, false));
-      event.registerSpriteSet(SiegeworksParticles.HEAVY_SIEGE_SMOKE.get(),
-              sprites -> new SiegeSmokeParticle.Provider(sprites, true));
-      event.registerSpecial(SiegeworksParticles.MUZZLE_PLUME.get(),
-              new MuzzlePlumeParticle.Provider());
-      event.registerSpecial(SiegeworksParticles.IMPACT_SMOKE_PLUME.get(),
-              new ImpactSmokePlumeParticle.Provider());
-      event.registerSpecial(SiegeworksParticles.FRAGMENT.get(), new FragmentParticle.Provider());
+      me.mss1r.axiomata.ballistics.client.ParticleProviders.register(event, SiegeworksParticles.SET);
    }
 
    @SubscribeEvent

@@ -24,7 +24,8 @@ val loaderRange = project.property("mod.loader_range") as String
 val packFormat = project.property("mod.pack_format") as String
 val forgeVersion = project.property("deps.forge") as String
 val geckolibVersion = project.property("deps.geckolib") as String
-val axiomataVersion = project.property("deps.axiomata") as String
+val axiomataVersion = providers.gradleProperty("axiomataVersion")
+    .getOrElse(project.property("deps.axiomata") as String)
 val axiomataModVersion = project.property("deps.axiomata_mod") as String
 val architecturyVersion = project.property("deps.architectury") as String
 val recruitsVersion = project.property("deps.recruits") as String

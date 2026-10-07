@@ -1,66 +1,20 @@
 package me.mss1r.siegeworks.particle;
 
-import me.mss1r.siegeworks.Siegeworks;
-import dev.architectury.registry.registries.DeferredRegister;
+import me.mss1r.axiomata.ballistics.particle.ParticleSet;
 import dev.architectury.registry.registries.RegistrySupplier;
-//? if forge {
-/*import com.mojang.serialization.Codec;
-*///?} else {
-import com.mojang.serialization.MapCodec;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-//?}
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.Registries;
+import me.mss1r.siegeworks.Siegeworks;
 
 public final class SiegeworksParticles {
-    private static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES =
-            DeferredRegister.create(Siegeworks.MOD_ID, Registries.PARTICLE_TYPE);
+    public static final ParticleSet SET = new ParticleSet(Siegeworks.MOD_ID, "siege_smoke", "heavy_siege_smoke");
+    public static final RegistrySupplier<SimpleParticleType> SIEGE_SMOKE = SET.SMOKE;
+    public static final RegistrySupplier<SimpleParticleType> HEAVY_SIEGE_SMOKE = SET.HEAVY_SMOKE;
+    public static final RegistrySupplier<SimpleParticleType> MUZZLE_PLUME = SET.MUZZLE_PLUME;
+    public static final RegistrySupplier<SimpleParticleType> IMPACT_SMOKE_PLUME = SET.IMPACT_SMOKE_PLUME;
+    public static final RegistrySupplier<ParticleType<BlockParticleOption>> FRAGMENT = SET.FRAGMENT;
 
-    public static final RegistrySupplier<SimpleParticleType> SIEGE_SMOKE =
-            PARTICLE_TYPES.register("siege_smoke", () -> new SimpleParticleType(false));
-    public static final RegistrySupplier<SimpleParticleType> HEAVY_SIEGE_SMOKE =
-            PARTICLE_TYPES.register("heavy_siege_smoke", () -> new SimpleParticleType(false));
-    public static final RegistrySupplier<SimpleParticleType> MUZZLE_PLUME =
-            PARTICLE_TYPES.register("muzzle_plume", () -> new SimpleParticleType(false));
-    public static final RegistrySupplier<SimpleParticleType> IMPACT_SMOKE_PLUME =
-            PARTICLE_TYPES.register("impact_smoke_plume", () -> new SimpleParticleType(false));
-    /** Block fragment particle that keeps its given velocity. */
-    //? if forge {
-    /*public static final RegistrySupplier<ParticleType<BlockParticleOption>> FRAGMENT =
-            PARTICLE_TYPES.register("fragment", FragmentParticleType::new);
-
-    private static final class FragmentParticleType extends ParticleType<BlockParticleOption> {
-        private FragmentParticleType() {
-            super(false, BlockParticleOption.DESERIALIZER);
-        }
-
-        @Override
-        public Codec<BlockParticleOption> codec() {
-            return BlockParticleOption.codec(this);
-        }
-    }
-    *///?} else {
-    public static final RegistrySupplier<ParticleType<BlockParticleOption>> FRAGMENT =
-            PARTICLE_TYPES.register("fragment", () -> new ParticleType<BlockParticleOption>(false) {
-                @Override
-                public MapCodec<BlockParticleOption> codec() {
-                    return BlockParticleOption.codec(this);
-                }
-
-                @Override
-                public StreamCodec<? super RegistryFriendlyByteBuf, BlockParticleOption> streamCodec() {
-                    return BlockParticleOption.streamCodec(this);
-                }
-            });
-    //?}
-
-    private SiegeworksParticles() {
-    }
-
-    public static void register() {
-        PARTICLE_TYPES.register();
-    }
+    private SiegeworksParticles() {}
+    public static void register() { SET.register(); }
 }

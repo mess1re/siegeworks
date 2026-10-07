@@ -1,12 +1,12 @@
 {
   "textures": [
-    "siegeworks:siege_smoke_0",
-    "siegeworks:siege_smoke_1",
-    "siegeworks:siege_smoke_2",
-    "siegeworks:siege_smoke_3",
-    "siegeworks:siege_smoke_4",
-    "siegeworks:siege_smoke_5",
-    "siegeworks:siege_smoke_6",
-    "siegeworks:siege_smoke_7"
+    "axiomata:smoke_0",
+    "axiomata:smoke_1",
+    "axiomata:smoke_2",
+    "axiomata:smoke_3",
+    "axiomata:smoke_4",
+    "axiomata:smoke_5",
+    "axiomata:smoke_6",
+    "axiomata:smoke_7"
   ]
 }
