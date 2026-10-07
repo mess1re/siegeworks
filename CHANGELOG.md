@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.9
+
+### Changed
+
+- Requires Axiomata 0.1.0-beta.8.
+- Uses Axiomata for ballistics, block damage, particles and loading. Existing projectile profiles and saved block damage remain compatible.
+
 ## 0.1.0-beta.8
 
 ### Notes
