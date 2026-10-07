@@ -22,6 +22,7 @@ public final class RecruitsNetworking {
     }
 
     public static void register() {
+        RecruitsCommandStatesPayloads.register();
         register(SIEGE_COMMAND,
                 RecruitsSiegeCommandC2SPayload::decode, RecruitsSiegeCommandC2SPayload::handle);
         register(TOWER_CREW,
