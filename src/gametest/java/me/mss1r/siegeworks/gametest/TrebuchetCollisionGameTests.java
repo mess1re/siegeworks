@@ -4,7 +4,7 @@ import java.util.List;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import me.mss1r.siegeworks.entity.projectile.TrebuchetProjectile;
 import me.mss1r.siegeworks.entity.siege.TrebuchetEntity;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectileSweep;
+import me.mss1r.axiomata.ballistics.ProjectileSweep;
 import me.mss1r.axiomata.collision.CollisionGroup;
 import me.mss1r.axiomata.collision.CollisionPart;
 import me.mss1r.axiomata.collision.CollisionPose;

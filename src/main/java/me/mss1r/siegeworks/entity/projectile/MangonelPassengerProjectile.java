@@ -2,7 +2,7 @@ package me.mss1r.siegeworks.entity.projectile;
 
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import me.mss1r.siegeworks.entity.base.SiegeProjectile;
-import me.mss1r.siegeworks.data.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;

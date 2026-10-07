@@ -1,5 +1,10 @@
 package me.mss1r.siegeworks.data.profile;
 
+import me.mss1r.axiomata.ballistics.profile.BlockMaterialProfile;
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.data.profile.JsonProfileReloadListener;
+import me.mss1r.axiomata.data.profile.ProfileCatalog;
+
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import me.mss1r.siegeworks.Siegeworks;
@@ -279,9 +284,27 @@ public final class DatapackGameTests {
         return BlockMaterialProfile.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(json)).result().orElseThrow();
     }
 
-    private static JsonProfileReloadListener<ProjectilePhysicsProfile> loader(ProfileCatalog<ProjectilePhysicsProfile> catalog) {
-        return new JsonProfileReloadListener<>("definitions/projectile_physics", "test projectile profiles",
-                ProjectilePhysicsProfile.CODEC, ProjectilePhysicsProfile::validationError, catalog, ProfileFormat::projectile);
+    private static TestProfileLoader loader(ProfileCatalog<ProjectilePhysicsProfile> catalog) {
+        return new TestProfileLoader(catalog);
+    }
+
+    private static final class TestProfileLoader extends JsonProfileReloadListener<ProjectilePhysicsProfile> {
+        private TestProfileLoader(ProfileCatalog<ProjectilePhysicsProfile> catalog) {
+            super("definitions/projectile_physics", "test projectile profiles",
+                    ProjectilePhysicsProfile.CODEC, ProjectilePhysicsProfile::validationError, catalog, ProfileFormat::projectile);
+        }
+
+        @Override
+        public PreparedProfiles<ProjectilePhysicsProfile> prepare(ResourceManager resources,
+                net.minecraft.util.profiling.ProfilerFiller profiler) {
+            return super.prepare(resources, profiler);
+        }
+
+        @Override
+        public void apply(PreparedProfiles<ProjectilePhysicsProfile> prepared, ResourceManager resources,
+                net.minecraft.util.profiling.ProfilerFiller profiler) {
+            super.apply(prepared, resources, profiler);
+        }
     }
 
     private static Resource resource(String packId, String json) {

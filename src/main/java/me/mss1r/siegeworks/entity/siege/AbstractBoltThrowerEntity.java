@@ -8,7 +8,7 @@ import me.mss1r.siegeworks.api.SiegeOperationState;
 import me.mss1r.siegeworks.entity.projectile.AbstractBoltProjectile;
 import me.mss1r.axiomata.collision.system.StructureMotionSystem;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
-import me.mss1r.siegeworks.gameplay.loading.LoadingRequirement;
+import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;

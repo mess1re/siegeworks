@@ -11,7 +11,7 @@ import me.mss1r.siegeworks.event.MountedSiegeItemHandler;
 import me.mss1r.siegeworks.event.SiegeProfileReloads;
 import me.mss1r.siegeworks.event.SiegeDeploymentLimitEvents;
 import me.mss1r.siegeworks.event.SiegeOwnershipEvents;
-import me.mss1r.siegeworks.event.SiegeworksServerTickHandler;
+import me.mss1r.siegeworks.gameplay.ballistics.SiegeBallisticsEnvironment;
 import me.mss1r.siegeworks.particle.SiegeworksParticles;
 import me.mss1r.siegeworks.registry.SiegeworksItemGroups;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
@@ -48,6 +48,7 @@ public final class Siegeworks {
       SiegeworksItemGroups.register();
       SiegeworksSounds.register();
       SiegeworksParticles.register();
+      SiegeBallisticsEnvironment.initialize();
       SiegeworksNetworking.register();
       LadderCarry.register();
       CommandRegistrationEvent.EVENT.register(SiegeworksCommands::register);
@@ -57,7 +58,6 @@ public final class Siegeworks {
       EntityAttributesHandler.register();
       SiegeProfileReloads.register();
       ProfileSync.register();
-      SiegeworksServerTickHandler.register();
       ExplosionPhysicsHandler.register();
       MountedSiegeItemHandler.register();
       EnvExecutor.runInEnv(Env.CLIENT, () -> SiegeworksClient::initialize);

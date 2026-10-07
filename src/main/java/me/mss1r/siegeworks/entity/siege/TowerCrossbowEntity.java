@@ -6,7 +6,7 @@ import me.mss1r.axiomata.collision.CollisionGroup;
 import me.mss1r.axiomata.collision.CollisionPose;
 import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes;
 import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
-import me.mss1r.siegeworks.gameplay.loading.LoadingRequirement;
+import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
 import me.mss1r.siegeworks.registry.SiegeworksSounds;

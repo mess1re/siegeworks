@@ -1,6 +1,6 @@
 package me.mss1r.siegeworks.entity.siege;
 
-import me.mss1r.siegeworks.data.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.gameplay.towing.TowingProfile;
 import me.mss1r.siegeworks.api.SiegeActionResult;
 import me.mss1r.siegeworks.api.MountedSiegeItemControl;
@@ -15,8 +15,8 @@ import me.mss1r.axiomata.collision.CollisionPose;
 import me.mss1r.axiomata.collision.system.StructureMotionSystem;
 import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
-import me.mss1r.siegeworks.gameplay.loading.AutomatedLoadingSession;
-import me.mss1r.siegeworks.gameplay.loading.LoadingRequirement;
+import me.mss1r.axiomata.loading.AutomatedLoadingSession;
+import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.gameplay.loading.LoadingStatus;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.particle.SiegeParticleEffects;
@@ -675,7 +675,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
 
     private LoadingRequirement createRocketBatchStage(Item item, int amount) {
         return LoadingRequirement.consume(item, amount)
-                .withFeedback(LoadingStatus.LOADING_AMMUNITION)
+                .withFeedback(LoadingStatus.LOADING_AMMUNITION.translationKey())
                 .timedBy("rocket");
     }
 
@@ -730,7 +730,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
 
     private LoadingRequirement createPrimingStage() {
         return LoadingRequirement.tool(Items.FLINT_AND_STEEL)
-                .withFeedback(LoadingStatus.PRIMING)
+                .withFeedback(LoadingStatus.PRIMING.translationKey())
                 .timedBy("priming");
     }
 

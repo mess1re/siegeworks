@@ -1,12 +1,10 @@
 package me.mss1r.siegeworks.network;
 
-import com.mojang.serialization.Codec;
+import me.mss1r.axiomata.data.profile.ProfileSnapshotCodec;
 import dev.architectury.networking.NetworkManager;
-import me.mss1r.siegeworks.data.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 //? if neoforge {
@@ -20,8 +18,8 @@ import java.util.Map;
 
 /** Server projectile profiles, so clients predict projectiles the same way. */
 //? if forge {
-/*
-public record ProjectileProfilesS2CPayload(Map<ResourceLocation, ProjectilePhysicsProfile> profiles) {
+
+/*public record ProjectileProfilesS2CPayload(Map<ResourceLocation, ProjectilePhysicsProfile> profiles) {
 *///?} else {
 public record ProjectileProfilesS2CPayload(Map<ResourceLocation, ProjectilePhysicsProfile> profiles)
         implements CustomPacketPayload {
@@ -32,24 +30,19 @@ public record ProjectileProfilesS2CPayload(Map<ResourceLocation, ProjectilePhysi
     private void write(RegistryFriendlyByteBuf buffer) { encode(this, buffer); }
     @Override public Type<ProjectileProfilesS2CPayload> type() { return TYPE; }
     //?}
-    private static final Codec<Map<ResourceLocation, ProjectilePhysicsProfile>> PROFILES =
-            Codec.unboundedMap(ResourceLocation.CODEC, ProjectilePhysicsProfile.CODEC);
+    private static final ProfileSnapshotCodec<ProjectilePhysicsProfile> PROFILES =
+            new ProfileSnapshotCodec<>(ProjectilePhysicsProfile.CODEC);
 
     public static ProjectileProfilesS2CPayload current() {
         return new ProjectileProfilesS2CPayload(SiegeProfileCatalogs.PROJECTILES.snapshot());
     }
 
     public static void encode(ProjectileProfilesS2CPayload packet, FriendlyByteBuf buffer) {
-        buffer.writeNbt((CompoundTag) PROFILES.encodeStart(NbtOps.INSTANCE, packet.profiles).result()
-                .orElseThrow(() -> new IllegalStateException("Projectile profiles could not be encoded")));
+        PROFILES.write(buffer, packet.profiles);
     }
 
     public static ProjectileProfilesS2CPayload decode(FriendlyByteBuf buffer) {
-        CompoundTag tag = buffer.readNbt();
-        Map<ResourceLocation, ProjectilePhysicsProfile> profiles = tag == null
-                ? Map.of()
-                : PROFILES.parse(NbtOps.INSTANCE, tag).result().orElse(Map.of());
-        return new ProjectileProfilesS2CPayload(profiles);
+        return new ProjectileProfilesS2CPayload(PROFILES.read(buffer));
     }
 
     public static void handle(ProjectileProfilesS2CPayload packet, NetworkManager.PacketContext context) {

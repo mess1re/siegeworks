@@ -1,5 +1,7 @@
 package me.mss1r.siegeworks.data.profile;
 
+import me.mss1r.axiomata.data.profile.ProfileValidation;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 

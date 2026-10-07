@@ -12,7 +12,7 @@ import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.gameplay.towing.TowingProfile;
-import me.mss1r.siegeworks.gameplay.damage.StructuralDamageSystem;
+import me.mss1r.axiomata.ballistics.damage.StructuralDamageSystem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;

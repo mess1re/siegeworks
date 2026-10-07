@@ -1,6 +1,6 @@
 package me.mss1r.siegeworks.entity.siege;
 
-import me.mss1r.siegeworks.gameplay.loading.LoadingRequirement;
+import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.item.ArtilleryPowderCosts;
 import me.mss1r.axiomata.collision.CollisionShape;
 import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes;

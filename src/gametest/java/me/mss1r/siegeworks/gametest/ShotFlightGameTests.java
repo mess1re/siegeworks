@@ -4,7 +4,7 @@ import me.mss1r.siegeworks.Siegeworks;
 import me.mss1r.siegeworks.config.SiegeBlockDamage;
 import me.mss1r.siegeworks.config.SiegeworksServerConfig;
 import me.mss1r.siegeworks.api.SiegeBallistics;
-import me.mss1r.siegeworks.data.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import me.mss1r.siegeworks.entity.projectile.GiantCannonProjectile;
 import me.mss1r.siegeworks.entity.projectile.SingijeonProjectile;

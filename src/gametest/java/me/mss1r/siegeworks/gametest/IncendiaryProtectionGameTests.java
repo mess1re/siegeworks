@@ -3,7 +3,7 @@ package me.mss1r.siegeworks.gametest;
 import me.mss1r.siegeworks.Siegeworks;
 import me.mss1r.siegeworks.config.SiegeBlockDamage;
 import me.mss1r.siegeworks.config.SiegeworksServerConfig;
-import me.mss1r.siegeworks.data.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpacts;
 import me.mss1r.siegeworks.gameplay.ballistics.ExplosionPhysics;
 import net.minecraft.core.BlockPos;
@@ -93,15 +93,19 @@ public final class IncendiaryProtectionGameTests {
         var pos = helper.absolutePos(new BlockPos(2, 3, 2));
         var breaker = SiegeGameTestPlayers.create(helper.getLevel());
         try {
-            helper.assertTrue(!land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, breaker, true, true, false),
+            helper.assertTrue(!land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, breaker, true, DebrisKind.SAVED),
                     "Saved debris placed a block in a protected area");
-            helper.assertTrue(land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, breaker, false, true, false),
+            helper.assertTrue(land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, breaker, false, DebrisKind.SAVED),
                     "Saved debris lost its responsible player or could not land in an unclaimed area");
-            helper.assertTrue(!land(helper, pos, SiegeBlockDamage.NEVER, breaker, false, false, false),
+            helper.assertTrue(!land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, breaker, true, DebrisKind.LEGACY),
+                    "Legacy debris bypassed a protected area");
+            helper.assertTrue(land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, breaker, false, DebrisKind.LEGACY),
+                    "Legacy debris lost its responsible player");
+            helper.assertTrue(!land(helper, pos, SiegeBlockDamage.NEVER, breaker, false, DebrisKind.LIVE),
                     "Debris placed a block while terrain damage was disabled");
-            helper.assertTrue(land(helper, pos, SiegeBlockDamage.EVERYWHERE, breaker, true, false, false),
+            helper.assertTrue(land(helper, pos, SiegeBlockDamage.EVERYWHERE, breaker, true, DebrisKind.LIVE),
                     "EVERYWHERE blocked a debris landing");
-            helper.assertTrue(land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, null, true, false, true),
+            helper.assertTrue(land(helper, pos, SiegeBlockDamage.RESPECT_PROTECTION, null, true, DebrisKind.ORDINARY),
                     "Siegeworks intercepted an ordinary falling block");
         } finally {
             SiegeworksServerConfig.setBlockDamage(before);
@@ -111,8 +115,10 @@ public final class IncendiaryProtectionGameTests {
         helper.succeed();
     }
 
+    private enum DebrisKind { LIVE, SAVED, LEGACY, ORDINARY }
+
     private static boolean land(GameTestHelper helper, BlockPos pos, SiegeBlockDamage rule, Player breaker,
-                                  boolean claimed, boolean saveReload, boolean ordinary) {
+                                  boolean claimed, DebrisKind kind) {
         var level = helper.getLevel();
         NO_BREAK.clear();
         NO_PLACE.clear();
@@ -123,7 +129,7 @@ public final class IncendiaryProtectionGameTests {
         level.setBlock(pos.below(), Blocks.NETHERRACK.defaultBlockState(), 2);
         SiegeworksServerConfig.setBlockDamage(rule);
         FallingBlockEntity debris;
-        if (ordinary) {
+        if (kind == DebrisKind.ORDINARY) {
             debris = EntityType.FALLING_BLOCK.create(level);
             CompoundTag tag = new CompoundTag();
             tag.put("BlockState", NbtUtils.writeBlockState(Blocks.STONE.defaultBlockState()));
@@ -136,7 +142,10 @@ public final class IncendiaryProtectionGameTests {
                     new Vec3(0, 1, 0), 2.0F, breaker), "No debris was launched for the landing test");
             debris = level.getEntitiesOfClass(FallingBlockEntity.class, new AABB(source).inflate(3))
                     .stream().filter(entity -> entity.getStartPos().equals(source)).findFirst().orElseThrow();
-            if (saveReload) {
+            if (kind == DebrisKind.SAVED || kind == DebrisKind.LEGACY) {
+                if (kind == DebrisKind.LEGACY) {
+                    debris.getPersistentData().remove("axiomata:debris_context");
+                }
                 CompoundTag saved = new CompoundTag();
                 debris.saveWithoutId(saved);
                 debris.discard();

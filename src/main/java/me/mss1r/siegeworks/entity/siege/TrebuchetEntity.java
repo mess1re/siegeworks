@@ -20,8 +20,8 @@ import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes
 import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.item.SiegeAmmo;
-import me.mss1r.siegeworks.gameplay.loading.AutomatedLoadingSession;
-import me.mss1r.siegeworks.gameplay.loading.LoadingRequirement;
+import me.mss1r.axiomata.loading.AutomatedLoadingSession;
+import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
 import net.minecraft.nbt.CompoundTag;

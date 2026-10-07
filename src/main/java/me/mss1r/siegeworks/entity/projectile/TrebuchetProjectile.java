@@ -12,7 +12,7 @@ import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpactEffects;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpacts;
 import me.mss1r.siegeworks.particle.SiegeParticleEffects;
 import me.mss1r.siegeworks.entity.base.SiegeProjectile;
-import me.mss1r.siegeworks.data.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.registry.SiegeworksBlocks;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import net.minecraft.nbt.CompoundTag;

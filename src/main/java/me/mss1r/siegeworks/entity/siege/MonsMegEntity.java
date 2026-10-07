@@ -15,8 +15,8 @@ import me.mss1r.axiomata.collision.ScalarAnimationCurve;
 import me.mss1r.axiomata.collision.system.StructureMotionSystem;
 import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
-import me.mss1r.siegeworks.gameplay.loading.AutomatedLoadingSession;
-import me.mss1r.siegeworks.gameplay.loading.LoadingRequirement;
+import me.mss1r.axiomata.loading.AutomatedLoadingSession;
+import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.gameplay.loading.LoadingStatus;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.gameplay.audio.ArtilleryLoadingSounds;
@@ -121,14 +121,14 @@ public class MonsMegEntity extends AbstractSiegeEntity implements GeoEntity, Sie
 
     private static final LoadingRequirement[] LOAD_STAGES = {
             LoadingRequirement.consume(SiegeworksItems.BLACK_POWDER.get(), ArtilleryPowderCosts.MONS_MEG)
-                    .withFeedback(LoadingStatus.LOADING_POWDER).timedBy("powder"),
+                    .withFeedback(LoadingStatus.LOADING_POWDER.translationKey()).timedBy("powder"),
             LoadingRequirement.tool(SiegeworksItems.RAMROD.get())
-                    .withFeedback(LoadingStatus.RAMMING_CHARGE).timedBy("ramCharge"),
+                    .withFeedback(LoadingStatus.RAMMING_CHARGE.translationKey()).timedBy("ramCharge"),
             LoadingRequirement.consume(SiegeworksItems.GIANT_CANNON_BALL.get()),
             LoadingRequirement.tool(SiegeworksItems.RAMROD.get())
-                    .withFeedback(LoadingStatus.RAMMING_PROJECTILE).timedBy("ramProjectile"),
+                    .withFeedback(LoadingStatus.RAMMING_PROJECTILE.translationKey()).timedBy("ramProjectile"),
             LoadingRequirement.tool(Items.FLINT_AND_STEEL)
-                    .withFeedback(LoadingStatus.PRIMING).timedBy("priming")
+                    .withFeedback(LoadingStatus.PRIMING.translationKey()).timedBy("priming")
     };
 
     private final AnimatableInstanceCache animatableInstanceCache = GeckoLibUtil.createInstanceCache(this);

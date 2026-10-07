@@ -1,5 +1,8 @@
 package me.mss1r.siegeworks.data.profile;
 
+import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
+import me.mss1r.axiomata.data.profile.ProfileCatalog;
+
 public final class SiegeProfileCatalogs {
     public static final ProfileCatalog<SiegeEngineProfile> ENGINES =
             new ProfileCatalog<>(SiegeEngineProfile.DEFAULT);

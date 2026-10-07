@@ -7,7 +7,7 @@ import me.mss1r.siegeworks.debug.SiegeworksDebug;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.entity.base.SiegeProjectile;
 import me.mss1r.siegeworks.entity.siege.HwachaEntity;
-import me.mss1r.siegeworks.gameplay.damage.StructuralDamageSystem;
+import me.mss1r.axiomata.ballistics.damage.StructuralDamageSystem;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
