@@ -30,6 +30,6 @@ public final class SiegeBallisticsEnvironment {
     private SiegeBallisticsEnvironment() {}
 
     public static void initialize() {
-        // Registers the debris landing handler before a saved falling block can tick.
+        DEBRIS.register();
     }
 }

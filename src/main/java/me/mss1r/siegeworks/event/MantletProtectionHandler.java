@@ -1,6 +1,5 @@
 package me.mss1r.siegeworks.event;
 
-import me.mss1r.siegeworks.api.ProjectilePassThroughControl;
 import me.mss1r.siegeworks.entity.siege.MantletEntity;
 import me.mss1r.siegeworks.entity.base.SiegeProjectile;
 import net.minecraft.server.level.ServerLevel;
@@ -10,15 +9,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 //? if forge {
-/*import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
+/*import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 *///?} else {
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 //?}
 
@@ -33,24 +29,6 @@ public final class MantletProtectionHandler {
 
     public static void register(IEventBus gameBus) {
         gameBus.addListener(MantletProtectionHandler::onLivingIncomingDamage);
-        gameBus.addListener(MantletProtectionHandler::onProjectileImpact);
-    }
-
-    private static void onProjectileImpact(ProjectileImpactEvent event) {
-        if (!(event.getRayTraceResult() instanceof EntityHitResult entityHit)
-                || !(entityHit.getEntity() instanceof ProjectilePassThroughControl passThrough)) {
-            return;
-        }
-
-        Projectile projectile = event.getProjectile();
-        Vec3 start = projectile.position();
-        Vec3 movement = projectile.getDeltaMovement();
-        Vec3 end = movement.lengthSqr() > 1.0E-6D
-                ? start.add(movement)
-                : entityHit.getLocation();
-        if (passThrough.allowsProjectilePassage(start, end)) {
-            event.setCanceled(true);
-        }
     }
 
     //? if forge {
