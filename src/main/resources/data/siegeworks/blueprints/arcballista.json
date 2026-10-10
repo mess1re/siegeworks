@@ -3,11 +3,11 @@
   "result": { "item": "siegeworks:arcballista_spawner", "entity": "siegeworks:arcballista" },
   "returns": { "#minecraft:logs": "minecraft:oak_log", "#minecraft:planks": "minecraft:oak_planks" },
   "stages": [
-    { "section": "wheels", "hits": 6,
+    { "section": "wheels", "hits": 8,
       "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
-    { "section": "frame", "hits": 14,
+    { "section": "frame", "hits": 18,
       "materials": { "#minecraft:logs": 6, "#minecraft:planks": 8, "minecraft:iron_nugget": 2 } },
-    { "section": "mechanism", "hits": 10,
+    { "section": "mechanism", "hits": 22,
       "materials": { "minecraft:iron_ingot": 4, "siegeworks:rope": 6, "#minecraft:logs": 1 } }
   ]
 }

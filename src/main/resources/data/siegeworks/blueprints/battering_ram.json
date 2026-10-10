@@ -3,17 +3,17 @@
   "result": { "item": "siegeworks:battering_ram_spawner", "entity": "siegeworks:battering_ram" },
   "returns": { "#minecraft:logs": "minecraft:oak_log", "#minecraft:planks": "minecraft:oak_planks" },
   "stages": [
-    { "section": "wheels_1", "hits": 6,
+    { "section": "wheels_1", "hits": 8,
       "materials": { "siegeworks:wheel": 2 } },
-    { "section": "wheels_2", "hits": 6,
+    { "section": "wheels_2", "hits": 8,
       "materials": { "siegeworks:wheel": 2 } },
-    { "section": "base_stage_1", "hits": 26,
+    { "section": "base_stage_1", "hits": 42,
       "materials": { "#minecraft:logs": 24, "#minecraft:planks": 16, "minecraft:iron_nugget": 12 } },
-    { "section": "base_stage_2", "hits": 20,
+    { "section": "base_stage_2", "hits": 30,
       "materials": { "#minecraft:logs": 20, "#minecraft:planks": 4, "minecraft:iron_nugget": 8, "siegeworks:rope": 10 } },
-    { "section": "base_stage_3", "hits": 18,
+    { "section": "base_stage_3", "hits": 28,
       "materials": { "#minecraft:logs": 16, "minecraft:iron_nugget": 16, "minecraft:iron_ingot": 8, "siegeworks:rope": 10 } },
-    { "section": "ram", "hits": 24,
+    { "section": "ram", "hits": 44,
       "materials": { "#minecraft:logs": 24, "minecraft:iron_ingot": 16, "siegeworks:rope": 16 } }
   ]
 }
