@@ -4,6 +4,9 @@
   "package": "me.mss1r.siegeworks.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "siegeworks.refmap.json",
+  "mixins": [
+    "RecruitsStrategicFireMixin"
+  ],
   "client": [
     "client.RecruitsGameRendererMixin"
   ],

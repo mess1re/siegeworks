@@ -300,7 +300,6 @@ public final class RecruitsCompat {
                 continue;
             }
 
-            RecruitsFireZone.set(engineer, center, radiusX, radiusZ, rectangular);
             engineer.setStrategicFirePos(center);
             engineer.setShouldStrategicFire(true);
             engineer.setShouldRanged(true);
@@ -315,6 +314,7 @@ public final class RecruitsCompat {
                 player.getBoundingBox().inflate(COMMAND_RANGE), chosen::test));
     }
 
+            RecruitsFireZone.set(engineer, center, radiusX, radiusZ, rectangular);
     public static int clearFireZone(List<AbstractRecruitEntity> recruits) {
         int cleared = 0;
         for (AbstractRecruitEntity recruit : recruits) {

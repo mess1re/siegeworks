@@ -9,7 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
-final class RecruitsFireZone {
+public final class RecruitsFireZone {
     private static final String TAG_ZONE = "SiegeworksFireZone";
     private static final String TAG_DIMENSION = "Dimension";
     private static final String TAG_X = "X";
@@ -33,8 +33,12 @@ final class RecruitsFireZone {
         engineer.getPersistentData().put(TAG_ZONE, zone);
     }
 
-    static void clear(SiegeEngineerEntity engineer) {
+    public static void clear(SiegeEngineerEntity engineer) {
         engineer.getPersistentData().remove(TAG_ZONE);
+    }
+
+    static boolean hasZone(SiegeEngineerEntity engineer) {
+        return engineer.getPersistentData().contains(TAG_ZONE, Tag.TAG_COMPOUND);
     }
 
     static Vec3 resolveTarget(SiegeEngineerEntity engineer, int shotSequence, double shotSpreadRadius,

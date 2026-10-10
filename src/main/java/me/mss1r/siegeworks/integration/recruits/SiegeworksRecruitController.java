@@ -274,7 +274,7 @@ public final class SiegeworksRecruitController implements ISiegeController {
         if (commandedTarget == null) {
             return null;
         }
-        if (engineer.getShouldStrategicFire()) {
+        if (engineer.getShouldStrategicFire() && RecruitsFireZone.hasZone(engineer)) {
             for (int sample = 0; sample < FIRE_ZONE_TARGET_SAMPLES; sample++) {
                 Vec3 zoneTarget = RecruitsFireZone.resolveTarget(engineer, artilleryShotSequence,
                         artillery.getAutomatedTargetSpreadRadius(), sample);
