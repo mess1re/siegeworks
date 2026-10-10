@@ -37,6 +37,11 @@ public final class MangonelPassengerProjectile extends SiegeProjectile {
     }
 
     @Override
+    protected boolean canHitEntity(Entity target) {
+        return !target.isPassengerOfSameVehicle(this) && super.canHitEntity(target);
+    }
+
+    @Override
     protected void positionRider(Entity passenger, MoveFunction moveFunction) {
         if (hasPassenger(passenger)) {
             moveFunction.accept(passenger, getX(), getY() + PASSENGER_Y_OFFSET, getZ());

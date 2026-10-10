@@ -791,7 +791,8 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
     protected void removePassenger(Entity passenger) {
         boolean launchPayload = isLaunchPayload(passenger);
         super.removePassenger(passenger);
-        if (launchPayload && !transferringLaunchPayload) {
+        // Passenger packets rebuild the client list through ejectPassengers(). Only the server ends a payload seat.
+        if (!level().isClientSide && launchPayload && !transferringLaunchPayload) {
             entityData.set(LAUNCH_PAYLOAD, Optional.empty());
             setWindingTime(0);
         }
