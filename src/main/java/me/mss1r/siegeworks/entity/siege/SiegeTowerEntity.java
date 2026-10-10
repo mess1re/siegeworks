@@ -776,6 +776,10 @@ public class SiegeTowerEntity extends AbstractSiegeEntity
         return crew.reservePusher(passenger, this);
     }
 
+    public boolean reserveDriver(LivingEntity passenger) {
+        return crew.reserveDriver(passenger);
+    }
+
     public boolean reserveInteriorSeat(LivingEntity passenger) {
         return crew.reserveInteriorSeat(passenger, this);
     }

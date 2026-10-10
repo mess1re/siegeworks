@@ -589,8 +589,9 @@ public final class RecruitsCompat {
                     sendToMount(recruit, lead);
                 } else if (tower.isTowed()) {
                     continue;
-                } else if (recruit.getVehicle() != tower) {
-                    RecruitsSiegeTraversal.requestBoarding(recruit, tower);
+                } else {
+                    if (!tower.reserveDriver(recruit)) continue;
+                    if (recruit.getVehicle() != tower) RecruitsSiegeTraversal.requestBoarding(recruit, tower);
                 }
                 driverAssigned = true;
                 placed++;
@@ -626,7 +627,6 @@ public final class RecruitsCompat {
     public static int applyTowerCrew(ServerPlayer player, SiegeTowerEntity tower, int action,
                                      java.util.function.Predicate<AbstractRecruitEntity> chosen) {
         if (action != RecruitsTowerCrewC2SPayload.ACTION_BOARD
-                && action != RecruitsTowerCrewC2SPayload.ACTION_PUSH
                 && action != RecruitsTowerCrewC2SPayload.ACTION_UNLOAD
                 && action != RecruitsTowerCrewC2SPayload.ACTION_RETURN) {
             return 0;
@@ -659,12 +659,11 @@ public final class RecruitsCompat {
                     returned++;
                     continue;
                 }
-                if (recruit instanceof SiegeEngineerEntity) {
-                    if (!driverAssigned) {
-                        RecruitsSiegeTraversal.requestBoarding(recruit, tower);
-                        driverAssigned = true;
-                        returned++;
-                    }
+                if (recruit instanceof SiegeEngineerEntity && !driverAssigned && !tower.isTowed()
+                        && tower.reserveDriver(recruit)) {
+                    RecruitsSiegeTraversal.requestBoarding(recruit, tower);
+                    driverAssigned = true;
+                    returned++;
                     continue;
                 }
                 if (RecruitsSiegeTraversal.requestTowerReturn(recruit, tower)) {
@@ -675,31 +674,9 @@ public final class RecruitsCompat {
         }
 
         boolean driverAssigned = tower.hasActiveDriver();
-        Set<UUID> pushTaken = new HashSet<>();
         int applied = 0;
         for (AbstractRecruitEntity recruit : recruits) {
             if (recruit.isPassenger() && recruit.getVehicle() != tower) {
-                continue;
-            }
-
-            if (action == RecruitsTowerCrewC2SPayload.ACTION_PUSH) {
-                if (recruit instanceof SiegeEngineerEntity) {
-                    continue;
-                }
-                AbstractHorse mount = freeDraftMount(tower, pushTaken);
-                if (mount != null) {
-                    pushTaken.add(mount.getUUID());
-                    sendToMount(recruit, mount);
-                    applied++;
-                    continue;
-                }
-                if (tower.isTowed() ? !tower.reserveInteriorSeat(recruit) : !tower.reservePusher(recruit)) {
-                    continue;
-                }
-                if (recruit.getVehicle() != tower) {
-                    RecruitsSiegeTraversal.requestBoarding(recruit, tower);
-                }
-                applied++;
                 continue;
             }
 
@@ -709,7 +686,8 @@ public final class RecruitsCompat {
                 continue;
             }
 
-            if (recruit instanceof SiegeEngineerEntity && !driverAssigned) {
+            if (recruit instanceof SiegeEngineerEntity && !driverAssigned && !tower.isTowed()) {
+                if (!tower.reserveDriver(recruit)) continue;
                 if (recruit.getVehicle() != tower) {
                     RecruitsSiegeTraversal.requestBoarding(recruit, tower);
                 }
@@ -718,7 +696,7 @@ public final class RecruitsCompat {
                 continue;
             }
 
-            if (tower.reserveInteriorSeat(recruit)) {
+            if ((!tower.isTowed() && tower.reservePusher(recruit)) || tower.reserveInteriorSeat(recruit)) {
                 if (recruit.getVehicle() != tower) {
                     RecruitsSiegeTraversal.requestBoarding(recruit, tower);
                 }

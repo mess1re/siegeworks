@@ -53,23 +53,26 @@ public final class TowerCrewCoordinator {
             return;
         }
 
-        boolean engineerFirst = host.supportedDirectOperator(passenger);
-        Seat seat = engineerFirst ? roster.firstFreeInteriorSeat() : null;
-        if (seat != null) {
-            roster.assignSeat(uuid, seat.floor(), seat.slot());
-            return;
-        }
-
         int pusherSlot = roster.firstFreePusherSlot();
         if (pusherSlot >= 0) {
             roster.assignPusher(uuid, pusherSlot);
             return;
         }
 
-        seat = roster.firstFreeInteriorSeat();
+        Seat seat = roster.firstFreeInteriorSeat();
         if (seat != null) {
             roster.assignSeat(uuid, seat.floor(), seat.slot());
         }
+    }
+
+    public boolean reserveDriver(LivingEntity passenger) {
+        if (!host.pushBarsManned() || !host.supportedDirectOperator(passenger)
+                || !roster.driverSlotAvailable(passenger.getUUID())) {
+            return false;
+        }
+        roster.assignDriver(passenger.getUUID());
+        host.setOperator(passenger);
+        return true;
     }
 
     public boolean reservePusher(LivingEntity passenger, Entity tower) {

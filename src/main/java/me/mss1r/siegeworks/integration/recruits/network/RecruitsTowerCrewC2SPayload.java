@@ -12,7 +12,6 @@ import java.util.UUID;
 
 public record RecruitsTowerCrewC2SPayload(int action, int towerEntityId, List<UUID> groupIds) {
     public static final int ACTION_BOARD = 0;
-    public static final int ACTION_PUSH = 1;
     public static final int ACTION_UNLOAD = 2;
     public static final int ACTION_RETURN = 3;
     private static final int MAX_GROUPS = 64;
