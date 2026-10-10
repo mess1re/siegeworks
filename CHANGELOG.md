@@ -2,11 +2,27 @@
 
 ## 0.1.0-beta.9
 
+### Added
+
+- Enabled Recruits integration on NeoForge 1.21.1. Compatibility with unofficial ports is not guaranteed.
+- Battering ram beam mass, contact width/height and damage spread can be set in its engine profile, under `ramImpact`.
+
 ### Changed
 
 - Requires Axiomata 0.1.0-beta.8.
+- Increased construction work for siege engines, with most of the additional hits on frames and mechanisms.
 - Uses Axiomata for ballistics, block damage, particles and loading. Existing projectile profiles and saved block damage remain compatible.
 - Reduced repeated server-side crew-state checks from the siege command menu.
+- Battering ram block damage uses beam mass, swing speed and material resistance, with weaker damage to neighbouring blocks on the wall surface.
+- Blueprint quality no longer changes the number of wheels or gun barrels needed to build an engine. Add other fixed-count parts to `axiomata:quality_cost_exempt`.
+
+### Fixed
+
+- Players loaded into a mangonel keep their payload seat when another player boards, and the flight carrier no longer hits its own passenger.
+- Siege tower crew orders fill the driver and push bars before interior seats, including when several siege engineers are selected.
+- Recruits' strategic fire command works without an RTS fire zone. A new point order replaces the previous zone.
+- Placed ammunition can be picked up one at a time by right-clicking with an empty hand.
+- Battering ram wheels keep their rotation when an attack starts.
 
 ## 0.1.0-beta.8
 
