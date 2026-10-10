@@ -91,19 +91,6 @@ jobs:
             echo 'CHANGELOG_EOF'
           } >> "$GITHUB_OUTPUT"
 
-      - name: Build Axiomata
-        shell: bash
-        run: |
-          version="$(sed -n 's/^deps.axiomata = "\(.*\)"/\1/p' stonecutter.properties.toml | head -n 1)"
-          git clone --quiet https://github.com/mess1re/axiomata.git "$RUNNER_TEMP/axiomata"
-          git -C "$RUNNER_TEMP/axiomata" checkout --quiet "$version"
-          cd "$RUNNER_TEMP/axiomata"
-          chmod +x gradlew
-          for target in 1.20.1-forge 1.21.1-neoforge; do
-            GROUP=com.github.mess1re.axiomata ARTIFACT="$target" VERSION="$version" \
-              ./gradlew ":$target:publishToMavenLocal"
-          done
-
       - name: Build pinned Recruits NeoForge port
         shell: bash
         run: |
