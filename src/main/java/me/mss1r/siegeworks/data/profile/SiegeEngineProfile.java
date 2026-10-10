@@ -13,7 +13,12 @@ import java.util.Optional;
  */
 public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, double muzzleVelocity,
                                  float accuracyMultiplier,
-                                 SiegeDamageRules damageRules, ScattershotProfile scattershot) {
+                                 SiegeDamageRules damageRules, ScattershotProfile scattershot,
+                                 RamImpactProfile ramImpact) {
+    public SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, double muzzleVelocity,
+                              float accuracyMultiplier, SiegeDamageRules damageRules, ScattershotProfile scattershot) {
+        this(maxHealth, baseDamage, muzzleVelocity, accuracyMultiplier, damageRules, scattershot, RamImpactProfile.DEFAULT);
+    }
     private static final double DEFAULT_MUZZLE_VELOCITY = 60.0D;
     public static final SiegeEngineProfile DEFAULT = new SiegeEngineProfile(
             Optional.empty(), 25.0D, DEFAULT_MUZZLE_VELOCITY, 1.0F, SiegeDamageRules.DEFAULT,
@@ -29,7 +34,9 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
             SiegeDamageRules.CODEC.optionalFieldOf("damageConfig", SiegeDamageRules.DEFAULT)
                     .forGetter(SiegeEngineProfile::damageRules),
             ScattershotProfile.CODEC.optionalFieldOf("scattershot", ScattershotProfile.DEFAULT)
-                    .forGetter(SiegeEngineProfile::scattershot)
+                    .forGetter(SiegeEngineProfile::scattershot),
+            RamImpactProfile.CODEC.optionalFieldOf("ramImpact", RamImpactProfile.DEFAULT)
+                    .forGetter(SiegeEngineProfile::ramImpact)
     ).apply(instance, SiegeEngineProfile::new));
 
     public Optional<String> validationError() {
@@ -48,6 +55,8 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
             return error;
         }
         error = damageRules.validationError();
-        return error.isPresent() ? error : scattershot.validationError();
+        if (error.isPresent()) return error;
+        error = scattershot.validationError();
+        return error.isPresent() ? error : ramImpact.validationError();
     }
 }

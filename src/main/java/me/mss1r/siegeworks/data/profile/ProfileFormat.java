@@ -18,7 +18,7 @@ public final class ProfileFormat {
             "shrapnelRadius", "shrapnelDamage");
     private static final Set<String> ENGINE_FIELDS = Set.of(
             "formatVersion", "maxHealth", "baseDamage", "muzzleVelocity", "accuracyMultiplier",
-            "damageConfig", "scattershot");
+            "damageConfig", "scattershot", "ramImpact");
     private static final Set<String> PROJECTILE_FIELDS = Set.of(
             "formatVersion", "mass", "dragCoefficient", "diameter", "hardness", "motor", "entity",
             "shock", "blast", "fire");
@@ -38,7 +38,8 @@ public final class ProfileFormat {
                 "damageConfig", Set.of("entityDamageSources", "itemDamageSources", "damageTypeSources",
                         "entityDamageMultipliers"),
                 "scattershot", Set.of("capacity", "minPellets", "maxPellets", "pelletsPerLoadedItemMin",
-                        "pelletsPerLoadedItemMax", "spreadDegrees", "baseDamagePerPellet")));
+                        "pelletsPerLoadedItemMax", "spreadDegrees", "baseDamagePerPellet"),
+                "ramImpact", Set.of("mass", "width", "height", "spread")));
     }
 
     public static Optional<String> projectile(JsonElement json) {

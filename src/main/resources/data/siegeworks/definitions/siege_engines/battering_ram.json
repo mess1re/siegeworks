@@ -2,6 +2,12 @@
   "formatVersion": 2,
   "maxHealth": 150.0,
   "baseDamage": 16.0,
+  "ramImpact": {
+    "mass": 3500.0,
+    "width": 0.625,
+    "height": 0.625,
+    "spread": 1.75
+  },
   "damageConfig": {
     "entityDamageSources": {
       "siegeworks:tower_crossbow_bolt_projectile": true,

@@ -1,19 +1,20 @@
 package me.mss1r.siegeworks.entity.siege;
 
-import net.minecraft.world.level.Explosion;
 import me.mss1r.siegeworks.gameplay.ballistics.SiegeBlockBreaker;
+import me.mss1r.siegeworks.gameplay.ballistics.SiegeBallisticsEnvironment;
+import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import me.mss1r.siegeworks.api.SiegeActionResult;
 import me.mss1r.siegeworks.api.SiegeMeleeControl;
 import me.mss1r.axiomata.collision.CollisionGroup;
 import me.mss1r.axiomata.collision.CollisionPose;
+import me.mss1r.axiomata.collision.OrientedBox;
+import me.mss1r.axiomata.collision.Rotation3;
 import me.mss1r.axiomata.collision.system.StructureMotionSystem;
 import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes;
 import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.gameplay.towing.TowingProfile;
-import me.mss1r.axiomata.ballistics.damage.StructuralDamageSystem;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -29,7 +30,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -288,6 +288,18 @@ public class BatteringRamEntity extends AbstractSiegeEntity implements GeoEntity
         return entityData.get(ATTACK_ANIMATION_TICK);
     }
 
+    public float wheelRecoilDegrees(float partialTick) {
+        int tick = getAttackAnimationTick();
+        return tick < 0 ? 0.0F : (float) (-10.0D * framePositionAt(tick + partialTick).z / 3.0D);
+    }
+
+    /** Metres per second immediately before the ram head reaches the end of its forward stroke. */
+    public static double strikeSpeed() {
+        Vec3 previous = ramPositionAt(ATTACK_IMPACT_TICK - 1);
+        Vec3 impact = ramPositionAt(ATTACK_IMPACT_TICK);
+        return previous.distanceTo(impact) * 20.0D / MODEL_UNITS_PER_BLOCK;
+    }
+
     private void setAttackAnimationTick(int tick) {
         entityData.set(ATTACK_ANIMATION_TICK, tick);
     }
@@ -373,7 +385,8 @@ public class BatteringRamEntity extends AbstractSiegeEntity implements GeoEntity
         Vec3 forward = getHorizontalForward();
         Vec3 right = new Vec3(forward.z, 0.0D, -forward.x);
         Vec3 center = position()
-                .add(forward.scale(RAM_HEAD_CENTER_FORWARD))
+                .add(forward.scale(RAM_HEAD_CENTER_FORWARD
+                        - ramPositionAt(ATTACK_IMPACT_TICK).z / MODEL_UNITS_PER_BLOCK))
                 .add(0.0D, RAM_HEAD_CENTER_HEIGHT, 0.0D);
         AABB impactBox = createRamHeadBox(center, forward, right);
         Vec3 knockback = forward.scale(2.5D).add(0.0D, 0.25D, 0.0D);
@@ -391,30 +404,14 @@ public class BatteringRamEntity extends AbstractSiegeEntity implements GeoEntity
             entity.hurtMarked = true;
         });
 
+        var impact = SiegeProfileCatalogs.ENGINES.forEntity(getType()).ramImpact();
+        OrientedBox contact = new OrientedBox(center,
+                new Vec3(impact.width() / 2.0D, impact.height() / 2.0D, RAM_HEAD_HALF_DEPTH),
+                Rotation3.aroundY((float) -Math.toRadians(getVisualRotationYInDegrees())));
         Player breaker = SiegeBlockBreaker.responsiblePlayer(this);
-        Explosion probe = SiegeBlockBreaker.damageProbe(serverLevel, impactBox.getCenter(), breaker);
-        int minX = (int) Math.floor(impactBox.minX);
-        int minY = (int) Math.floor(impactBox.minY);
-        int minZ = (int) Math.floor(impactBox.minZ);
-        int maxX = (int) Math.floor(impactBox.maxX);
-        int maxY = (int) Math.floor(impactBox.maxY);
-        int maxZ = (int) Math.floor(impactBox.maxZ);
-        for (BlockPos pos : BlockPos.betweenClosed(minX, minY, minZ, maxX, maxY, maxZ)) {
-            BlockState state = serverLevel.getBlockState(pos);
-            float hardness = SiegeBlockBreaker.siegeResistance(serverLevel, pos, state, probe);
-            if (state.isAir() || hardness < 0.0F || !intersectsBlock(serverLevel, pos, state, impactBox)) {
-                continue;
-            }
-
-            if (!SiegeBlockBreaker.mayDamage(serverLevel, pos, state, breaker)) {
-                continue;
-            }
-            if (StructuralDamageSystem.applyImpact(serverLevel, pos, baseDamage / 40.0F, hardness)
-                    == StructuralDamageSystem.ImpactResult.BREAK_BLOCK
-                    && !SiegeBlockBreaker.breakBlock(serverLevel, pos, breaker)) {
-                break;
-            }
-        }
+        double speed = strikeSpeed();
+        double energy = 0.5D * impact.mass() * speed * speed;
+        SiegeBallisticsEnvironment.IMPACTS.contactImpact(serverLevel, contact, energy, impact.spread(), breaker);
     }
 
     private Vec3 getHorizontalForward() {
@@ -430,13 +427,6 @@ public class BatteringRamEntity extends AbstractSiegeEntity implements GeoEntity
         return new AABB(
                 center.x - radiusX, center.y - RAM_HEAD_HALF_HEIGHT, center.z - radiusZ,
                 center.x + radiusX, center.y + RAM_HEAD_HALF_HEIGHT, center.z + radiusZ);
-    }
-
-    private static boolean intersectsBlock(ServerLevel serverLevel, BlockPos pos, BlockState state,
-                                           AABB impactBox) {
-        return state.getCollisionShape(serverLevel, pos).toAabbs().stream()
-                .map(box -> box.move(pos))
-                .anyMatch(impactBox::intersects);
     }
 
     @Override
