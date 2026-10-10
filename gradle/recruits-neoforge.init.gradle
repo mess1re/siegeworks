@@ -1,0 +1,18 @@
+// Builds the pinned unofficial Recruits port as a local compile/test dependency. Nothing is published remotely.
+allprojects { portProject ->
+    portProject.afterEvaluate {
+        portProject.apply plugin: 'maven-publish'
+        portProject.publishing {
+            publications {
+                recruitsPort(MavenPublication) {
+                    groupId = 'com.github.nekomario28.recruits'
+                    artifactId = '1.21.1-neoforge'
+                    version = portProject.providers.gradleProperty('recruitsRevision').get()
+                    artifact(portProject.tasks.named('shadowJar')) {
+                        classifier = null
+                    }
+                }
+            }
+        }
+    }
+}

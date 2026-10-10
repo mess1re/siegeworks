@@ -14,11 +14,21 @@ description='''${mod_description}'''
 [[mixins]]
 config="${mod_id}.mixins.json"
 
+[[mixins]]
+config="${mod_id}.recruits.mixins.json"
+
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
 versionRange="[21.1,)"
 ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="recruits"
+type="optional"
+versionRange="${recruits_version_range}"
+ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]

@@ -5,9 +5,9 @@ import me.mss1r.siegeworks.config.SiegeworksClientConfig;
 import me.mss1r.siegeworks.config.SiegeworksServerConfig;
 import me.mss1r.siegeworks.event.MantletProtectionHandler;
 import me.mss1r.siegeworks.registry.ItemIdMigrations;
+import me.mss1r.siegeworks.integration.recruits.RecruitsCompat;
 //? if forge {
 /*import dev.architectury.platform.forge.EventBuses;
-import me.mss1r.siegeworks.integration.recruits.RecruitsCompat;
 import me.mss1r.siegeworks.integration.rts.RtsCompat;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -44,6 +44,9 @@ public final class SiegeworksBootstrap {
         modContainer.registerConfig(ModConfig.Type.CLIENT, SiegeworksClientConfig.SPEC.unwrap());
         modContainer.registerConfig(ModConfig.Type.SERVER, SiegeworksServerConfig.SPEC.unwrap());
         initialize(modBus, NeoForge.EVENT_BUS);
+        if (Platform.isModLoaded("recruits")) {
+            RecruitsCompat.register(modBus);
+        }
     }
     //?}
 

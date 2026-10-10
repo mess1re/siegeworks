@@ -18,6 +18,9 @@ The mod includes ballistas, cannons, catapults, a hwacha, battering rams, mantle
 
 [Villager Recruits](https://modrinth.com/mod/villager-recruits) can crew, supply, build, repair and dismantle siege engines. [Recruits RTS Command](https://github.com/mess1re/recruitsrtscommand) adds map controls and group orders for those crews.
 
+Recruits integration is also enabled on NeoForge 1.21.1. Compatibility with unofficial ports
+is not guaranteed. RTS Command is only available on Forge 1.20.1.
+
 Usage, configuration and data formats are documented in the [Siegeworks wiki](https://github.com/mess1re/siegeworks/wiki).
 
 ## Contributing

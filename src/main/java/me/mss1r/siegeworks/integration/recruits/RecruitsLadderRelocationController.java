@@ -7,6 +7,7 @@ import me.mss1r.siegeworks.entity.siege.SiegeLadderEntity;
 import me.mss1r.siegeworks.item.SiegeLadderDeploymentItem;
 import me.mss1r.siegeworks.gameplay.deployment.SiegeDeploymentLimits;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
+import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -218,7 +219,7 @@ final class RecruitsLadderRelocationController {
         if (storedHealth > 0.0F) {
             ladder.setHealth(Math.min(ladder.getMaxHealth(), storedHealth));
         }
-        if (ladderStack.hasCustomHoverName()) {
+        if (MinecraftVersionCompat.hasCustomName(ladderStack)) {
             ladder.setCustomName(ladderStack.getHoverName());
         }
         ladder.moveTo(destination.x, destination.y, destination.z, yaw, 0.0F);

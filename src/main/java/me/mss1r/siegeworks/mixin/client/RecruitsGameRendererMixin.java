@@ -34,8 +34,12 @@ public abstract class RecruitsGameRendererMixin {
         }
 
         Vec3 eye = minecraft.player.getEyePosition(partialTick);
-        Vec3 end = eye.add(minecraft.player.getViewVector(partialTick)
-                .scale(minecraft.gameMode.getPickRange()));
+        //? if forge {
+        /*double reach = minecraft.gameMode.getPickRange();
+        *///?} else {
+        double reach = minecraft.player.entityInteractionRange();
+        //?}
+        Vec3 end = eye.add(minecraft.player.getViewVector(partialTick).scale(reach));
         Entity operator = null;
         Vec3 operatorHit = null;
         double closestDistance = Double.MAX_VALUE;

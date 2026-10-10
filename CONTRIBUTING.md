@@ -10,6 +10,19 @@ Forge-only integrations stay out of targets where their dependencies do not exis
 
 Code that references an optional mod belongs in its integration package and must only be initialized after checking that the mod is loaded.
 
+The NeoForge Recruits compile dependency is built locally from the fork and revision in
+`stonecutter.properties.toml`. Clone `https://github.com/nekomario28/recruits.git`, check out that
+revision, then run this from the Recruits checkout (use `gradlew.bat` on Windows):
+
+```sh
+./gradlew -I /path/to/siegeworks/gradle/recruits-neoforge.init.gradle publishToMavenLocal -PrecruitsRevision=<revision>
+```
+
+This revision is a build/test API baseline, not a runtime fork requirement. Integration checks
+for `modId=recruits`; Recruits is not included in Siegeworks jars. The release
+workflow performs this step automatically. Integration GameTests use the `siegeworks_recruits`
+namespace and need `-Penable_recruits_compat_runtime=true`.
+
 ## Mechanics, configuration and data
 
 - Engine and projectile combat values belong in data definitions.

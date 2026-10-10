@@ -53,12 +53,21 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-import net.minecraftforge.common.MinecraftForge;
+//? if forge {
+/*import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+*///?} else {
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -88,13 +97,17 @@ public final class RecruitsCompat {
         SiegeAllianceRegistry.register(OPERATOR_TYPE, RecruitsCompat::alliedFactions);
         modBus.addListener(RecruitsCompat::onLoadComplete);
         modBus.addListener(RecruitsCompat::onClientSetup);
-        MinecraftForge.EVENT_BUS.addListener(RecruitsCompat::onLivingTick);
+        //? if forge {
+        /*MinecraftForge.EVENT_BUS.addListener(RecruitsCompat::onLivingTick);
         MinecraftForge.EVENT_BUS.addListener(RecruitsCompat::onServerStarting);
+        *///?} else {
+        NeoForge.EVENT_BUS.addListener(RecruitsCompat::onLivingTick);
+        NeoForge.EVENT_BUS.addListener(RecruitsCompat::onServerStarting);
+        //?}
     }
 
     private static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            RecruitsNetworking.registerClient();
             RecruitsSiegeCommandCategory.register();
         });
     }
@@ -301,6 +314,7 @@ public final class RecruitsCompat {
             }
 
             engineer.setStrategicFirePos(center);
+            RecruitsFireZone.set(engineer, center, radiusX, radiusZ, rectangular);
             engineer.setShouldStrategicFire(true);
             engineer.setShouldRanged(true);
             applied++;
@@ -314,7 +328,6 @@ public final class RecruitsCompat {
                 player.getBoundingBox().inflate(COMMAND_RANGE), chosen::test));
     }
 
-            RecruitsFireZone.set(engineer, center, radiusX, radiusZ, rectangular);
     public static int clearFireZone(List<AbstractRecruitEntity> recruits) {
         int cleared = 0;
         for (AbstractRecruitEntity recruit : recruits) {
@@ -1496,7 +1509,11 @@ public final class RecruitsCompat {
         }
     }
 
-    private static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    //? if forge {
+    /*private static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    *///?} else {
+    private static void onLivingTick(EntityTickEvent.Pre event) {
+    //?}
         if (!(event.getEntity() instanceof AbstractRecruitEntity recruit) || recruit.level().isClientSide()) {
             return;
         }

@@ -26,6 +26,8 @@ val axiomataVersion = providers.gradleProperty("axiomataVersion")
     .getOrElse(project.property("deps.axiomata") as String)
 val axiomataModVersion = project.property("deps.axiomata_mod") as String
 val architecturyVersion = project.property("deps.architectury") as String
+val recruitsVersion = project.property("deps.recruits") as String
+val recruitsRange = project.property("deps.recruits_range") as String
 
 group = modGroup
 version = "$modVersion+${sc.current.version}"
@@ -35,10 +37,16 @@ base {
 }
 
 val gameTestSourceSet = sourceSets.create("gametest")
+if (providers.gradleProperty("enable_recruits_compat_runtime").orNull?.toBoolean() != true) {
+    gameTestSourceSet.java.exclude("me/mss1r/siegeworks/gametest/RecruitsCrewAndFireGameTests.java")
+}
 val gameTestDirectory = rootProject.file("run/gametest/${sc.current.version}-neoforge")
 
 configurations.named(gameTestSourceSet.implementationConfigurationName) {
     extendsFrom(configurations.implementation.get())
+}
+configurations.named(gameTestSourceSet.compileOnlyConfigurationName) {
+    extendsFrom(configurations.compileOnly.get())
 }
 configurations.named(gameTestSourceSet.runtimeOnlyConfigurationName) {
     extendsFrom(configurations.runtimeOnly.get())
@@ -48,7 +56,10 @@ repositories {
     // The release workflow builds the pinned Axiomata into the local repository, so a release does not depend on
     // JitPack building it.
     mavenLocal {
-        content { includeGroup("com.github.mess1re.axiomata") }
+        content {
+            includeGroup("com.github.mess1re.axiomata")
+            includeGroup("com.github.nekomario28.recruits")
+        }
     }
     mavenCentral()
     maven("https://jitpack.io") {
@@ -71,6 +82,10 @@ dependencies {
     implementation("com.github.mess1re.axiomata:${sc.current.version}-neoforge:$axiomataVersion")
     implementation("dev.architectury:architectury-neoforge:$architecturyVersion")
     implementation("software.bernie.geckolib:geckolib-neoforge-${sc.current.version}:$geckolibVersion")
+    compileOnly("com.github.nekomario28.recruits:1.21.1-neoforge:$recruitsVersion")
+    if (providers.gradleProperty("enable_recruits_compat_runtime").orNull?.toBoolean() == true) {
+        runtimeOnly("com.github.nekomario28.recruits:1.21.1-neoforge:$recruitsVersion")
+    }
     add(gameTestSourceSet.implementationConfigurationName, sourceSets.main.get().output)
 }
 
@@ -114,11 +129,8 @@ neoForge {
 
 sourceSets.main {
     java.exclude(
-        "me/mss1r/siegeworks/integration/recruits/**",
-        // The RTS map layer is a Forge 1.20.1 mod, as is Recruits, so neither integration has a
-        // 1.21.1 target to build against.
-        "me/mss1r/siegeworks/integration/rts/**",
-        "me/mss1r/siegeworks/mixin/client/Recruits*.java"
+        // RTS has no 1.21.1 target; Recruits' own command screen remains available without it.
+        "me/mss1r/siegeworks/integration/rts/**"
     )
     resources.srcDir(rootProject.file("src/generated/resources"))
 }
@@ -151,6 +163,7 @@ tasks.named<ProcessResources>("processResources") {
         "geckolib_version" to geckolibVersion,
         "axiomata_mod_version" to axiomataModVersion,
         "architectury_version" to architecturyVersion,
+        "recruits_version_range" to recruitsRange,
         "mod_id" to modId,
         "mod_name" to modName,
         "mod_license" to modLicense,

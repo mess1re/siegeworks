@@ -104,6 +104,17 @@ jobs:
               ./gradlew ":$target:publishToMavenLocal"
           done
 
+      - name: Build pinned Recruits NeoForge port
+        shell: bash
+        run: |
+          revision="$(sed -n 's/^deps.recruits = "\(.*\)"/\1/p' stonecutter.properties.toml | tail -n 1)"
+          init_script="$GITHUB_WORKSPACE/gradle/recruits-neoforge.init.gradle"
+          git clone --quiet https://github.com/nekomario28/recruits.git "$RUNNER_TEMP/recruits-neoforge"
+          git -C "$RUNNER_TEMP/recruits-neoforge" checkout --quiet "$revision"
+          cd "$RUNNER_TEMP/recruits-neoforge"
+          chmod +x gradlew
+          ./gradlew -I "$init_script" publishToMavenLocal "-PrecruitsRevision=$revision"
+
       - name: Build
         run: |
           chmod +x gradlew

@@ -41,6 +41,9 @@ base {
 }
 
 val gameTestSourceSet = sourceSets.create("gametest")
+if (providers.gradleProperty("enable_recruits_compat_runtime").orNull?.toBoolean() != true) {
+    gameTestSourceSet.java.exclude("me/mss1r/siegeworks/gametest/RecruitsCrewAndFireGameTests.java")
+}
 val gameTestDirectory = rootProject.file("run/gametest/${sc.current.version}-forge")
 
 configurations.named(gameTestSourceSet.implementationConfigurationName) {
@@ -109,6 +112,7 @@ legacyForge {
     version = forgeVersion
     validateAccessTransformers = true
     addModdingDependenciesTo(gameTestSourceSet)
+    gameTestSourceSet.compileClasspath += sourceSets.main.get().compileClasspath
 
     runs {
         configureEach {
@@ -270,6 +274,6 @@ tasks.withType<Jar>().configureEach {
 
 tasks.register<Copy>("buildAndCollect") {
     dependsOn("build")
-    from(tasks.named<Jar>("jar"), tasks.named<Jar>("sourcesJar"))
+    from(tasks.named("reobfJar"), tasks.named<Jar>("sourcesJar"))
     into(rootProject.layout.buildDirectory.dir("libs/$modVersion"))
 }

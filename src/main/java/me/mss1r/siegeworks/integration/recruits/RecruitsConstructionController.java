@@ -4,6 +4,7 @@ import com.talhanation.recruits.entities.SiegeEngineerEntity;
 import me.mss1r.axiomata.blueprint.api.BlueprintTags;
 import me.mss1r.axiomata.blueprint.api.construction.ConstructionWork;
 import me.mss1r.axiomata.blueprint.api.construction.UnderConstruction;
+import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -116,8 +117,7 @@ final class RecruitsConstructionController {
         engineer.swing(InteractionHand.MAIN_HAND);
         ItemStack hammer = engineer.getMainHandItem();
         if (hammer.isDamageableItem()) {
-            hammer.hurtAndBreak(1, engineer, brokenEngineer ->
-                    brokenEngineer.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+            MinecraftVersionCompat.damageHeldItem(hammer, 1, engineer, InteractionHand.MAIN_HAND);
         }
         return true;
     }

@@ -7,6 +7,10 @@ import me.mss1r.siegeworks.integration.recruits.RecruitsCommandStates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+//? if neoforge {
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+//?}
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
@@ -125,7 +129,11 @@ public final class RecruitsCommandStatesPayloads {
                 buffer.writeUtf(key);
                 buffer.writeBoolean(refusal != null);
                 if (refusal != null) {
-                    buffer.writeComponent(refusal);
+                    //? if forge {
+                    /*buffer.writeComponent(refusal);
+                    *///?} else {
+                    ComponentSerialization.STREAM_CODEC.encode((RegistryFriendlyByteBuf) buffer, refusal);
+                    //?}
                 }
             });
         }
@@ -147,7 +155,12 @@ public final class RecruitsCommandStatesPayloads {
             Map<String, Component> refusals = new LinkedHashMap<>();
             for (int i = 0; i < count; i++) {
                 String key = buffer.readUtf();
-                refusals.put(key, buffer.readBoolean() ? buffer.readComponent() : null);
+                //? if forge {
+                /*refusals.put(key, buffer.readBoolean() ? buffer.readComponent() : null);
+                *///?} else {
+                refusals.put(key, buffer.readBoolean()
+                        ? ComponentSerialization.STREAM_CODEC.decode((RegistryFriendlyByteBuf) buffer) : null);
+                //?}
             }
             return new Answer(queryId, types, refusals);
         }
