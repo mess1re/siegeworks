@@ -146,7 +146,7 @@ public final class SiegeworksServerConfig {
         INCENDIARY_FUSE_TICKS = builder
                 .comment("How long a lit pot's fuse burns, in ticks, before it bursts wherever it is:",
                         "where it was placed, loaded in a stone thrower, or in flight.")
-                .defineInRange("fuseTicks", 140, 20, 1200);
+                .defineInRange("fuseTicks", 200, 20, 1200);
         builder.pop(2);
 
         builder.push("movement");
