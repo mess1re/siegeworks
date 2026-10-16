@@ -14,6 +14,8 @@ import me.mss1r.siegeworks.network.SiegeworksNetworking;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.io.IOException;
 
 public class SiegeMaintenanceScreen extends Screen {
     private static final int PANEL_WIDTH = 280;
@@ -26,6 +28,12 @@ public class SiegeMaintenanceScreen extends Screen {
             "textures/gui/maintenance.png"
     );
 
+    private static final ResourceLocation TEXT_COLORS = MinecraftVersionCompat.id(
+            Siegeworks.MOD_ID, "gui/maintenance.properties");
+    private int textColor = TEXT_COLOR;
+    private int headingColor = HEADING_COLOR;
+    private int progressColor = PROGRESS_COLOR;
+
     private final OpenMaintenanceS2CPayload payload;
 
     public SiegeMaintenanceScreen(OpenMaintenanceS2CPayload payload) {
@@ -35,6 +43,7 @@ public class SiegeMaintenanceScreen extends Screen {
 
     @Override
     protected void init() {
+        loadTextColors();
         int left = (width - PANEL_WIDTH) / 2;
         int top = (height - PANEL_HEIGHT) / 2;
         int buttonY = top + PANEL_HEIGHT - 48;
@@ -60,6 +69,30 @@ public class SiegeMaintenanceScreen extends Screen {
                 .build());
     }
 
+    private void loadTextColors() {
+        // Optional RP palette; preserve the native grey panel without a skin.
+        textColor = TEXT_COLOR;
+        headingColor = HEADING_COLOR;
+        progressColor = PROGRESS_COLOR;
+        var resource = minecraft.getResourceManager().getResource(TEXT_COLORS);
+        if (resource.isEmpty()) return;
+        Properties colors = new Properties();
+        try (var stream = resource.get().open()) {
+            colors.load(stream);
+            textColor = readColor(colors, "text", TEXT_COLOR);
+            headingColor = readColor(colors, "heading", HEADING_COLOR);
+            progressColor = readColor(colors, "progress", PROGRESS_COLOR);
+        } catch (IOException | IllegalArgumentException ignored) {
+            // A malformed optional skin must not prevent opening the screen.
+        }
+    }
+
+    private static int readColor(Properties colors, String key, int fallback) {
+        String value = colors.getProperty(key, "").trim();
+        if (value.startsWith("#")) value = value.substring(1);
+        return value.matches("[0-9a-fA-F]{6}") ? Integer.parseInt(value, 16) : fallback;
+    }
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         guiGraphics.fill(0, 0, width, height, 0x66000000);
@@ -79,7 +112,7 @@ public class SiegeMaintenanceScreen extends Screen {
         );
 
         int titleX = (width - font.width(title)) / 2;
-        guiGraphics.drawString(font, title, titleX, top + 10, HEADING_COLOR, false);
+        guiGraphics.drawString(font, title, titleX, top + 10, headingColor, false);
 
         int healthPercent = payload.maxHealth() <= 0 ? 0 : Math.round(payload.health() * 100.0F / payload.maxHealth());
         Component healthLine = Component.translatable(
@@ -88,7 +121,7 @@ public class SiegeMaintenanceScreen extends Screen {
                 payload.maxHealth(),
                 healthPercent
         );
-        guiGraphics.drawString(font, healthLine, left + 14, top + 30, TEXT_COLOR, false);
+        guiGraphics.drawString(font, healthLine, left + 14, top + 30, textColor, false);
 
         if (payload.dismantling()) {
             Component progress = Component.translatable(
@@ -96,7 +129,7 @@ public class SiegeMaintenanceScreen extends Screen {
                     payload.dismantleProgress(),
                     payload.dismantleRequired()
             );
-            guiGraphics.drawString(font, progress, left + 14, top + 44, PROGRESS_COLOR, false);
+            guiGraphics.drawString(font, progress, left + 14, top + 44, progressColor, false);
         }
 
         drawSection(guiGraphics, left + 14, top + 62,
@@ -152,13 +185,13 @@ public class SiegeMaintenanceScreen extends Screen {
     }
 
     private void drawSection(GuiGraphics guiGraphics, int x, int y, Component heading, List<Component> lines) {
-        guiGraphics.drawString(font, heading, x, y, HEADING_COLOR, false);
+        guiGraphics.drawString(font, heading, x, y, headingColor, false);
         int maxLines = 7;
         for (int i = 0; i < Math.min(maxLines, lines.size()); i++) {
-            guiGraphics.drawString(font, lines.get(i), x, y + 14 + i * 10, TEXT_COLOR, false);
+            guiGraphics.drawString(font, lines.get(i), x, y + 14 + i * 10, textColor, false);
         }
         if (lines.size() > maxLines) {
-            guiGraphics.drawString(font, Component.literal("..."), x, y + 14 + maxLines * 10, TEXT_COLOR, false);
+            guiGraphics.drawString(font, Component.literal("..."), x, y + 14 + maxLines * 10, textColor, false);
         }
     }
 }
