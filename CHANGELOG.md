@@ -1,11 +1,9 @@
 # Changelog
 
-## 0.1.0-beta.9
+## 0.1.0-beta.10
 
 ### Added
 
-- Enabled Recruits integration on NeoForge 1.21.1. Compatibility with unofficial ports is not guaranteed.
-- Battering ram beam mass, contact width/height and damage spread can be set in its engine profile, under `ramImpact`.
 - Engine profiles set `burnRate`, the share of health a fire takes each second.
 
 ### Changed
@@ -17,6 +15,17 @@
 - An engine is as sturdy as it is built: its health follows the construction work done, from a tenth for a bare site. Only the owner's side can build or take apart a site.
 - A destroyed engine leaves a quarter of what it is made of; a destroyed site leaves a quarter of its built stages and half of what was paid for the stage under way.
 - Wooden engines burn until rain, water or a bucket of water puts the fire out, losing 1.5% of their health a second; cannon carriages burn at half that.
+
+## 0.1.0-beta.9
+
+### Added
+
+- Enabled Recruits integration on NeoForge 1.21.1. Compatibility with unofficial ports is not guaranteed.
+- Battering ram beam mass, contact width/height and damage spread can be set in its engine profile, under `ramImpact`.
+
+### Changed
+
+- Requires Axiomata 0.1.0-beta.8.
 - Increased construction work for siege engines, with most of the additional hits on frames and mechanisms.
 - Uses Axiomata for ballistics, block damage, particles and loading. Existing projectile profiles and saved block damage remain compatible.
 - Reduced repeated server-side crew-state checks from the siege command menu.
