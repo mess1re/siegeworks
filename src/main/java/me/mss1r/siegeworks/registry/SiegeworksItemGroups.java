@@ -30,7 +30,6 @@ public interface SiegeworksItemGroups {
                     .title(Component.translatable("component.itemgroup.siegeworks.tab.items"))
                     .displayItems((parameters, output) -> output.acceptAll(List.of(
                             itemStack(SiegeworksItems.BLACK_POWDER.get()),
-                            itemStack(SiegeworksItems.ROPE.get()),
                             itemStack(SiegeworksItems.WHEEL.get()),
                             itemStack(SiegeworksItems.BARREL.get()),
                             itemStack(SiegeworksItems.RAMROD.get()),

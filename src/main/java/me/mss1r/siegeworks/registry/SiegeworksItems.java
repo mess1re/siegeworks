@@ -17,7 +17,6 @@ public interface SiegeworksItems {
     DeferredRegister<Item> ITEMS = DeferredRegister.create(Siegeworks.MOD_ID, Registries.ITEM);
 
     RegistrySupplier<Item> BLACK_POWDER = ITEMS.register("black_powder", () -> new Item(new Item.Properties()));
-    RegistrySupplier<Item> ROPE = ITEMS.register("rope", () -> new Item(new Item.Properties()));
     RegistrySupplier<Item> WHEEL = ITEMS.register("wheel", () -> new Item(new Item.Properties()));
     RegistrySupplier<Item> BARREL = ITEMS.register("barrel", () -> new Item(new Item.Properties()));
     RegistrySupplier<Item> SERPENTINE_SPAWNER = ITEMS.register("serpentine_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.SERPENTINE_ENTITY, new Item.Properties()));

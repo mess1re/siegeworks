@@ -11,7 +11,7 @@
       "item": "minecraft:cobblestone"
     },
     "R": {
-      "item": "siegeworks:rope"
+      "tag": "c:ropes"
     }
   },
   "result": {

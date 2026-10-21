@@ -9,6 +9,7 @@
 ### Changed
 
 - Requires Axiomata 0.1.0-beta.9.
+- Rope is Axiomata's now: rope in existing worlds becomes `axiomata:rope`, and blueprints and recipes take any rope in `#c:ropes`.
 - Siege ladders are crafted to length instead of built with the construction hammer: the ladder recipe with a ladder in place of the bottom middle stick adds a section, up to four. Repairs and dismantling cost what the crafts took.
 - Unfinished engines can be walked on and climbed where they are already built. Only a player holding a construction hammer sees the stages still to come.
 - Trebuchet, mangonel and siege tower ropes appear once both of their ends are built.

@@ -23,7 +23,9 @@ public final class ItemIdMigrations {
     // Keep old saves and datapack references readable; newly saved stacks use the registered ID.
     private static final Map<ResourceLocation, ResourceLocation> RENAMES = Map.of(
             id("singijeon"), id("so_singijeon"),
-            id("explosive_singijeon"), id("jung_singijeon"));
+            id("explosive_singijeon"), id("jung_singijeon"),
+            // Rope is Axiomata's now, shared with every mod that builds with it.
+            id("rope"), MinecraftVersionCompat.id("axiomata", "rope"));
 
     private ItemIdMigrations() {
     }

@@ -14,7 +14,7 @@
       "item": "minecraft:charcoal"
     },
     "S": {
-      "item": "siegeworks:rope"
+      "tag": "c:ropes"
     },
     "A": {
       "item": "minecraft:stick"
