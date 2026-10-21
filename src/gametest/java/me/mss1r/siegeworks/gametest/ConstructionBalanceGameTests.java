@@ -9,7 +9,7 @@ import com.google.gson.JsonParser;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinitions;
-import me.mss1r.axiomata.blueprint.internal.construction.MaterialAllocation;
+import me.mss1r.axiomata.blueprint.api.construction.MaterialAllocation;
 import me.mss1r.axiomata.blueprint.internal.definition.BlueprintFormat;
 import me.mss1r.siegeworks.Siegeworks;
 import net.minecraft.core.registries.BuiltInRegistries;

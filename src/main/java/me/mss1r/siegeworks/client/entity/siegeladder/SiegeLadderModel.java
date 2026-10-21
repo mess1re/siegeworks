@@ -34,8 +34,7 @@ public class SiegeLadderModel extends GeoModel<SiegeLadderEntity> {
                 geoBone.setRotX((float) Math.toRadians(
                         -animatable.getRenderedLeanAngleDegrees(animationState.getPartialTick()))));
 
-        // While building, every section is shown; the construction renderer draws the unbuilt ones as ghosts.
-        int sections = animatable.isFullyBuilt() ? animatable.getSections() : SiegeLadderEntity.MAX_SECTIONS;
+        int sections = animatable.getSections();
         for (int i = 1; i <= SiegeLadderEntity.MAX_SECTIONS; i++) {
             int sectionIndex = i;
             getBone("section_" + sectionIndex).ifPresent(geoBone -> geoBone.setHidden(sectionIndex > sections));

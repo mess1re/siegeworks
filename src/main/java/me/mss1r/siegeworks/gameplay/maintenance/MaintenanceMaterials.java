@@ -1,7 +1,7 @@
 package me.mss1r.siegeworks.gameplay.maintenance;
 
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
-import me.mss1r.axiomata.blueprint.internal.construction.MaterialAllocation;
+import me.mss1r.axiomata.blueprint.api.construction.MaterialAllocation;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.server.level.ServerLevel;
