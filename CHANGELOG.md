@@ -5,6 +5,7 @@
 ### Added
 
 - Engine profiles set `burnRate`, the share of health a fire takes each second.
+- Siege engines, from their blueprints or deployment items, can be placed on the deck of a ship or another structure, which carries them. An arcballista or tower crossbow on a deck does not aim down through it.
 
 ### Changed
 
@@ -16,10 +17,6 @@
 - An engine is as sturdy as it is built: its health follows the construction work done, from a tenth for a bare site. Only the owner's side can build or take apart a site.
 - A destroyed engine leaves a quarter of what it is made of; a destroyed site leaves a quarter of its built stages and half of what was paid for the stage under way.
 - Wooden engines burn until rain, water or a bucket of water puts the fire out, losing 1.5% of their health a second; cannon carriages burn at half that.
-
-### Fixed
-
-- Arcballista and tower crossbow pitch checks include other structures, preventing parked mechanisms from tilting through a ship deck and displacing their support.
 
 ## 0.1.0-beta.9
 

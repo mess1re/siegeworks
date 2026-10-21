@@ -37,9 +37,8 @@ Collision, terrain movement, deployment, ladders, siege-tower ramps and projecti
 
 ### Working with unpublished Axiomata changes
 
-Deck deployment uses the current Axiomata placement/contact API. Until that revision is published
-and the dependency pin is advanced, build the matching Axiomata checkout first and point local SW
-builds at its collected jars. This override is available on both loaders; it neither bundles Axiomata
+When SW needs Axiomata changes that are not published yet, build the matching Axiomata checkout
+first and point local SW builds at its collected jars. This override is available on both loaders; it neither bundles Axiomata
 nor changes the published dependency pin:
 
 ```sh
@@ -47,8 +46,7 @@ nor changes the published dependency pin:
 ./gradlew :1.20.1-forge:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
 ```
 
-Use the same property for `runClient` and `runGameTestServer`. Tidewright's optional cross-mod
-GameTests exercise the real SW deployment items, construction stages, support rotation and reload.
+Use the same property for `runClient` and `runGameTestServer`.
 
 ## Assets
 
