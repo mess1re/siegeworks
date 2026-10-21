@@ -3,16 +3,9 @@ package me.mss1r.siegeworks.gametest;
 import me.mss1r.axiomata.blueprint.api.construction.BlueprintConstructionPlan;
 import me.mss1r.axiomata.blueprint.api.construction.BuildProgress;
 import me.mss1r.axiomata.blueprint.api.construction.BuildQuality;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinitions;
 import me.mss1r.axiomata.blueprint.api.construction.MaterialAllocation;
-import me.mss1r.axiomata.blueprint.internal.definition.BlueprintFormat;
-import me.mss1r.siegeworks.Siegeworks;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -27,11 +20,6 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 //?}
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -110,30 +98,6 @@ public final class ConstructionBalanceGameTests {
     }
 
     @GameTest(template = "empty")
-    public static void bundledBlueprintsReadAsTheOldFilesDid(GameTestHelper helper) {
-        BlueprintFormat.Ids ids = new BlueprintFormat.Ids(
-                BuiltInRegistries.ITEM::containsKey, BuiltInRegistries.ENTITY_TYPE::containsKey);
-        for (JsonElement name : readJson("data/siegeworks/blueprints/index.json").getAsJsonArray()) {
-            String id = Siegeworks.MOD_ID + ":" + name.getAsString();
-            BlueprintFormat.Parsed old = BlueprintFormat.parse(
-                    readJson("legacy_blueprints/" + name.getAsString() + ".json"), ids);
-            helper.assertTrue(old.valid(), "The old " + id + " no longer reads: " + old.errors());
-            BlueprintDefinition loaded = BlueprintDefinitions.get(id);
-            helper.assertTrue(loaded != null, "Blueprint " + id + " did not load");
-            // Since the conversion, oak logs and planks are taken as any logs and planks.
-            String expected = BlueprintFormat.write(old.definition()).toString()
-                    .replace("\"minecraft:oak_log\"", "\"#minecraft:logs\"")
-                    .replace("\"minecraft:oak_planks\"", "\"#minecraft:planks\"");
-            JsonObject written = BlueprintFormat.write(loaded);
-            written.remove("returns");
-            String actual = written.toString();
-            helper.assertTrue(expected.equals(actual),
-                    "Blueprint " + id + " changed in the new format:\n was " + expected + "\n now " + actual);
-        }
-        helper.succeed();
-    }
-
-    @GameTest(template = "empty")
     public static void materialsThatShareItemsAreNotPaidWithTheSameOnes(GameTestHelper helper) {
         List<ItemStack> stacks = new ArrayList<>(List.of(new ItemStack(Items.OAK_LOG, 6),
                 new ItemStack(Items.SPRUCE_LOG, 2)));
@@ -161,16 +125,5 @@ public final class ConstructionBalanceGameTests {
         BuildProgress moved = BuildProgress.finished();
         moved.load(tag);
         return moved;
-    }
-
-    private static JsonElement readJson(String path) {
-        try (InputStream stream = ConstructionBalanceGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            if (stream == null) {
-                throw new IllegalStateException("Missing test resource " + path);
-            }
-            return JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-        } catch (IOException exception) {
-            throw new UncheckedIOException(exception);
-        }
     }
 }

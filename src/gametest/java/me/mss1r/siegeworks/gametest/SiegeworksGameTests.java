@@ -57,6 +57,7 @@ import me.mss1r.siegeworks.registry.SiegeworksItems;
 import me.mss1r.siegeworks.item.SiegeLadderDeploymentItem;
 import me.mss1r.siegeworks.gameplay.deployment.SiegeDeploymentLimits;
 import me.mss1r.siegeworks.gameplay.maintenance.SiegeMaintenanceData;
+import me.mss1r.siegeworks.config.SiegeworksServerConfig;
 import me.mss1r.siegeworks.gameplay.ownership.SiegeAccess;
 import me.mss1r.siegeworks.gameplay.ownership.SiegeCaptureController;
 import me.mss1r.siegeworks.gameplay.ownership.SiegeOwnerActivity;
@@ -254,7 +255,7 @@ public final class SiegeworksGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 360)
+    @GameTest(template = "empty", timeoutTicks = 600)
     public static void seatedCaptureRestartsWhenHurtAndThenTakesTheEngine(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         ArcballistaEntity ballista = SiegeworksEntities.ARCBALLISTA_ENTITY.get().create(level);
@@ -276,10 +277,13 @@ public final class SiegeworksGameTests {
             helper.assertTrue(!ballista.shouldPassengerControlRotation(enemy),
                     "The capturer could aim the engine before capturing it");
         });
-        helper.runAfterDelay(60, () -> enemy.hurt(level.damageSources().generic(), 1.0F));
-        helper.runAfterDelay(200, () -> helper.assertTrue(ballista.isOwnedBy(owner.getUUID()),
+        // The capture takes as long as the engine is big, so the checks follow its own time.
+        int captureTicks = SiegeworksServerConfig.getCaptureTicks(SiegeMaintenanceData.dismantleRequiredHits(ballista));
+        int hurtAt = 60;
+        helper.runAfterDelay(hurtAt, () -> enemy.hurt(level.damageSources().generic(), 1.0F));
+        helper.runAfterDelay(hurtAt + captureTicks - 20, () -> helper.assertTrue(ballista.isOwnedBy(owner.getUUID()),
                 "The capture completed although the capturer was hurt halfway through"));
-        helper.runAfterDelay(300, () -> {
+        helper.runAfterDelay(hurtAt + captureTicks + 40, () -> {
             helper.assertTrue(ballista.isOwnedBy(enemy.getUUID()), "Holding the controls unhurt did not capture the engine");
             helper.assertTrue(!ballista.isBeingCaptured() && ballista.shouldPassengerControlRotation(enemy),
                     "The new owner did not get the controls after the capture");
