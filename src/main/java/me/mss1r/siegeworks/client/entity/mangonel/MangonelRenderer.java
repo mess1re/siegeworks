@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import java.util.Optional;
 import me.mss1r.siegeworks.Siegeworks;
 import me.mss1r.siegeworks.api.SiegeOperationState;
+import me.mss1r.axiomata.blueprint.api.construction.ConstructionGeometry;
 import me.mss1r.siegeworks.client.rope.RopeRenderer;
 import me.mss1r.siegeworks.client.rope.SiegeRopeAnchors;
 import me.mss1r.siegeworks.client.entity.TowedSiegeRenderer;
@@ -104,7 +105,9 @@ public class MangonelRenderer extends TowedSiegeRenderer<MangonelEntity> {
                                  MultiBufferSource bufferSource, int packedLight) {
         Optional<Vec3> arm = SiegeRopeAnchors.modelPosition(getGeoModel(), ARM_ANCHOR);
         Optional<Vec3> drum = SiegeRopeAnchors.modelPosition(getGeoModel(), DRUM_ANCHOR);
-        if (arm.isEmpty() || drum.isEmpty()) {
+        // A rope hangs only once both of its ends stand.
+        if (arm.isEmpty() || drum.isEmpty() || !ConstructionGeometry.isBoneBuilt(animatable, ARM_ANCHOR)
+                || !ConstructionGeometry.isBoneBuilt(animatable, DRUM_ANCHOR)) {
             return;
         }
 

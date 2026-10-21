@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.Optional;
 import me.mss1r.siegeworks.Siegeworks;
+import me.mss1r.axiomata.blueprint.api.construction.ConstructionGeometry;
 import me.mss1r.siegeworks.client.rope.RopeRenderer;
 import me.mss1r.siegeworks.client.rope.SiegeRopeAnchors;
 import me.mss1r.siegeworks.entity.siege.TrebuchetEntity;
@@ -103,7 +104,7 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
         if (!isReRender) {
             poseStack.pushPose();
             enterModelSpace(poseStack, animatable, partialTick);
-            renderWinchRope(poseStack, bufferSource, packedLight);
+            renderWinchRope(poseStack, animatable, bufferSource, packedLight);
             poseStack.popPose();
         }
     }
@@ -116,7 +117,8 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
         poseStack.translate(0.0F, 0.01F, 0.0F);
     }
 
-    private void renderWinchRope(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+    private void renderWinchRope(PoseStack poseStack, TrebuchetEntity animatable, MultiBufferSource bufferSource,
+                                 int packedLight) {
         Optional<Vec3> beam = SiegeRopeAnchors.modelPosition(getGeoModel(), BEAM_ANCHOR);
         Optional<Vec3> guide = SiegeRopeAnchors.modelPosition(getGeoModel(), GUIDE_ANCHOR);
         Optional<Vec3> drum = SiegeRopeAnchors.modelPosition(getGeoModel(), DRUM_ANCHOR);
@@ -129,11 +131,17 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
         Vec3 drumPoint = drum.get();
         Vec3 beamPoint = beam.get();
 
+        // A rope hangs only once both of its ends stand.
+        boolean guideBuilt = ConstructionGeometry.isBoneBuilt(animatable, GUIDE_ANCHOR);
         poseStack.pushPose();
-        RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, drumPoint, guidePoint,
-                drumPoint.distanceTo(guidePoint) + DRUM_SPAN_SLACK * spare, packedLight);
-        RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, guidePoint, beamPoint,
-                guidePoint.distanceTo(beamPoint) + BEAM_SPAN_SLACK * spare, packedLight);
+        if (guideBuilt && ConstructionGeometry.isBoneBuilt(animatable, DRUM_ANCHOR)) {
+            RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, drumPoint, guidePoint,
+                    drumPoint.distanceTo(guidePoint) + DRUM_SPAN_SLACK * spare, packedLight);
+        }
+        if (guideBuilt && ConstructionGeometry.isBoneBuilt(animatable, BEAM_ANCHOR)) {
+            RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, guidePoint, beamPoint,
+                    guidePoint.distanceTo(beamPoint) + BEAM_SPAN_SLACK * spare, packedLight);
+        }
         poseStack.popPose();
     }
 

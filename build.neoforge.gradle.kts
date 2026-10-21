@@ -76,7 +76,18 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.mess1re.axiomata:${sc.current.version}-neoforge:$axiomataVersion")
+    // -Paxiomata.localDir=<axiomata/build/libs/<version>> builds and runs against a local Axiomata build instead of
+    // the pinned commit.
+    val localAxiomata = providers.gradleProperty("axiomata.localDir").orNull
+    if (localAxiomata != null) {
+        val jar = file(localAxiomata).listFiles()?.singleOrNull {
+            it.name.startsWith("axiomata-neoforge-") && it.name.endsWith("+${sc.current.version}.jar")
+        }
+        require(jar != null) { "No Axiomata neoforge jar for ${sc.current.version} in $localAxiomata" }
+        implementation(files(jar))
+    } else {
+        implementation("com.github.mess1re.axiomata:${sc.current.version}-neoforge:$axiomataVersion")
+    }
     implementation("dev.architectury:architectury-neoforge:$architecturyVersion")
     implementation("software.bernie.geckolib:geckolib-neoforge-${sc.current.version}:$geckolibVersion")
     compileOnly("com.github.nekomario28.recruits:1.21.1-neoforge:$recruitsVersion")

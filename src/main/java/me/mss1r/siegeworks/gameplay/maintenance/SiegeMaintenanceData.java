@@ -23,7 +23,10 @@ import java.util.TreeMap;
  */
 public final class SiegeMaintenanceData {
     private static final int HITS_PER_RESOURCE = 4;
-    private static final String LADDER_BLUEPRINT = "siegeworks:siege_ladder";
+    // A ladder is crafted, not built: its base, then each section in the same pattern with the ladder for a stick.
+    private static final ResourceLocation LOGS = ResourceLocation.tryParse("minecraft:logs");
+    private static final ResourceLocation OAK_LOG = ResourceLocation.tryParse("minecraft:oak_log");
+    private static final ResourceLocation STICK = ResourceLocation.tryParse("minecraft:stick");
     private static final Map<String, String> ENTITY_TO_SPAWNER = Map.ofEntries(
             Map.entry("siegeworks:serpentine", "siegeworks:serpentine_spawner"),
             Map.entry("siegeworks:culverin", "siegeworks:culverin_spawner"),
@@ -34,23 +37,26 @@ public final class SiegeMaintenanceData {
             Map.entry("siegeworks:arcballista", "siegeworks:arcballista_spawner"),
             Map.entry("siegeworks:mantlet", "siegeworks:mantlet_spawner"),
             Map.entry("siegeworks:mons_meg", "siegeworks:mons_meg_spawner"),
-            Map.entry("siegeworks:siege_tower", "siegeworks:siege_tower_spawner"),
-            Map.entry("siegeworks:siege_ladder", "siegeworks:siege_ladder_spawner")
+            Map.entry("siegeworks:siege_tower", "siegeworks:siege_tower_spawner")
     );
 
     private SiegeMaintenanceData() {
     }
 
     public static MaintenanceRecipe forSiege(AbstractSiegeEntity siege) {
+        if (siege instanceof SiegeLadderEntity ladder) {
+            List<Material> crafted = List.of(
+                    Material.ofTag(LOGS, 6 + 6 * ladder.getSections()).withReturns(OAK_LOG),
+                    Material.ofItem(STICK, 3 + 2 * ladder.getSections()));
+            return new MaintenanceRecipe(crafted, total(crafted) * HITS_PER_RESOURCE);
+        }
         BlueprintDefinition recipe = findRecipe(siege);
         if (recipe == null) {
             return MaintenanceRecipe.empty();
         }
 
-        // A ladder only cost its base and the sections it has.
-        int stages = siege instanceof SiegeLadderEntity ladder ? 1 + ladder.getSections() : Integer.MAX_VALUE;
-        Map<String, Material> ingredients = collectIngredients(recipe, stages);
-        int authoredHits = collectConstructionHits(recipe, stages);
+        Map<String, Material> ingredients = collectIngredients(recipe, Integer.MAX_VALUE);
+        int authoredHits = collectConstructionHits(recipe, Integer.MAX_VALUE);
         int totalHits = authoredHits > 0
                 ? authoredHits
                 : Math.max(1, total(List.copyOf(ingredients.values())) * HITS_PER_RESOURCE);
@@ -127,12 +133,6 @@ public final class SiegeMaintenanceData {
 
     @Nullable
     private static BlueprintDefinition findRecipe(AbstractSiegeEntity siege) {
-        if (siege instanceof SiegeLadderEntity) {
-            BlueprintDefinition ladder = BlueprintDefinitions.get(LADDER_BLUEPRINT);
-            if (ladder != null) {
-                return ladder;
-            }
-        }
         String spawnerId = ENTITY_TO_SPAWNER.get(BuiltInRegistries.ENTITY_TYPE.getKey(siege.getType()).toString());
         if (spawnerId == null) {
             return null;

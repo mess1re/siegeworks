@@ -42,6 +42,7 @@ import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import me.mss1r.axiomata.blueprint.api.construction.BuildProgress;
+import me.mss1r.axiomata.blueprint.api.construction.ConstructionGeometry;
 import me.mss1r.axiomata.blueprint.api.construction.UnderConstruction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -78,15 +79,6 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         implements SiegeEngineControl, CollidableStructure, UnderConstruction {
     private static final String TAG_DISMANTLING = "Dismantling";
     private static final String TAG_DISMANTLE_PROGRESS = "DismantleProgress";
-
-    private static final EntityDataAccessor<Integer> BUILD_STAGE =
-            SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<String> BUILD_BLUEPRINT =
-            SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<Integer> BUILD_HITS =
-            SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> BUILD_STAGE_HITS =
-            SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.INT);
 
     protected static final EntityDataAccessor<Float> TRACKED_YAW =
             SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.FLOAT);
@@ -294,41 +286,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
                     return AbstractSiegeEntity.this.getCooldownStatusKey();
                 }
             });
-    private final SiegeConstructionController construction = new SiegeConstructionController(
-            new SiegeConstructionController.Host() {
-                @Override
-                public AbstractSiegeEntity siege() {
-                    return AbstractSiegeEntity.this;
-                }
-
-                @Override
-                public void syncProgress(int builtStages, String blueprintId, int hits, int stageHits) {
-                    entityData.set(BUILD_STAGE, builtStages);
-                    entityData.set(BUILD_BLUEPRINT, blueprintId);
-                    entityData.set(BUILD_HITS, hits);
-                    entityData.set(BUILD_STAGE_HITS, stageHits);
-                }
-
-                @Override
-                public int syncedBuildHits() {
-                    return entityData.get(BUILD_HITS);
-                }
-
-                @Override
-                public int syncedBuildStageHits() {
-                    return entityData.get(BUILD_STAGE_HITS);
-                }
-
-                @Override
-                public int syncedBuiltSections() {
-                    return entityData.get(BUILD_STAGE);
-                }
-
-                @Override
-                public String syncedBlueprintId() {
-                    return entityData.get(BUILD_BLUEPRINT);
-                }
-            });
+    private final SiegeConstructionController construction = new SiegeConstructionController(this);
     private final SiegeTowingController towing = new SiegeTowingController(this);
     private final SiegeCrewController crew = new SiegeCrewController(this);
     private final SiegeDriveState drive = new SiegeDriveState();
@@ -348,10 +306,6 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         super.defineSynchedData(builder);
         var data = builder;
     //?}
-        data.define(BUILD_STAGE, Integer.MAX_VALUE);
-        data.define(BUILD_BLUEPRINT, "");
-        data.define(BUILD_HITS, 0);
-        data.define(BUILD_STAGE_HITS, 0);
         data.define(TRACKED_YAW, 0.0f);
         data.define(TRACKED_PITCH, 0.0f);
         data.define(DRIVE_SPEED, 0.0f);
@@ -390,6 +344,13 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     public boolean isTerrainCollisionExcluded(CollisionGroup group) {
+        return false;
+    }
+
+    // Movement clamps the geometry against walls first; the bounding box, the wheels, then carries the
+    // engine over steps and stands it on the ground.
+    @Override
+    public boolean movesByGeometry() {
         return false;
     }
 
@@ -928,45 +889,9 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         return construction.progress();
     }
 
-    public BlueprintConstructionVisuals.State constructionVisualState() {
-        return BlueprintConstructionVisuals.state(
-                buildBlueprintId(), builtSections());
-    }
-
     @Override
     public void orientForPlacement(float yaw) {
         construction.orientForPlacement(yaw);
-    }
-
-    @Override
-    public void onBuildProgressChanged() {
-        construction.syncProgress();
-    }
-
-    @Override
-    public boolean acceptsBlowOnStage(Player builder, String section) {
-        return construction.acceptsBlow(builder, section);
-    }
-
-    public int buildHits() {
-        return construction.buildHits();
-    }
-
-    public int buildStageHits() {
-        return construction.buildStageHits();
-    }
-
-    public int builtSections() {
-        return construction.builtSections();
-    }
-
-    public String buildBlueprintId() {
-        return construction.blueprintId();
-    }
-
-    @Override
-    public boolean isFullyBuilt() {
-        return construction.fullyBuilt();
     }
 
     protected boolean isPlayerControlledDraftMount(Entity passenger) {
@@ -1236,6 +1161,8 @@ public abstract class AbstractSiegeEntity extends LivingEntity
             setNoGravity(true);
             super.tick();
             construction.holdOrientation();
+            // Builders stand on what already stands.
+            StructureCollisionSystem.register(this);
             return;
         }
         setNoGravity(false);
@@ -1685,17 +1612,17 @@ public abstract class AbstractSiegeEntity extends LivingEntity
 
     @Override
     public List<CollisionGroup> solidCollisionGroups() {
-        return isFullyBuilt() ? CollidableStructure.super.solidCollisionGroups() : List.of();
+        return isFullyBuilt() ? CollidableStructure.super.solidCollisionGroups() : ConstructionGeometry.builtGroups(this);
     }
 
     @Override
     public List<CollisionGroup> previousCollisionGroups() {
-        return isFullyBuilt() ? CollidableStructure.super.previousCollisionGroups() : List.of();
+        return isFullyBuilt() ? CollidableStructure.super.previousCollisionGroups() : ConstructionGeometry.builtGroups(this);
     }
 
     @Override
     public List<ClimbableGroup> climbableGroups() {
-        return isFullyBuilt() ? CollidableStructure.super.climbableGroups() : List.of();
+        return ConstructionGeometry.builtClimbables(this, CollidableStructure.super.climbableGroups());
     }
 
     @Override

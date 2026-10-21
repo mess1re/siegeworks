@@ -17,6 +17,7 @@ import me.mss1r.siegeworks.registry.SiegeworksItemGroups;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
 import me.mss1r.siegeworks.network.ProfileSync;
 import me.mss1r.siegeworks.network.SiegeworksNetworking;
+import me.mss1r.siegeworks.registry.SiegeworksRecipes;
 import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import com.mojang.logging.LogUtils;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
@@ -47,6 +48,7 @@ public final class Siegeworks {
       SiegeworksItems.registerItems();
       SiegeworksItemGroups.register();
       SiegeworksSounds.register();
+      SiegeworksRecipes.register();
       SiegeworksParticles.register();
       SiegeBallisticsEnvironment.initialize();
       SiegeworksNetworking.register();

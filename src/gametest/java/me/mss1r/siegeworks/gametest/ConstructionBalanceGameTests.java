@@ -3,7 +3,17 @@ package me.mss1r.siegeworks.gametest;
 import me.mss1r.axiomata.blueprint.api.construction.BlueprintConstructionPlan;
 import me.mss1r.axiomata.blueprint.api.construction.BuildProgress;
 import me.mss1r.axiomata.blueprint.api.construction.BuildQuality;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition;
+import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinitions;
+import me.mss1r.axiomata.blueprint.internal.construction.MaterialAllocation;
+import me.mss1r.axiomata.blueprint.internal.definition.BlueprintFormat;
+import me.mss1r.siegeworks.Siegeworks;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -17,6 +27,12 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 //?}
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +47,7 @@ public final class ConstructionBalanceGameTests {
                 Map.entry("serpentine", 64), Map.entry("catapult", 84),
                 Map.entry("mons_meg", 112), Map.entry("battering_ram", 160),
                 Map.entry("trebuchet", 210), Map.entry("siege_tower", 420),
-                Map.entry("mantlet", 60), Map.entry("siege_ladder", 56));
+                Map.entry("mantlet", 60));
         totals.forEach((id, total) -> {
             var definition = BlueprintDefinitions.get("siegeworks:" + id);
             helper.assertTrue(definition != null, "Missing blueprint " + id);
@@ -59,7 +75,7 @@ public final class ConstructionBalanceGameTests {
     public static void savedWorkAndPaidMaterialsSurviveHigherHitRequirements(GameTestHelper helper) {
         BuildProgress old = BuildProgress.finished();
         old.begin("siegeworks:tower_crossbow", BuildQuality.PLAIN);
-        old.skipBuilt(1);
+        old = atStage(old, 1);
         old.commitMaterials(List.of(new ItemStack(Items.IRON_INGOT, 8)));
         for (int hit = 0; hit < 15; hit++) old.strike();
         CompoundTag saved = new CompoundTag();
@@ -84,12 +100,77 @@ public final class ConstructionBalanceGameTests {
     public static void completedBuildStaysCompleteWhenWorkIncreases(GameTestHelper helper) {
         BuildProgress completed = BuildProgress.finished();
         completed.begin("siegeworks:tower_crossbow", BuildQuality.PLAIN);
-        completed.skipBuilt(3);
+        completed = atStage(completed, 3);
         CompoundTag saved = new CompoundTag();
         completed.save(saved);
         BuildProgress restored = BuildProgress.finished();
         restored.load(saved);
         helper.assertTrue(restored.complete(), "New hit requirements reopened a completed build");
         helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void bundledBlueprintsReadAsTheOldFilesDid(GameTestHelper helper) {
+        BlueprintFormat.Ids ids = new BlueprintFormat.Ids(
+                BuiltInRegistries.ITEM::containsKey, BuiltInRegistries.ENTITY_TYPE::containsKey);
+        for (JsonElement name : readJson("data/siegeworks/blueprints/index.json").getAsJsonArray()) {
+            String id = Siegeworks.MOD_ID + ":" + name.getAsString();
+            BlueprintFormat.Parsed old = BlueprintFormat.parse(
+                    readJson("legacy_blueprints/" + name.getAsString() + ".json"), ids);
+            helper.assertTrue(old.valid(), "The old " + id + " no longer reads: " + old.errors());
+            BlueprintDefinition loaded = BlueprintDefinitions.get(id);
+            helper.assertTrue(loaded != null, "Blueprint " + id + " did not load");
+            // Since the conversion, oak logs and planks are taken as any logs and planks.
+            String expected = BlueprintFormat.write(old.definition()).toString()
+                    .replace("\"minecraft:oak_log\"", "\"#minecraft:logs\"")
+                    .replace("\"minecraft:oak_planks\"", "\"#minecraft:planks\"");
+            JsonObject written = BlueprintFormat.write(loaded);
+            written.remove("returns");
+            String actual = written.toString();
+            helper.assertTrue(expected.equals(actual),
+                    "Blueprint " + id + " changed in the new format:\n was " + expected + "\n now " + actual);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void materialsThatShareItemsAreNotPaidWithTheSameOnes(GameTestHelper helper) {
+        List<ItemStack> stacks = new ArrayList<>(List.of(new ItemStack(Items.OAK_LOG, 6),
+                new ItemStack(Items.SPRUCE_LOG, 2)));
+        Material anyLogs = Material.ofTag(ResourceLocation.tryParse("minecraft:logs"), 4);
+        Material oakLogs = Material.ofItem(ResourceLocation.tryParse("minecraft:oak_log"), 6);
+        List<Material> stage = List.of(anyLogs, oakLogs);
+        Map<Material, Integer> missing = MaterialAllocation.shortfall(stacks, stage);
+        helper.assertTrue(missing.equals(Map.of(anyLogs, 2)),
+                "Six oak and two spruce logs should leave any logs two short, not " + missing);
+        stacks.add(new ItemStack(Items.BIRCH_LOG, 2));
+        helper.assertTrue(MaterialAllocation.shortfall(stacks, stage).isEmpty(),
+                "Ten logs, six of them oak, did not pay for six oak and four of any");
+        MaterialAllocation.take(stacks, stage);
+        helper.assertTrue(stacks.stream().allMatch(ItemStack::isEmpty), "Not every log was taken: " + stacks);
+        helper.succeed();
+    }
+
+    /** The same progress with its first {@code stages} stages standing, as a saved world would hold it. */
+    private static BuildProgress atStage(BuildProgress progress, int stages) {
+        CompoundTag tag = new CompoundTag();
+        progress.save(tag);
+        tag.putInt("BuildStage", stages);
+        tag.putInt("BuildHits", 0);
+        tag.putBoolean("BuildMaterialsCommitted", false);
+        BuildProgress moved = BuildProgress.finished();
+        moved.load(tag);
+        return moved;
+    }
+
+    private static JsonElement readJson(String path) {
+        try (InputStream stream = ConstructionBalanceGameTests.class.getClassLoader().getResourceAsStream(path)) {
+            if (stream == null) {
+                throw new IllegalStateException("Missing test resource " + path);
+            }
+            return JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
     }
 }

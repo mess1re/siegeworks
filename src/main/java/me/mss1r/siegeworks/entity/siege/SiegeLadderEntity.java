@@ -239,11 +239,6 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
             tickCarried();
             return;
         }
-        if (!isFullyBuilt()) {
-            // While under construction the ladder stays upright in place: no climbing, no leaning.
-            StructureMotionSystem.tickStructure(this);
-            return;
-        }
         if (level() instanceof ServerLevel) {
             tickDeployAndLean();
             automatedTraversal.tick();
@@ -344,10 +339,9 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         super.remove(reason);
     }
 
-    /** Number of standing parts: the base plus built sections, or all parts once finished. */
+    /** Number of parts: the base and its sections. */
     private int builtStages() {
-        int whole = 1 + getSections();
-        return isFullyBuilt() ? whole : Math.min(whole, builtSections());
+        return 1 + getSections();
     }
 
     @Override
@@ -387,12 +381,6 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
             groups.add(new CollisionGroup("section_" + section, shapes.get(section), pose));
         }
         return List.copyOf(groups);
-    }
-
-    /** An early-finished build keeps only the sections that were built. */
-    @Override
-    public void applyBuiltData(java.util.Map<String, Integer> data) {
-        setSections(data.getOrDefault(SiegeLadderDeploymentItem.TAG_SECTIONS, MIN_SECTIONS));
     }
 
     public int getSections() {

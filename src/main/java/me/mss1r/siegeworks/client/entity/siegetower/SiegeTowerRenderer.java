@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Optional;
 import me.mss1r.siegeworks.Siegeworks;
+import me.mss1r.axiomata.blueprint.api.construction.ConstructionGeometry;
 import me.mss1r.siegeworks.client.rope.RopeRenderer;
 import me.mss1r.siegeworks.client.rope.SiegeRopeAnchors;
 import me.mss1r.siegeworks.client.entity.TowedSiegeRenderer;
@@ -112,11 +113,18 @@ public class SiegeTowerRenderer extends TowedSiegeRenderer<SiegeTowerEntity> {
             Vec3 rollerPoint = roller.get();
             Vec3 bridgePoint = bridge.get();
 
-            RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, drumPoint, shaftPoint,
-                    drumPoint.distanceTo(shaftPoint) + DRUM_SPAN_SLACK * spare, packedLight);
-            double bridgeSlack = BRIDGE_SPAN_SLACK * spare * sagClearance(animatable, partialTick);
-            RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, rollerPoint, bridgePoint,
-                    rollerPoint.distanceTo(bridgePoint) + bridgeSlack, packedLight);
+            // A rope hangs only once both of its ends stand.
+            if (ConstructionGeometry.isBoneBuilt(animatable, side[0])
+                    && ConstructionGeometry.isBoneBuilt(animatable, side[1])) {
+                RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, drumPoint, shaftPoint,
+                        drumPoint.distanceTo(shaftPoint) + DRUM_SPAN_SLACK * spare, packedLight);
+            }
+            if (ConstructionGeometry.isBoneBuilt(animatable, side[2])
+                    && ConstructionGeometry.isBoneBuilt(animatable, side[3])) {
+                double bridgeSlack = BRIDGE_SPAN_SLACK * spare * sagClearance(animatable, partialTick);
+                RopeRenderer.render(poseStack, bufferSource, ROPE_TEXTURE, rollerPoint, bridgePoint,
+                        rollerPoint.distanceTo(bridgePoint) + bridgeSlack, packedLight);
+            }
         }
     }
 

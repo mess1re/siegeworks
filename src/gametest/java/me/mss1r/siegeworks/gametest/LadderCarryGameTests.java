@@ -18,7 +18,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 //?}
 
-@GameTestHolder(LadderConstructionGameTests.NAMESPACE)
+@GameTestHolder(SiegeLadderGameTests.NAMESPACE)
 @PrefixGameTestTemplate(false)
 public final class LadderCarryGameTests {
     // A carried ladder extends past its test area into neighbouring tests.
