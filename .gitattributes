@@ -4,3 +4,5 @@
 src/generated/**/.cache/cache text eol=lf
 src/generated/**/*.json text eol=lf
 src/main/resources/data/**/*.json text eol=lf
+# Blockbench writes models on one line; keep them byte for byte.
+src/main/blockbench/**/*.bbmodel -text

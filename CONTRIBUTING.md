@@ -38,3 +38,7 @@ Collision, terrain movement, deployment, ladders, siege-tower ramps and projecti
 ## Assets
 
 Third-party assets need a traceable source and license entry in `THIRD_PARTY_NOTICES.md`.
+
+Engine models live in `src/main/blockbench/models`. After changing one in Blockbench, export the geo file with
+GeckoLib and the construction markup with Axiomata's Build Sections plugin (**File → Export → Construction Markup**)
+to `src/main/resources/data/siegeworks/construction/<model>.json`.

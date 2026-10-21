@@ -42,7 +42,10 @@ import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import me.mss1r.axiomata.blueprint.api.construction.BuildProgress;
-import me.mss1r.axiomata.blueprint.api.construction.ConstructionGeometry;
+import me.mss1r.siegeworks.gameplay.maintenance.SiegeMaintenanceData;
+import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageTypes;
 import me.mss1r.axiomata.blueprint.api.construction.UnderConstruction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -78,6 +81,7 @@ import java.util.*;
 public abstract class AbstractSiegeEntity extends LivingEntity
         implements SiegeEngineControl, CollidableStructure, UnderConstruction {
     private static final String TAG_DISMANTLING = "Dismantling";
+    private static final float WRECKAGE_SHARE = 0.25F;
     private static final String TAG_DISMANTLE_PROGRESS = "DismantleProgress";
 
     protected static final EntityDataAccessor<Float> TRACKED_YAW =
@@ -287,6 +291,8 @@ public abstract class AbstractSiegeEntity extends LivingEntity
                 }
             });
     private final SiegeConstructionController construction = new SiegeConstructionController(this);
+    // The work share the health last followed; below zero until the first server tick.
+    private float constructionShare = -1.0F;
     private final SiegeTowingController towing = new SiegeTowingController(this);
     private final SiegeCrewController crew = new SiegeCrewController(this);
     private final SiegeDriveState drive = new SiegeDriveState();
@@ -580,7 +586,6 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        construction.save(tag);
         aiming.save(tag);
         weapon.save(tag);
         operator.save(tag);
@@ -881,7 +886,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     protected boolean canAddOperator(Entity entity) {
-        return isFullyBuilt() && getPassengers().isEmpty() && isSupportedDirectOperator(entity);
+        return getPassengers().isEmpty() && isSupportedDirectOperator(entity);
     }
 
     @Override
@@ -1157,12 +1162,12 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         }
 
         if (!isFullyBuilt()) {
-            setDeltaMovement(Vec3.ZERO);
-            setNoGravity(true);
             super.tick();
             construction.holdOrientation();
-            // Builders stand on what already stands.
-            StructureCollisionSystem.register(this);
+            if (level() instanceof ServerLevel) {
+                followConstructionHealth();
+                keepBurning();
+            }
             return;
         }
         setNoGravity(false);
@@ -1193,6 +1198,8 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         }
 
         followProfileHealth();
+        followConstructionHealth();
+        keepBurning();
         deployment.tick();
         capture.tick(serverLevel);
         if (tickCount % ABANDONMENT_CHECK_INTERVAL_TICKS == 0) {
@@ -1224,6 +1231,15 @@ public abstract class AbstractSiegeEntity extends LivingEntity
 
     @Override
     public void remove(RemovalReason reason) {
+        if (reason == RemovalReason.KILLED && level() instanceof ServerLevel && !isRemoved() && isFullyBuilt()) {
+            // A destroyed engine leaves a quarter of what it is made of; an unfinished one is left by Axiomata.
+            for (BlueprintDefinition.Material material : SiegeMaintenanceData.forSiege(this).ingredients()) {
+                int count = (int) Math.floor(material.count() * WRECKAGE_SHARE);
+                if (count > 0) {
+                    spawnAtLocation(material.returnStack().copyWithCount(count));
+                }
+            }
+        }
         StructureCollisionSystem.unregister(this);
         deployment.onRemoved(reason);
         capture.stop();
@@ -1400,6 +1416,10 @@ public abstract class AbstractSiegeEntity extends LivingEntity
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        if (source.is(DamageTypes.ON_FIRE)) {
+            // Wood burns by its size: a share of the engine's health each second.
+            amount = (float) (getMaxHealth() * SiegeProfileCatalogs.ENGINES.forEntity(getType()).burnRate());
+        }
         Entity attacker = source.getEntity();
         ServerLevel serverLevel = level() instanceof ServerLevel server ? server : null;
 
@@ -1523,8 +1543,13 @@ public abstract class AbstractSiegeEntity extends LivingEntity
             return super.interact(player, hand);
         }
 
-        if (!isFullyBuilt()) {
-            return InteractionResult.PASS;
+        if (isOnFire() && player.getItemInHand(hand).is(Items.WATER_BUCKET)) {
+            clearFire();
+            playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
+            if (!player.getAbilities().instabuild) {
+                player.setItemInHand(hand, new ItemStack(Items.BUCKET));
+            }
+            return InteractionResult.SUCCESS;
         }
 
         if (player.getItemInHand(hand).is(Items.FLINT_AND_STEEL) && requestDebugInstantFire(player)) {
@@ -1608,21 +1633,6 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         if (collisionGroups().isEmpty()) {
             super.pushEntities();
         }
-    }
-
-    @Override
-    public List<CollisionGroup> solidCollisionGroups() {
-        return isFullyBuilt() ? CollidableStructure.super.solidCollisionGroups() : ConstructionGeometry.builtGroups(this);
-    }
-
-    @Override
-    public List<CollisionGroup> previousCollisionGroups() {
-        return isFullyBuilt() ? CollidableStructure.super.previousCollisionGroups() : ConstructionGeometry.builtGroups(this);
-    }
-
-    @Override
-    public List<ClimbableGroup> climbableGroups() {
-        return ConstructionGeometry.builtClimbables(this, CollidableStructure.super.climbableGroups());
     }
 
     @Override
@@ -1749,6 +1759,41 @@ public abstract class AbstractSiegeEntity extends LivingEntity
 
     public float getAccuracyMultiplier() {
         return SiegeProfileCatalogs.ENGINES.forEntity(this.getType()).accuracyMultiplier();
+    }
+
+    /**
+     * An engine is as sturdy as it is built: its health is capped by the share of construction work done, at least a
+     * tenth. A finished stage adds its share; damage already taken stays.
+     */
+    private void followConstructionHealth() {
+        float share = isFullyBuilt() ? 1.0F : construction.workShare();
+        if (constructionShare < 0.0F) {
+            constructionShare = share;
+            setHealth(Math.min(getHealth(), getMaxHealth() * share));
+            return;
+        }
+        if (share != constructionShare) {
+            setHealth(Mth.clamp(getHealth() + (share - constructionShare) * getMaxHealth(), 1.0F, getMaxHealth() * share));
+            constructionShare = share;
+        }
+    }
+
+    /** Wood keeps burning until rain or water puts it out. */
+    private void keepBurning() {
+        if (!isOnFire() || fireImmune()) {
+            return;
+        }
+        if (isInWaterRainOrBubble()) {
+            clearFire();
+        } else if (getRemainingFireTicks() < 25) {
+            // Topped up by whole seconds, so the fire still bites once a second.
+            setRemainingFireTicks(getRemainingFireTicks() + 20);
+        }
+    }
+
+    @Override
+    public boolean mayWork(Player builder) {
+        return SiegeAccess.allows(builder, this, SiegeAccess.Action.REPAIR);
     }
 
     /** Applies the profile's max health, keeping the current health fraction. */

@@ -1,6 +1,7 @@
 {
   "formatVersion": 2,
   "maxHealth": 150.0,
+  "burnRate": 0.0075,
   "baseDamage": 140.0,
   "muzzleVelocity": 315.0,
   "accuracyMultiplier": 0.08,
