@@ -251,6 +251,11 @@ public class TowerCrossbowEntity extends AbstractBoltThrowerEntity {
     }
 
     @Override
+    protected List<CollisionGroup> aimCollisionGroups(float pitch) {
+        return collisionGroups(toModelPitch(pitch), currentCollisionRelativeYaw());
+    }
+
+    @Override
     public List<CollisionGroup> previousCollisionGroups() {
         return collisionGroups(previousCollisionModelPitch(), previousCollisionRelativeYaw());
     }

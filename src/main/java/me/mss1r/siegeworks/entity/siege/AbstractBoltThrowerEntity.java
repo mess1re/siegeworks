@@ -7,6 +7,10 @@ import me.mss1r.siegeworks.api.MountedSiegeItemControl;
 import me.mss1r.siegeworks.api.SiegeOperationState;
 import me.mss1r.siegeworks.entity.projectile.AbstractBoltProjectile;
 import me.mss1r.axiomata.collision.system.StructureMotionSystem;
+import me.mss1r.axiomata.collision.CollisionGroup;
+import me.mss1r.axiomata.collision.StructureCollisionResolver;
+import me.mss1r.axiomata.collision.StructureGeometry;
+import me.mss1r.axiomata.collision.system.StructureCollisionSystem;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.registry.SiegeworksSounds;
@@ -61,6 +65,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.UUID;
+import java.util.List;
 
 public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity implements GeoEntity, SiegeArtilleryControl,
         MountedSiegeItemControl {
@@ -140,10 +145,10 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
 
     protected float resolveAimPitch(float currentPitch, float requestedPitch) {
         float targetPitch = Mth.clamp(requestedPitch, getMinAimPitch(), getMaxAimPitch());
-        if (Math.abs(targetPitch - currentPitch) < 0.0001F || isAimGeometryClear(targetPitch)) {
+        if (Math.abs(targetPitch - currentPitch) < 0.0001F || isAimPoseClear(targetPitch)) {
             return targetPitch;
         }
-        if (!isAimGeometryClear(currentPitch)) {
+        if (!isAimPoseClear(currentPitch)) {
             return targetPitch;
         }
 
@@ -151,7 +156,7 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
         float blockedPitch = targetPitch;
         for (int iteration = 0; iteration < AIM_COLLISION_SEARCH_STEPS; iteration++) {
             float candidate = (validPitch + blockedPitch) * 0.5F;
-            if (isAimGeometryClear(candidate)) {
+            if (isAimPoseClear(candidate)) {
                 validPitch = candidate;
             } else {
                 blockedPitch = candidate;
@@ -161,6 +166,21 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
     }
 
     protected abstract boolean isAimGeometryClear(float pitch);
+
+    protected abstract List<CollisionGroup> aimCollisionGroups(float pitch);
+
+    private boolean isAimPoseClear(float pitch) {
+        // Block probes alone do not see a ship deck. Test the complete proposed mechanism pose
+        // against nearby structures before applying it, rather than depenetrating the hull later.
+        List<CollisionGroup> groups = aimCollisionGroups(pitch);
+        AABB bounds = StructureCollisionResolver.worldBounds(this, groups);
+        if (bounds != null) {
+            for (var other : StructureCollisionSystem.structuresNear(this, bounds)) {
+                if (StructureCollisionResolver.intersects(this, groups, other, StructureGeometry.solid(other), 0)) return false;
+            }
+        }
+        return isAimGeometryClear(pitch);
+    }
 
     public abstract float getMinAimPitch();
 

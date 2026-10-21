@@ -247,6 +247,11 @@ public class ArcballistaEntity extends AbstractBoltThrowerEntity {
     }
 
     @Override
+    protected List<CollisionGroup> aimCollisionGroups(float pitch) {
+        return collisionGroups(toModelPitch(pitch));
+    }
+
+    @Override
     public List<CollisionGroup> previousCollisionGroups() {
         return collisionGroups(previousCollisionModelPitch());
     }

@@ -17,6 +17,10 @@
 - A destroyed engine leaves a quarter of what it is made of; a destroyed site leaves a quarter of its built stages and half of what was paid for the stage under way.
 - Wooden engines burn until rain, water or a bucket of water puts the fire out, losing 1.5% of their health a second; cannon carriages burn at half that.
 
+### Fixed
+
+- Arcballista and tower crossbow pitch checks include other structures, preventing parked mechanisms from tilting through a ship deck and displacing their support.
+
 ## 0.1.0-beta.9
 
 ### Added
