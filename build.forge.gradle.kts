@@ -54,6 +54,12 @@ configurations.named(gameTestSourceSet.runtimeOnlyConfigurationName) {
 }
 
 repositories {
+    providers.gradleProperty("axiomata.localDir").orNull?.let { directory ->
+        flatDir {
+            dirs(directory)
+            content { includeGroup("local.axiomata") }
+        }
+    }
     mavenCentral()
     maven("https://jitpack.io") {
         name = "JitPack"
@@ -80,7 +86,19 @@ repositories {
 }
 
 dependencies {
-    "modImplementation"("com.github.mess1re.axiomata:${sc.current.version}-forge:$axiomataVersion")
+    val localAxiomata = providers.gradleProperty("axiomata.localDir").orNull
+    if (localAxiomata != null) {
+        val jar = file(localAxiomata).listFiles()?.singleOrNull {
+            it.name.startsWith("axiomata-forge-") && it.name.endsWith("+${sc.current.version}.jar")
+        }
+        require(jar != null) { "No Axiomata forge jar for ${sc.current.version} in $localAxiomata" }
+        // Legacy ModDev remaps module dependencies from SRG to Mojang names; file dependencies
+        // cannot be used in its remapping constraints.
+        val version = jar.name.removePrefix("axiomata-forge-").removeSuffix(".jar")
+        "modImplementation"("local.axiomata:axiomata-forge:$version")
+    } else {
+        "modImplementation"("com.github.mess1re.axiomata:${sc.current.version}-forge:$axiomataVersion")
+    }
     "modImplementation"("dev.architectury:architectury-forge:$architecturyVersion")
     "modImplementation"("software.bernie.geckolib:geckolib-forge-$minecraftVersion:$geckolibVersion")
     "modCompileOnly"("maven.modrinth:villager-recruits:$recruitsVersion")

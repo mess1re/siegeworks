@@ -355,6 +355,14 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
     }
 
     @Override
+    public List<CollisionGroup> supportContactGroups() {
+        // Rungs stay climb-through, but the ladder itself still occupies space when placed or carried.
+        List<CollisionGroup> groups = new ArrayList<>(super.supportContactGroups());
+        groups.addAll(collisionGroups());
+        return List.copyOf(groups);
+    }
+
+    @Override
     public List<CollisionGroup> previousSolidCollisionGroups() {
         return List.of();
     }

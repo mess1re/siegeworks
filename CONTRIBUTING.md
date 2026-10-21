@@ -35,6 +35,21 @@ Do not duplicate a value in code when it already comes from a data definition or
 
 Collision, terrain movement, deployment, ladders, siege-tower ramps and projectile behavior have deterministic tests or GameTests. Changes in those areas should update the relevant coverage rather than rely only on a manual client check.
 
+### Working with unpublished Axiomata changes
+
+Deck deployment uses the current Axiomata placement/contact API. Until that revision is published
+and the dependency pin is advanced, build the matching Axiomata checkout first and point local SW
+builds at its collected jars. This override is available on both loaders; it neither bundles Axiomata
+nor changes the published dependency pin:
+
+```sh
+./gradlew :1.21.1-neoforge:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
+./gradlew :1.20.1-forge:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
+```
+
+Use the same property for `runClient` and `runGameTestServer`. Tidewright's optional cross-mod
+GameTests exercise the real SW deployment items, construction stages, support rotation and reload.
+
 ## Assets
 
 Third-party assets need a traceable source and license entry in `THIRD_PARTY_NOTICES.md`.

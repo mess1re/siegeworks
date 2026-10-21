@@ -20,6 +20,8 @@ import me.mss1r.siegeworks.gameplay.movement.SiegeDriveState;
 import me.mss1r.axiomata.collision.ClimbableGroup;
 import me.mss1r.axiomata.collision.CollidableStructure;
 import me.mss1r.axiomata.collision.CollisionGroup;
+import me.mss1r.axiomata.collision.CollisionPart;
+import me.mss1r.axiomata.collision.CollisionShape;
 import me.mss1r.axiomata.collision.system.StructureCollisionSystem;
 import me.mss1r.axiomata.collision.StructureTransform;
 import me.mss1r.siegeworks.gameplay.audio.SiegeAudioController;
@@ -1659,6 +1661,26 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     @Override
     public StructureTransform previousCollisionTransform() {
         return collisionTransformAt(xo, yo, zo, yBodyRotO);
+    }
+
+    @Override
+    public List<CollisionGroup> supportContactGroups() {
+        // These machines stand on their vanilla wheel box, not the lowest cube of the elevated
+        // firing mechanism. The footing is contact-only and must never become an invisible wall.
+        double halfWidth = getBbWidth() * .5D;
+        var footing = CollisionGroup.fixed("wheel_footing", new CollisionShape(
+                Vec3.ZERO, List.of(CollisionPart.axisAligned(
+                        new AABB(-halfWidth, 0, -halfWidth, halfWidth, .01D, halfWidth)))));
+        return List.of(footing);
+    }
+
+    @Override
+    public void rotateWithSupport(float yawDelta) {
+        // The tracked aim is also the unfinished frame's heading; changing Entity rotation alone
+        // would be undone by holdOrientation on the next tick.
+        CollidableStructure.super.rotateWithSupport(yawDelta);
+        setTrackedYaw(getTrackedYaw() + yawDelta);
+        lastRiderYaw += yawDelta;
     }
 
     private StructureTransform collisionTransformAt(double x, double y, double z, float yaw) {
