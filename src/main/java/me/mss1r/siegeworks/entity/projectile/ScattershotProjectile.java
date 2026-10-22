@@ -69,11 +69,6 @@ public final class ScattershotProjectile extends CannonProjectile {
     }
 
     @Override
-    protected double getSupplementalEntitySweepPadding() {
-        return 0.08D;
-    }
-
-    @Override
     protected void playImpactReport(ServerLevel serverLevel, Vec3 impact, float volume, float pitch) {
         ProjectileImpactEffects.spawnScattershotImpactParticles(
                 serverLevel, impact, isStonePellet(), impactOutwardDirection());
