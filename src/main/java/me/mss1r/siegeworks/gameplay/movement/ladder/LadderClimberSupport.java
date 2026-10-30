@@ -29,8 +29,8 @@ public final class LadderClimberSupport {
     private static final double STEP_ON_HEIGHT = 0.6D;
     /** Getting on by walking happens within this much of either end. */
     private static final double ENTRY_ZONE = 1.5D;
-    /** How far below the feet a block may be and still be a landing to step onto from the ladder's top. */
-    private static final double LANDING_DEPTH = 1.0D;
+    /** A landing within vanilla's safe drop distance also permits leaving an overhanging top rung. */
+    private static final double LANDING_DEPTH = 3.0D;
     /** Movement along the ladder, per tick, that counts as walking onto it. */
     private static final double ENTRY_SPEED = 0.01D;
     private static final double STEEP_UPWARD_SPEED_FACTOR = 0.12D;
@@ -150,6 +150,11 @@ public final class LadderClimberSupport {
         Vec3 at = new Vec3(climbStep.position().x, platformY, climbStep.position().z);
         if (!LadderTraversalCollision.passage(entity, entity.position(), at)) return;
         entity.move(MoverType.SELF, at.subtract(entity.position()));
+        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+            // This displacement is applied outside handleMovePlayer. Its next
+            // packet must start from the corrected server position, not the old rung.
+            player.connection.resetPosition();
+        }
         climbStates.put(entity.getId(), new ClimbState(localY, host.gameTick()));
         entity.setDeltaMovement(slowMovement(velocity, angle, steep));
         entity.setOnGround(true);

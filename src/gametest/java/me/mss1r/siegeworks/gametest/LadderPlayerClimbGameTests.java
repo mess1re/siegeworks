@@ -74,7 +74,7 @@ public final class LadderPlayerClimbGameTests {
     }
 
     private static void getsOnTheWall(Player p, double wallTop, double wallFace, double best, int fell) {
-        if (p.getY() < wallTop - 0.01D || p.getZ() <= wallFace) {
+        if (Math.abs(p.getY() - wallTop) > 0.15D || p.getZ() <= wallFace + 0.5D) {
             throw new net.minecraft.gametest.framework.GameTestAssertException("The player did not get onto the wall: "
                     + String.format("%.2f", p.getY() - wallTop) + " from its top, " + String.format("%.2f", p.getZ() - wallFace)
                     + " past its face, best " + String.format("%.2f", best - wallTop) + ", fell at tick " + fell);
