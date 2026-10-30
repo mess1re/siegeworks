@@ -29,7 +29,7 @@ public abstract class MouseHandlerMixin {
     private void siegeworks$captureSiegeAimInput(CallbackInfo ci) {
         LocalPlayer player = minecraft.player;
         siegeworks$capturingSiegeAim = player != null
-                && SiegeAimView.findControlledSiege(player) != null;
+                && SiegeAimView.findDirectlyRiddenSiege(player) != null;
         if (!siegeworks$capturingSiegeAim) {
             return;
         }
@@ -49,7 +49,8 @@ public abstract class MouseHandlerMixin {
         if (siege == null) {
             AbstractSiegeEntity riddenSiege = SiegeAimView.findDirectlyRiddenSiege(player);
             if (riddenSiege != null) {
-                SiegePassengerPhysics.clampView(riddenSiege, player, player);
+                SiegePassengerPhysics.clampView(riddenSiege, player, player,
+                        siegeworks$capturingSiegeAim ? siegeworks$yawBeforeAimInput : player.yRotO);
             }
             return;
         }

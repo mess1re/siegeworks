@@ -107,8 +107,14 @@ neoForge {
     runs {
         register("client") {
             client()
-            systemProperty("siegeworks.debug.recruits", providers.gradleProperty("debug.recruits").getOrElse("false"))
             gameDirectory = rootProject.file("run/${sc.current.version}-neoforge")
+            providers.gradleProperty("test.aimSceneWorld").orNull?.let { world ->
+                gameDirectory = rootProject.file("build/aim-client")
+                programArguments.addAll("--quickPlaySingleplayer", world)
+                systemProperty("siegeworks.test.aimScene", "true")
+                systemProperty("siegeworks.test.aimSceneFloor", providers.gradleProperty("test.aimSceneFloor").getOrElse("full"))
+            }
+            systemProperty("siegeworks.debug.recruits", providers.gradleProperty("debug.recruits").getOrElse("false"))
             systemProperty("siegeworks.debug.instantFire", "true")
             systemProperty("siegeworks.debug.autoDrive", "true")
         }
@@ -126,7 +132,7 @@ neoForge {
             systemProperty(
                 "neoforge.enabledGameTestNamespaces",
                 providers.gradleProperty("gameTestNamespaces")
-                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb")
+                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb,${modId}_aim_regression")
             )
         }
     }

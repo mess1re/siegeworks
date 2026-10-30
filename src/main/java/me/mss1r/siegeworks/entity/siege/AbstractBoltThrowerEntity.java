@@ -303,7 +303,12 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
     @Override
     public void turnTowardsPitch(float targetPitch) {
         if (!level().isClientSide) {
-            super.turnTowardsPitch(targetPitch);
+            float currentPitch = getTrackedPitch();
+            float delta = Mth.clamp(targetPitch, getMinAimPitch(), getMaxAimPitch()) - currentPitch;
+            setTrackedPitch(currentPitch
+                    + Mth.clamp(delta, -getPitchTurnSpeedDegrees(), getPitchTurnSpeedDegrees()));
+            setXRot(getTrackedPitch());
+            lastRiderPitch = getTrackedPitch();
             return;
         }
 

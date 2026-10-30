@@ -105,7 +105,6 @@ public final class SiegeAimController {
     private static void lockPlayerBodyToSiege(LocalPlayer player, AbstractSiegeEntity siege) {
         float bodyYaw = siege.getPassengerVisualYaw(player);
         player.setYBodyRot(bodyYaw);
-        player.yBodyRotO = bodyYaw;
     }
 
     private static void initializeFor(AbstractSiegeEntity siege) {

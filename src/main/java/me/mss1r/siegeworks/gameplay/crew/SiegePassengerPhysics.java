@@ -31,7 +31,6 @@ public final class SiegePassengerPhysics {
         if (bodyFollowsSiege && passenger instanceof LivingEntity livingPassenger) {
             float passengerYaw = siege.getPassengerVisualYaw(passenger);
             livingPassenger.setYBodyRot(passengerYaw);
-            livingPassenger.yBodyRotO = passengerYaw;
         }
         if (passenger instanceof LivingEntity livingPassenger) {
             clampView(siege, passenger, livingPassenger);
@@ -53,28 +52,31 @@ public final class SiegePassengerPhysics {
     }
 
     public static void clampView(AbstractSiegeEntity siege, Entity passenger, LivingEntity livingPassenger) {
-        float centerYaw = siege.getPassengerVisualYaw(passenger);
-        float yawLimit = Mth.clamp(siege.getPassengerViewYawLimit(passenger), 0.0F, 180.0F);
-        float relativeYaw = Mth.wrapDegrees(passenger.getYRot() - centerYaw);
-        float clampedYaw = centerYaw + Mth.clamp(relativeYaw, -yawLimit, yawLimit);
-        if (Math.abs(Mth.wrapDegrees(clampedYaw - passenger.getYRot())) > 1.0E-3F) {
-            passenger.setYRot(clampedYaw);
-            passenger.yRotO = clampedYaw;
-        }
+        clampView(siege, passenger, livingPassenger, passenger.yRotO);
+    }
 
-        float relativeHeadYaw = Mth.wrapDegrees(livingPassenger.getYHeadRot() - centerYaw);
-        float clampedHeadYaw = centerYaw + Mth.clamp(relativeHeadYaw, -yawLimit, yawLimit);
-        if (Math.abs(Mth.wrapDegrees(clampedHeadYaw - livingPassenger.getYHeadRot())) > 1.0E-3F) {
-            livingPassenger.setYHeadRot(clampedHeadYaw);
-            livingPassenger.yHeadRotO = clampedHeadYaw;
+    /** The input reference is the view before this mouse update, so overshooting cannot swap view edges. */
+    public static void clampView(AbstractSiegeEntity siege, Entity passenger, LivingEntity livingPassenger,
+                                 float referenceYaw) {
+        float centerYaw = referenceYaw + Mth.wrapDegrees(siege.getPassengerVisualYaw(passenger) - referenceYaw);
+        float previousCenterYaw = centerYaw + Mth.wrapDegrees(siege.yBodyRotO - siege.yBodyRot);
+        float yawLimit = Mth.clamp(siege.getPassengerViewYawLimit(passenger), 0.0F, 180.0F);
+        if (yawLimit < 180.0F) {
+            passenger.setYRot(clampAngle(passenger.getYRot(), centerYaw, yawLimit));
+            passenger.yRotO = clampAngle(passenger.yRotO, previousCenterYaw, yawLimit);
+            float headYaw = referenceYaw + Mth.wrapDegrees(livingPassenger.getYHeadRot() - referenceYaw);
+            float previousHeadYaw = referenceYaw + Mth.wrapDegrees(livingPassenger.yHeadRotO - referenceYaw);
+            livingPassenger.setYHeadRot(clampAngle(headYaw, centerYaw, yawLimit));
+            livingPassenger.yHeadRotO = clampAngle(previousHeadYaw, previousCenterYaw, yawLimit);
         }
 
         float pitchLimit = Mth.clamp(siege.getPassengerViewPitchLimit(passenger), 0.0F, 90.0F);
-        float clampedPitch = Mth.clamp(passenger.getXRot(), -pitchLimit, pitchLimit);
-        if (Math.abs(clampedPitch - passenger.getXRot()) > 1.0E-3F) {
-            passenger.setXRot(clampedPitch);
-            passenger.xRotO = clampedPitch;
-        }
+        passenger.setXRot(Mth.clamp(passenger.getXRot(), -pitchLimit, pitchLimit));
+        passenger.xRotO = Mth.clamp(passenger.xRotO, -pitchLimit, pitchLimit);
+    }
+
+    private static float clampAngle(float angle, float center, float limit) {
+        return center + Mth.clamp(angle - center, -limit, limit);
     }
 
     public static Vec3 rotatedSeatOffset(AbstractSiegeEntity siege, Entity passenger) {
