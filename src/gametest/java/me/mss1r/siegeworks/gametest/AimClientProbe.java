@@ -33,6 +33,10 @@ public final class AimClientProbe {
     private static float lastYaw;
     private static float lastPitch;
     private static double maxTurn;
+    private static int manualPitchChecks;
+    private static int manualEngineIndex;
+    private static volatile int nextManualEngineId = -1;
+    private static boolean switchingManualEngine;
 
     @SubscribeEvent
     //? if forge {
@@ -59,12 +63,22 @@ public final class AimClientProbe {
                             (pedestal && (x != 0 || z != 0) ? Blocks.AIR : Blocks.CALCITE).defaultBlockState());
                 }
                 player.teleportTo(0.5, 100, -3);
-                var siege = SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(level);
+                String engine = System.getProperty("siegeworks.test.aimSceneEngine", "tower_crossbow");
+                AbstractSiegeEntity siege = switch (engine) {
+                    case "culverin", "manual_suite" -> SiegeworksEntities.CULVERIN_ENTITY.get().create(level);
+                    case "serpentine" -> SiegeworksEntities.SERPENTINE_ENTITY.get().create(level);
+                    case "mons_meg" -> SiegeworksEntities.MONS_MEG_ENTITY.get().create(level);
+                    default -> SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(level);
+                };
                 siege.setPos(0.5, 100, 0.5);
                 level.addFreshEntity(siege);
                 player.startRiding(siege, true);
                 LogUtils.getLogger().info("AIM_CLIENT started calcite scene, pedestal={}, engine={}", pedestal, siege.getId());
             });
+        }
+        if (mc.player.getVehicle() instanceof AbstractSiegeEntity manual && !manual.usesIndependentPitchAim()) {
+            testManualPitch(mc, manual);
+            return;
         }
         if (!(mc.player.getVehicle() instanceof AbstractBoltThrowerEntity siege)) return;
         ticks++;
@@ -80,6 +94,65 @@ public final class AimClientProbe {
         }
         if (ticks == 440) {
             LogUtils.getLogger().info("AIM_CLIENT completed");
+            mc.stop();
+        }
+    }
+
+    private static void testManualPitch(Minecraft mc, AbstractSiegeEntity siege) {
+        if (switchingManualEngine) {
+            if (siege.getId() != nextManualEngineId) return;
+            switchingManualEngine = false;
+            ticks = 0;
+            manualPitchChecks = 0;
+        }
+        ticks++;
+        // Alternate fast mouse requests across the entire elevation range, then deliver
+        // the previous request through the same entity-data callback as a delayed server echo.
+        int phase = ticks % 40;
+        if (ticks > 40 && phase == 1) mc.player.setXRot(siege.getMinAimPitch());
+        if (ticks > 40 && phase == 21) mc.player.setXRot(siege.getMaxAimPitch());
+        if (ticks > 40 && (phase == 5 || phase == 25)) {
+            float expected = mc.player.getXRot();
+            float delayed = phase == 5 ? siege.getMaxAimPitch() : siege.getMinAimPitch();
+            siege.updateRenderedAim(0.75F);
+            float beforeEcho = siege.getRenderedAimPitch();
+            siege.setTrackedPitch(delayed);
+            if (Math.abs(siege.getTrackedPitch() - expected) > 0.001F) {
+                LogUtils.getLogger().error("AIM_MANUAL FAIL engine={} expected={} delayed={} actual={}",
+                        siege.getType(), expected, delayed, siege.getTrackedPitch());
+                mc.stop();
+                return;
+            }
+            siege.updateRenderedAim(0.751F);
+            if (Math.abs(siege.getRenderedAimPitch() - beforeEcho) > 0.01F) {
+                LogUtils.getLogger().error("AIM_MANUAL FAIL rendered elevation jumped: {} -> {}",
+                        beforeEcho, siege.getRenderedAimPitch());
+                mc.stop();
+                return;
+            }
+            manualPitchChecks++;
+        }
+        if (ticks == 240) {
+            LogUtils.getLogger().info("AIM_MANUAL PASS engine={} checks={}", siege.getType(), manualPitchChecks);
+            if ("manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))
+                    && manualEngineIndex < 2) {
+                int next = ++manualEngineIndex;
+                switchingManualEngine = true;
+                mc.getSingleplayerServer().execute(() -> {
+                    var player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
+                    var previous = player.getVehicle();
+                    player.stopRiding();
+                    if (previous != null) previous.discard();
+                    AbstractSiegeEntity replacement = next == 1
+                            ? SiegeworksEntities.SERPENTINE_ENTITY.get().create(player.serverLevel())
+                            : SiegeworksEntities.MONS_MEG_ENTITY.get().create(player.serverLevel());
+                    replacement.setPos(0.5, 100, 0.5);
+                    player.serverLevel().addFreshEntity(replacement);
+                    nextManualEngineId = replacement.getId();
+                    player.startRiding(replacement, true);
+                });
+                return;
+            }
             mc.stop();
         }
     }

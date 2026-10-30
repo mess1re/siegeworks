@@ -191,6 +191,11 @@ public final class SiegeAimingController {
         }
     }
 
+    /** Manual elevation follows the operator's view with the same bounds on both sides. */
+    public void restoreManualPlayerPitch() {
+        controllingPlayer().ifPresent(player -> setTrackedPitch(player.getXRot()));
+    }
+
     public void updateClientEntityRotation() {
         float targetYaw = trackedYaw();
         if (host.independentYaw()) {

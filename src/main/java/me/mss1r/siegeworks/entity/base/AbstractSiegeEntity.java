@@ -1162,9 +1162,15 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         if (TRACKED_YAW.equals(key) && usesIndependentAimYaw()
                 && Math.abs(Mth.wrapDegrees(entityData.get(TRACKED_YAW) - predictedAimYaw)) < AIM_CORRECTION_DEGREES) {
             entityData.set(TRACKED_YAW, predictedAimYaw);
-        } else if (TRACKED_PITCH.equals(key)
-                && Math.abs(entityData.get(TRACKED_PITCH) - predictedAimPitch) < AIM_CORRECTION_DEGREES) {
-            entityData.set(TRACKED_PITCH, predictedAimPitch);
+        } else if (TRACKED_PITCH.equals(key)) {
+            if (!usesIndependentAimPitch()) {
+                // A fast mouse turn may exceed the correction threshold before its echo
+                // arrives. Manual elevation has no mechanical/terrain solver to correct:
+                // retain the local operator's bounded view, as updateFromController does.
+                aiming.restoreManualPlayerPitch();
+            } else if (Math.abs(entityData.get(TRACKED_PITCH) - predictedAimPitch) < AIM_CORRECTION_DEGREES) {
+                entityData.set(TRACKED_PITCH, predictedAimPitch);
+            }
         }
     }
 

@@ -112,6 +112,7 @@ neoForge {
                 gameDirectory = rootProject.file("build/aim-client")
                 programArguments.addAll("--quickPlaySingleplayer", world)
                 systemProperty("siegeworks.test.aimScene", "true")
+                systemProperty("siegeworks.test.aimSceneEngine", providers.gradleProperty("test.aimSceneEngine").getOrElse("tower_crossbow"))
                 systemProperty("siegeworks.test.aimSceneFloor", providers.gradleProperty("test.aimSceneFloor").getOrElse("full"))
             }
             providers.gradleProperty("test.bannerSceneWorld").orNull?.let { world ->
