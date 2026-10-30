@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/main/resources/siegeworks.png" width="200" alt="Siegeworks icon">
+  <img src="media/images/avatar.png" width="200" alt="Siegeworks icon">
 </p>
 
 # Siegeworks
