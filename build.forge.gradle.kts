@@ -150,6 +150,12 @@ legacyForge {
             )
         }
         register("client") {
+            providers.gradleProperty("test.networkPort").orNull?.let { port ->
+                gameDirectory = rootProject.file("build/network-client-forge")
+                programArguments.addAll("--username", "SiegeRegression", "--quickPlayMultiplayer", "127.0.0.1:$port")
+                systemProperty("siegeworks.test.networkLadder", "true")
+            }
+
             providers.gradleProperty("test.aimSceneWorld").orNull?.let { world ->
                 gameDirectory = rootProject.file("build/aim-client-forge")
                 programArguments.addAll("--quickPlaySingleplayer", world)
@@ -169,6 +175,9 @@ legacyForge {
         }
         register("server") {
             server()
+            if (providers.gradleProperty("test.networkPort").isPresent) {
+                gameDirectory = rootProject.file("build/network-server-forge")
+            }
             systemProperty("siegeworks.debug.instantFire", "true")
             systemProperty("siegeworks.debug.autoDrive", "true")
             programArgument("--nogui")

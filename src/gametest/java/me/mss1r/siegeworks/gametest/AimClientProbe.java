@@ -45,7 +45,12 @@ public final class AimClientProbe {
     *///?} else {
     public static void tick(ClientTickEvent.Post event) {
     //?}
+        if (Boolean.getBoolean("siegeworks.test.networkLadder")) { networkLadder(); return; }
         if (!Boolean.getBoolean("siegeworks.test.aimScene")) return;
+        if ("construction_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
+            constructionProbe();
+            return;
+        }
         var mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || mc.screen != null) return;
         var server = mc.getSingleplayerServer();
@@ -94,6 +99,150 @@ public final class AimClientProbe {
         }
         if (ticks == 440) {
             LogUtils.getLogger().info("AIM_CLIENT completed");
+            mc.stop();
+        }
+    }
+
+    private static int networkWaiting;
+    private static boolean networkStarted;
+    private static double networkLastZ;
+    private static int networkTicks;
+    private static void networkLadder() {
+        var mc=Minecraft.getInstance();
+        if(mc.player==null || mc.level==null) {
+            if(++networkWaiting%100==0) LogUtils.getLogger().info("NETWORK_LADDER login screen={}",mc.screen==null?null:mc.screen.getClass().getName());
+            if(mc.screen instanceof net.minecraft.client.gui.screens.DisconnectedScreen) {
+                try {
+                    var reason=net.minecraft.client.gui.screens.DisconnectedScreen.class.getDeclaredField("reason");
+                    reason.setAccessible(true);
+                    LogUtils.getLogger().error("NETWORK_LADDER FAIL login={}",((net.minecraft.network.chat.Component)reason.get(mc.screen)).getString());
+                } catch(ReflectiveOperationException ex) { LogUtils.getLogger().error("NETWORK_LADDER FAIL login",ex); }
+                net.minecraft.client.Screenshot.grab(mc.gameDirectory,"network-disconnect.png",mc.getMainRenderTarget(),m->{});
+                mc.stop();return;
+            }
+            if(networkStarted) {LogUtils.getLogger().error("NETWORK_LADDER FAIL disconnected");mc.stop();}
+            return;
+        }
+        if(!networkStarted && ++networkWaiting%100==0) {
+            LogUtils.getLogger().info("NETWORK_LADDER waiting pos={} screen={}",mc.player.position(), mc.screen==null?null:mc.screen.getClass().getName());
+            if(networkWaiting==100) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"network-wait.png",mc.getMainRenderTarget(),m->{});
+        }
+        if(mc.screen!=null) return;
+        if(!networkStarted) {
+            if(Math.abs(mc.player.getX()-8.5)>.2 || Math.abs(mc.player.getY()-100)>.2
+                    || Math.abs(mc.player.getZ()-3.9)>.3) return;
+            networkStarted=true;networkLastZ=mc.player.getZ();
+            LogUtils.getLogger().info("NETWORK_LADDER started at {}",mc.player.position());
+        }
+        networkTicks++;
+        mc.player.setYRot(0);
+        mc.options.keyUp.setDown(mc.player.getZ()<9.2);
+        double back=networkLastZ-mc.player.getZ();
+        networkLastZ=mc.player.getZ();
+        if(back>.5) {mc.options.keyUp.setDown(false);LogUtils.getLogger().error("NETWORK_LADDER FAIL rollback={} pos={}",back,mc.player.position());mc.stop();}
+        if(networkTicks%40==0) LogUtils.getLogger().info("NETWORK_LADDER tick={} pos={} ground={}",networkTicks,mc.player.position(),mc.player.onGround());
+        if(networkTicks>=200 && mc.player.getZ()>8.6 && Math.abs(mc.player.getY()-104)<.15 && mc.player.onGround()) {
+            mc.options.keyUp.setDown(false);LogUtils.getLogger().info("NETWORK_LADDER PASS ticks={} pos={}",networkTicks,mc.player.position());mc.stop();
+        } else if(networkTicks==600) {
+            mc.options.keyUp.setDown(false);LogUtils.getLogger().error("NETWORK_LADDER FAIL stalled at {}",mc.player.position());mc.stop();
+        }
+    }
+
+    private static volatile int[] constructionIds;
+    private static final String[] CONSTRUCTION_TYPES = {"tower_crossbow", "arcballista", "culverin", "onager"};
+    private static int hiddenVehicleHealthFrames;
+
+    @SubscribeEvent(priority =
+            //? if forge {
+            /*net.minecraftforge.eventbus.api.EventPriority.LOWEST,
+            *///?} else {
+            net.neoforged.bus.api.EventPriority.LOWEST,
+            //?}
+            receiveCanceled = true)
+    //? if forge {
+    /*public static void vehicleHealth(net.minecraftforge.client.event.RenderGuiOverlayEvent.Pre event) {
+        boolean vehicleHealth = event.getOverlay().id().equals(
+                net.minecraftforge.client.gui.overlay.VanillaGuiOverlay.MOUNT_HEALTH.id());
+    *///?} else {
+    public static void vehicleHealth(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Pre event) {
+        boolean vehicleHealth = event.getName().equals(
+                net.neoforged.neoforge.client.gui.VanillaGuiLayers.VEHICLE_HEALTH);
+    //?}
+        if (!"construction_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) return;
+        var player = Minecraft.getInstance().player;
+        if (vehicleHealth && player != null && player.getVehicle() instanceof AbstractSiegeEntity) {
+            if (!event.isCanceled()) {
+                LogUtils.getLogger().error("VEHICLE_HEALTH_CLIENT FAIL uncanceled health layer");
+                Minecraft.getInstance().stop();
+            }
+            hiddenVehicleHealthFrames++;
+        }
+    }
+
+    private static void constructionProbe() {
+        var mc = Minecraft.getInstance();
+        var server = mc.getSingleplayerServer();
+        if (mc.level == null || mc.player == null || mc.screen != null || server == null) return;
+        if (!started) {
+            started = true;
+            server.execute(() -> {
+                var player = server.getPlayerList().getPlayers().get(0);
+                var level = player.serverLevel();
+                level.getEntitiesOfClass(AbstractSiegeEntity.class, new AABB(-30, 90, -30, 30, 130, 30))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                for (int x=-20; x<=20; x++) for(int z=-20; z<=20; z++)
+                    level.setBlockAndUpdate(new BlockPos(x,99,z), Blocks.CALCITE.defaultBlockState());
+                player.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+                player.teleportTo(0,104,10);
+                int[] ids = new int[CONSTRUCTION_TYPES.length];
+                for (int i=0;i<ids.length;i++) {
+                    var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(
+                            me.mss1r.siegeworks.platform.MinecraftVersionCompat.id("siegeworks", CONSTRUCTION_TYPES[i]));
+                    var engine = (AbstractSiegeEntity)type.create(level);
+                    engine.buildProgress().begin("siegeworks:"+CONSTRUCTION_TYPES[i], null);
+                    engine.orientForPlacement(45+i*90);
+                    engine.setPos(-12+i*8,100,0);
+                    level.addFreshEntity(engine);
+                    ids[i]=engine.getId();
+                }
+                constructionIds=ids;
+            });
+        }
+        if (constructionIds == null) return;
+        ticks++;
+        if (ticks==80 || ticks==180) {
+            for(int i=0;i<constructionIds.length;i++) {
+                var engine=(AbstractSiegeEntity)mc.level.getEntity(constructionIds[i]);
+                float yaw=45+i*90;
+                if(engine==null || engine.isFullyBuilt() != (ticks==180)
+                        || Math.abs(Mth.wrapDegrees(engine.getYRot()-yaw))>.01F
+                        || Math.abs(Mth.wrapDegrees(engine.getRenderedAimYaw()-yaw))>.01F
+                        || Math.abs(Mth.wrapDegrees(engine.getVisualRotationYInDegrees()-yaw))>.01F
+                        || Math.abs(Mth.wrapDegrees(engine.collisionTransform().yawDegrees()-yaw))>.01F) {
+                    LogUtils.getLogger().error("CONSTRUCTION_CLIENT FAIL phase={} type={} built={} root={} visual={} collision={}",
+                            ticks,CONSTRUCTION_TYPES[i],engine==null?null:engine.isFullyBuilt(),
+                            engine==null?null:engine.getYRot(),engine==null?null:engine.getVisualRotationYInDegrees(),
+                            engine==null?null:engine.collisionTransform().yawDegrees());
+                    mc.stop();return;
+                }
+            }
+            LogUtils.getLogger().info("CONSTRUCTION_CLIENT PASS phase={} engines=4",ticks);
+        }
+        if(ticks==100) server.execute(() -> {
+            for(int id:constructionIds) {
+                var engine=(AbstractSiegeEntity)server.overworld().getEntity(id);
+                engine.buildProgress().begin("",null);
+                me.mss1r.axiomata.blueprint.internal.construction.ConstructionSync.changed(engine);
+            }
+        });
+        if (ticks == 190) server.execute(() -> {
+            var player = server.getPlayerList().getPlayers().get(0);
+            player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            player.startRiding(server.overworld().getEntity(constructionIds[2]), true);
+        });
+        if (ticks == 230) {
+            LogUtils.getLogger().info("VEHICLE_HEALTH_CLIENT {} hiddenFrames={}",
+                    hiddenVehicleHealthFrames > 0 ? "PASS" : "FAIL", hiddenVehicleHealthFrames);
             mc.stop();
         }
     }

@@ -106,8 +106,15 @@ neoForge {
 
     runs {
         register("client") {
+            providers.gradleProperty("test.networkPort").orNull?.let { port ->
+                gameDirectory = rootProject.file("build/network-client-neoforge")
+                programArguments.addAll("--username", "SiegeRegression", "--quickPlayMultiplayer", "127.0.0.1:$port")
+                systemProperty("siegeworks.test.networkLadder", "true")
+            }
+
             client()
-            gameDirectory = rootProject.file("run/${sc.current.version}-neoforge")
+            if (!providers.gradleProperty("test.networkPort").isPresent)
+                gameDirectory = rootProject.file("run/${sc.current.version}-neoforge")
             providers.gradleProperty("test.aimSceneWorld").orNull?.let { world ->
                 gameDirectory = rootProject.file("build/aim-client")
                 programArguments.addAll("--quickPlaySingleplayer", world)
@@ -126,7 +133,11 @@ neoForge {
         }
         register("server") {
             server()
-            gameDirectory = rootProject.file("run/${sc.current.version}-neoforge")
+            if (providers.gradleProperty("test.networkPort").isPresent) {
+                gameDirectory = rootProject.file("build/network-server-neoforge")
+            }
+            if (!providers.gradleProperty("test.networkPort").isPresent)
+                gameDirectory = rootProject.file("run/${sc.current.version}-neoforge")
             systemProperty("siegeworks.debug.instantFire", "true")
             systemProperty("siegeworks.debug.autoDrive", "true")
             programArgument("--nogui")
