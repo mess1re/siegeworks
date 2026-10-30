@@ -53,15 +53,13 @@ configurations.named(gameTestSourceSet.runtimeOnlyConfigurationName) {
 }
 
 repositories {
-    mavenLocal {
-        content {
-            includeGroup("com.github.nekomario28.recruits")
-        }
-    }
     mavenCentral()
     val jitpack = maven("https://jitpack.io") {
         name = "JitPack"
-        content { includeGroup("com.github.mess1re.axiomata") }
+        content {
+            includeGroup("com.github.mess1re.axiomata")
+            includeGroup("com.github.mess1re.recruits")
+        }
         metadataSources {
             mavenPom()
             artifact()
@@ -90,13 +88,13 @@ dependencies {
         require(jar != null) { "No Axiomata neoforge jar for ${sc.current.version} in $localAxiomata" }
         implementation(files(jar))
     } else {
-        implementation("com.github.mess1re.axiomata:${sc.current.version}-neoforge:$axiomataVersion")
+        implementation("com.github.mess1re.axiomata:${sc.current.version}-neoforge:$axiomataVersion")
     }
     implementation("dev.architectury:architectury-neoforge:$architecturyVersion")
     implementation("software.bernie.geckolib:geckolib-neoforge-${sc.current.version}:$geckolibVersion")
-    compileOnly("com.github.nekomario28.recruits:1.21.1-neoforge:$recruitsVersion")
+    compileOnly("com.github.mess1re.recruits:neoforge-1.21.1:$recruitsVersion")
     if (providers.gradleProperty("enable_recruits_compat_runtime").orNull?.toBoolean() == true) {
-        runtimeOnly("com.github.nekomario28.recruits:1.21.1-neoforge:$recruitsVersion")
+        runtimeOnly("com.github.mess1re.recruits:neoforge-1.21.1:$recruitsVersion")
     }
     add(gameTestSourceSet.implementationConfigurationName, sourceSets.main.get().output)
 }

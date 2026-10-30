@@ -1,12 +1,17 @@
 package me.mss1r.siegeworks.integration.recruits;
 
-import com.talhanation.recruits.Main;
+//? if forge {
+/*import com.talhanation.recruits.Main;
+*///?}
 import com.talhanation.recruits.client.ClientManager;
 import com.talhanation.recruits.client.events.CommandCategoryManager;
 import com.talhanation.recruits.client.gui.CommandScreen;
 import com.talhanation.recruits.client.gui.commandscreen.ICommandCategory;
 import com.talhanation.recruits.client.gui.group.RecruitsCommandButton;
 import com.talhanation.recruits.network.MessageBackToMountEntity;
+//? if neoforge {
+import com.talhanation.recruits.network.RecruitsNetwork;
+//?}
 import com.talhanation.recruits.world.RecruitsGroup;
 import me.mss1r.axiomata.blueprint.api.BlueprintStacks;
 import me.mss1r.siegeworks.api.SiegeAmmunitionMode;
@@ -100,8 +105,13 @@ final class RecruitsSiegeCommandCategory implements ICommandCategory {
                     () -> sendTargetedCommand(groups,
                             RecruitsSiegeCommandC2SPayload.ACTION_CREW_MACHINE, target.getId()));
             layout.add("return", hasActiveGroup,
-                    () -> forEachActiveGroup(groups, group -> Main.SIMPLE_CHANNEL.sendToServer(
-                            new MessageBackToMountEntity(player.getUUID(), group.getUUID()))));
+                    () -> forEachActiveGroup(groups, group ->
+                            //? if forge {
+                            /*Main.SIMPLE_CHANNEL.sendToServer(
+                            *///?} else {
+                            RecruitsNetwork.sendToServer(
+                            //?}
+                                    new MessageBackToMountEntity(player.getUUID(), group.getUUID()))));
         }
 
         if (selectedType != null) {
