@@ -2,11 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "  I",
+    "NIN",
     " S ",
-    "S  "
+    " S "
   ],
   "key": {
+    "N": {
+      "item": "minecraft:iron_nugget"
+    },
     "I": {
       "item": "minecraft:iron_ingot"
     },
