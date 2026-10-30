@@ -19,6 +19,7 @@ public final class CulverinEntity extends AbstractFieldGunEntity {
     private static final LoadingRequirement[] LOAD_STAGES = createLoadStages(ArtilleryPowderCosts.CULVERIN);
     private static final FieldGunGeometry GEOMETRY = new FieldGunGeometry(
             13.7D / 16.0D, -0.3D / 16.0D, 4.5D / 16.0D, 22.3D / 16.0D,
+            9.0D / 16.0D, -7.7D / 16.0D,
             12.5F, 20.0F);
     private static final SiegeSoundProfile SOUND_PROFILE = SiegeSoundProfile.defaults()
             .withMovementSound(SiegeworksSounds.SIEGE_ENGINE_MOVE.get())

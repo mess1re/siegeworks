@@ -3,6 +3,7 @@ package me.mss1r.siegeworks.mixin.client;
 import me.mss1r.siegeworks.client.aim.SiegeAimView;
 import me.mss1r.siegeworks.client.aim.SiegeAimController;
 import me.mss1r.siegeworks.entity.siege.AbstractBoltThrowerEntity;
+import me.mss1r.siegeworks.entity.siege.AbstractFieldGunEntity;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
@@ -69,6 +70,13 @@ public abstract class CameraMixin {
 
         float yaw = siege.getRenderedAimYaw();
         float pitch = siege.getRenderedAimPitch();
+
+        if (!detached && siege instanceof AbstractFieldGunEntity gun
+                && SiegeAimController.isBarrelSightActive(player, siege)) {
+            setPosition(gun.barrelSightPosition(partialTick, yaw, pitch));
+            setRotation(yaw, pitch);
+            return;
+        }
 
         if (detached) {
             double x = Mth.lerp(partialTick, player.xo, player.getX());

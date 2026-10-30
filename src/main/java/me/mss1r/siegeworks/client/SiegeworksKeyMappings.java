@@ -17,6 +17,13 @@ public final class SiegeworksKeyMappings {
             GLFW.GLFW_KEY_LEFT_ALT,
             "key.categories.siegeworks"
     );
+    public static final KeyMapping BARREL_SIGHT = new KeyMapping(
+            "key.siegeworks.barrel_sight",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
+            "key.categories.siegeworks"
+    );
 
     private SiegeworksKeyMappings() {
     }

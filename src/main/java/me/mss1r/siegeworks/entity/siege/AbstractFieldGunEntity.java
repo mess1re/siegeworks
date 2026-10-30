@@ -479,15 +479,29 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
 
     private Vec3 muzzlePosition(float atPitch) {
         FieldGunGeometry geometry = getFieldGunGeometry();
-        double yaw = Math.toRadians(getVisualRotationYInDegrees());
-        double pitch = Math.toRadians(atPitch);
+        return onBarrel(position(), getVisualRotationYInDegrees(), atPitch, geometry.muzzleForward(),
+                geometry.muzzleHeight());
+    }
+
+    /** Where a gunner's eye sits to sight along the barrel: over its breech, as it is drawn this frame. */
+    public Vec3 barrelSightPosition(float partialTick, float yaw, float pitch) {
+        FieldGunGeometry geometry = getFieldGunGeometry();
+        Vec3 at = new Vec3(net.minecraft.util.Mth.lerp(partialTick, xo, getX()),
+                net.minecraft.util.Mth.lerp(partialTick, yo, getY()),
+                net.minecraft.util.Mth.lerp(partialTick, zo, getZ()));
+        return onBarrel(at, yaw, pitch, geometry.sightForward(), geometry.sightHeight());
+    }
+
+    /** A point {@code forward} along the barrel from its pivot and {@code height} above it, turned with the barrel. */
+    private Vec3 onBarrel(Vec3 at, float yawDegrees, float pitchDegrees, double forward, double height) {
+        FieldGunGeometry geometry = getFieldGunGeometry();
+        double yaw = Math.toRadians(yawDegrees);
+        double pitch = Math.toRadians(pitchDegrees);
         Vec3 horizontal = new Vec3(-Math.sin(yaw), 0.0D, Math.cos(yaw));
-        Vec3 pivot = position().add(horizontal.scale(geometry.pivotForward()))
+        Vec3 pivot = at.add(horizontal.scale(geometry.pivotForward()))
                 .add(0.0D, geometry.pivotHeight(), 0.0D);
-        double horizontalDistance = geometry.muzzleForward() * Math.cos(pitch)
-                + geometry.muzzleHeight() * Math.sin(pitch);
-        double verticalDistance = -geometry.muzzleForward() * Math.sin(pitch)
-                + geometry.muzzleHeight() * Math.cos(pitch);
+        double horizontalDistance = forward * Math.cos(pitch) + height * Math.sin(pitch);
+        double verticalDistance = -forward * Math.sin(pitch) + height * Math.cos(pitch);
         return pivot.add(horizontal.scale(horizontalDistance)).add(0.0D, verticalDistance, 0.0D);
     }
 
@@ -591,8 +605,13 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
         return Vec3.ZERO;
     }
 
+    /**
+     * The barrel about its pivot: where the muzzle is, and where a gunner's eye goes to sight along it, a little
+     * ahead of the breech's end and over the barrel's top.
+     */
     protected record FieldGunGeometry(double pivotHeight, double pivotForward,
                                       double muzzleHeight, double muzzleForward,
+                                      double sightHeight, double sightForward,
                                       float carriageElevationDegrees, float maxDepressionDegrees) {
     }
 }
