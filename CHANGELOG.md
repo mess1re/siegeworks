@@ -5,18 +5,39 @@
 ### Added
 
 - Engine profiles set `burnRate`, the share of health a fire takes each second.
+- Engines left under the open sky weather after 20 in-game days, sooner in the rain: their wood fades and they lose 35% of their health, never dropping below 1. A repair of at least that much makes them fresh again. The pace and the loss are in the server config under `rules.weathering`.
+- Honeycomb waxes cannons, bolt throwers and the hwacha a few at a time; a waxed engine never weathers and takes on a richer finish. Profiles set how many with `waxHoneycomb`.
+- Copper ingots give the culverin and serpentine a bronze barrel, for its looks only. Profiles set how many with `bronzeCopper`.
+- The maintenance screen shows whether an engine is fresh, weathered or waxed, and its wax and copper so far.
+- Resource packs can set the maintenance screen's text colours.
 - Siege engines, from their blueprints or deployment items, can be placed on the deck of a ship or another structure, which carries them. An arcballista or tower crossbow on a deck does not aim down through it.
+- A forked pole, a slow long-reaching weapon, pushes a siege ladder off a wall: look at its top from the wall and hold use. The ladder is eased off the wall while you brace and goes over at the end; let go early and it falls back. Long weapons from other mods do the same, by the `siegeworks:ladder_pushers` tag or enough extra reach. Steeper ladders and ladders with climbers on them take longer; the times are in the server config under `rules.ladderPushing`.
+- The forked pole works with Better Combat as a spear.
+- Gunners of the culverin and serpentine, who stand beside the barrel, can hold V to sight along it from over the breech.
+- The client config sets free look and the barrel sight to switch on and off with a press instead of while held, under `aiming`.
 
 ### Changed
 
+- Machine movement, loading and crew settings are in `siegeworks-engines.toml`, using blocks/second, degrees/second and seconds, with acceleration and braking expressed as times. Existing settings migrate automatically to a file beside the old server config, including `mangonel` to `onager`; explicit settings in the new file take priority and original files are backed up. Shared rules remain in `siegeworks-server.toml`.
 - Requires Axiomata 0.1.0-beta.9.
+- Every engine is retextured in one set of woods, irons and ropes, with weathered and waxed variants. Mons Meg's barrel is shaped with chamfers, and the cannons' rings are slimmer.
+- Construction sections have names that say what they build, such as `trail`, `cradle` and `barrel`. Datapack blueprints that replace a bundled one use the new names; sites already under way keep their progress.
+- A siege ladder falls as one rigid pole: faster, coming to rest against what it meets without its foot flying up, and drawn without sinking into blocks on the way.
+- The default incendiary pot fuse is ten seconds instead of seven.
+- The mangonel is now the onager, as the torsion engine it is. Onagers, their deployment items, drawn blueprints and unfinished sites in existing worlds carry over. Server config values set under `mangonel` move to `onager` automatically. Datapacks that override `siege_engines/mangonel`, the `mangonel_*` projectile physics, the `mangonel_passenger_loading_items` tag or the `catapult` blueprint use the `onager` names now.
 - Rope is Axiomata's now: rope in existing worlds becomes `axiomata:rope`, and blueprints and recipes take any rope in `#c:ropes`.
 - Siege ladders are crafted to length instead of built with the construction hammer: the ladder recipe with a ladder in place of the bottom middle stick adds a section, up to four. Repairs and dismantling cost what the crafts took.
 - Unfinished engines can be walked on and climbed where they are already built. Only a player holding a construction hammer sees the stages still to come.
-- Trebuchet, mangonel and siege tower ropes appear once both of their ends are built.
+- Trebuchet, onager and siege tower ropes appear once both of their ends are built.
 - An engine is as sturdy as it is built: its health follows the construction work done, from a tenth for a bare site. Only the owner's side can build or take apart a site.
 - A destroyed engine leaves a quarter of what it is made of; a destroyed site leaves a quarter of its built stages and half of what was paid for the stage under way.
 - Wooden engines burn until rain, water or a bucket of water puts the fire out, losing 1.5% of their health a second; cannon carriages burn at half that.
+
+### Fixed
+
+- Recruits keep their ladder approach under follow, formation and repeated movement orders. Queues advance within their lanes instead of swapping everyone sideways. Climbers keep body-sized spacing and leave only onto clear, supported landings.
+- Automated ladder traversal checks the full body along each transition, not just the landing or separate movement axes, so a diagonal exit cannot be routed through a corner. A blocked passage waits, then returns its stream to the entrance instead of releasing climbers into walls or mid-air.
+- Siege ladders retain their saved lean from older worlds and use the actual solid geometry when resting against other structures, including rotated parts.
 
 ## 0.1.0-beta.9
 
