@@ -61,7 +61,7 @@ repositories {
         }
     }
     mavenCentral()
-    maven("https://jitpack.io") {
+    val jitpack = maven("https://jitpack.io") {
         name = "JitPack"
         content {
             includeGroup("com.github.mess1re")
@@ -72,6 +72,10 @@ repositories {
             artifact()
             ignoreGradleMetadataRedirection()
         }
+    }
+    exclusiveContent {
+        forRepositories(jitpack)
+        filter { includeGroup("com.github.mess1re.axiomata") }
     }
     maven("https://maven.architectury.dev/") { name = "Architectury" }
     maven("https://api.modrinth.com/maven") {
