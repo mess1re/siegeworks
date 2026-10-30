@@ -10,7 +10,7 @@
 - Copper ingots give the culverin and serpentine a bronze barrel, for its looks only. Profiles set how many with `bronzeCopper`.
 - The maintenance screen shows whether an engine is fresh, weathered or waxed, and its wax and copper so far.
 - Resource packs can set the maintenance screen's text colours.
-- Siege engines, from their blueprints or deployment items, can be placed on the deck of a ship or another structure, which carries them. An arcballista or tower crossbow on a deck does not aim down through it.
+- Siege engines, from their blueprints or deployment items, can be placed on other machines and structures using Axiomata collision geometry, which carry them as they move. Arcballistas and tower crossbows respect the supporting surface when aiming down.
 - A forked pole, a slow long-reaching weapon, pushes a siege ladder off a wall: look at its top from the wall and hold use. The ladder is eased off the wall while you brace and goes over at the end; let go early and it falls back. Long weapons from other mods do the same, by the `siegeworks:ladder_pushers` tag or enough extra reach. Steeper ladders and ladders with climbers on them take longer; the times are in the server config under `rules.ladderPushing`.
 - The forked pole works with Better Combat as a spear.
 - Gunners of the culverin and serpentine, who stand beside the barrel, can hold V to sight along it from over the breech.

@@ -170,7 +170,7 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
     protected abstract List<CollisionGroup> aimCollisionGroups(float pitch);
 
     private boolean isAimPoseClear(float pitch) {
-        // Block probes alone do not see a ship deck. Test the complete proposed mechanism pose
+        // Block probes alone do not see supporting Axiomata geometry. Test the complete proposed mechanism pose
         // against nearby structures before applying it, rather than depenetrating the hull later.
         List<CollisionGroup> groups = aimCollisionGroups(pitch);
         AABB bounds = StructureCollisionResolver.worldBounds(this, groups);

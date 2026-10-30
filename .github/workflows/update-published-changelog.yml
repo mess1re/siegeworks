@@ -1,0 +1,114 @@
+name: update published changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing GitHub release whose notes should be copied
+        required: true
+        type: string
+      modrinth_versions:
+        description: Comma-separated existing Modrinth version IDs
+        type: string
+      curseforge_files:
+        description: Comma-separated existing CurseForge file IDs
+        type: string
+      dry_run:
+        description: Check the targets without changing their changelogs
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: published-changelog-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      MODRINTH_VERSIONS: ${{ inputs.modrinth_versions }}
+      CURSEFORGE_FILES: ${{ inputs.curseforge_files }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      MODRINTH_PROJECT_ID: ipPcxTnH
+      CURSEFORGE_PROJECT_ID: '1713906'
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+    steps:
+      - name: Read the existing GitHub release
+        run: gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq .body > release-notes.md
+
+      - name: Update existing version changelogs
+        shell: python
+        run: |
+          import json, os, re, uuid
+          from pathlib import Path
+          from urllib.error import HTTPError
+          from urllib.request import Request, urlopen
+
+          notes = Path('release-notes.md').read_text().rstrip()
+          if not notes:
+              raise ValueError('The existing release has no notes')
+          tag = os.environ['RELEASE_TAG']
+          dry_run = os.environ['DRY_RUN'] == 'true'
+          mr_ids = [s.strip() for s in os.environ['MODRINTH_VERSIONS'].split(',') if s.strip()]
+          cf_ids = [s.strip() for s in os.environ['CURSEFORGE_FILES'].split(',') if s.strip()]
+          if not mr_ids and not cf_ids:
+              raise ValueError('No existing versions were selected')
+          if any(not re.fullmatch(r'[A-Za-z0-9]{8}', s) for s in mr_ids):
+              raise ValueError('Invalid Modrinth version ID')
+          if any(not re.fullmatch(r'[0-9]+', s) for s in cf_ids):
+              raise ValueError('Invalid CurseForge file ID')
+
+          def request(url, headers, method='GET', body=None):
+              req = Request(url, data=body, headers=headers, method=method)
+              try:
+                  with urlopen(req, timeout=30) as response:
+                      data = response.read()
+                      return json.loads(data) if data else None
+              except HTTPError as error:
+                  detail = error.read(4096).decode('utf-8', errors='replace')
+                  for name in ('MODRINTH_TOKEN', 'CURSEFORGE_TOKEN'):
+                      token = os.environ.get(name)
+                      if token:
+                          detail = detail.replace(token, '[redacted]')
+                  raise RuntimeError(f'{method} {url}: HTTP {error.code}; {detail[:1000]}') from None
+
+          mr_headers = {'Authorization': os.environ['MODRINTH_TOKEN'],
+                        'User-Agent': os.environ['GITHUB_REPOSITORY'] + '/changelog-maintenance',
+                        'Content-Type': 'application/json'}
+          # Validate every Modrinth target before making the first edit.
+          targets = []
+          for version_id in mr_ids:
+              url = 'https://api.modrinth.com/v2/version/' + version_id
+              version = request(url, mr_headers)
+              if version['project_id'] != os.environ['MODRINTH_PROJECT_ID']:
+                  raise ValueError('Version belongs to another project: ' + version_id)
+              if version['version_number'] != tag and not version['version_number'].startswith(tag + '+'):
+                  raise ValueError('Version does not match the release: ' + version_id)
+              targets.append((url, version))
+              print('Selected Modrinth', version_id, version['version_number'])
+
+          for url, before in targets:
+              if not dry_run:
+                  request(url, mr_headers, 'PATCH', json.dumps({'changelog': notes}).encode())
+                  after = request(url, mr_headers)
+                  assert after['changelog'] == notes
+                  assert after['files'] == before['files'], 'Version files changed'
+              print('Checked' if dry_run else 'Updated', 'Modrinth', before['id'])
+
+          for file_id in cf_ids:
+              if not dry_run:
+                  boundary = 'changelog-' + uuid.uuid4().hex
+                  metadata = json.dumps({'fileID': int(file_id), 'changelog': notes, 'changelogType': 'markdown'})
+                  body = (f'--{boundary}\r\nContent-Disposition: form-data; name="metadata"\r\n\r\n'
+                          + metadata + f'\r\n--{boundary}--\r\n').encode()
+                  headers = {'X-Api-Token': os.environ['CURSEFORGE_TOKEN'],
+                             'Content-Type': 'multipart/form-data; boundary=' + boundary}
+                  url = 'https://minecraft.curseforge.com/api/projects/' + os.environ['CURSEFORGE_PROJECT_ID'] + '/update-file'
+                  request(url, headers, 'POST', body)
+              print('Selected' if dry_run else 'Updated', 'CurseForge', file_id)
