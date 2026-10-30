@@ -172,6 +172,17 @@ public final class SiegeworksClientGameEvents {
         *///?} else {
         boolean crosshair = event.getName().equals(VanillaGuiLayers.CROSSHAIR);
         //?}
+        // Forge/NeoForge draw their vehicle layer directly; showVehicleHealth()
+        // on the engine alone does not suppress it on every supported version.
+        //? if forge {
+        /*boolean vehicleHealth = event.getOverlay().id().equals(VanillaGuiOverlay.MOUNT_HEALTH.id());
+        *///?} else {
+        boolean vehicleHealth = event.getName().equals(VanillaGuiLayers.VEHICLE_HEALTH);
+        //?}
+        if (vehicleHealth && minecraft.player != null
+                && minecraft.player.getVehicle() instanceof AbstractSiegeEntity) {
+            event.setCanceled(true);
+        }
         if (crosshair
                 && minecraft.player != null && siege != null
                 && !SiegeAimController.isFreeLookActive(minecraft.player, siege)) {

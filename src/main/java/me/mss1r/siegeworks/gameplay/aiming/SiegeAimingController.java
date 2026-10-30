@@ -150,14 +150,14 @@ public final class SiegeAimingController {
 
     public float renderedYaw() {
         if (!siege.isFullyBuilt()) {
-            return 0.0F;
+            return host.aimingRenderYaw();
         }
         return renderedInitialized ? renderedYaw : host.aimingRenderYaw();
     }
 
     public float renderedPitch() {
         if (!siege.isFullyBuilt()) {
-            return 0.0F;
+            return host.aimingRenderPitch();
         }
         return renderedInitialized ? renderedPitch : host.aimingRenderPitch();
     }
@@ -199,6 +199,9 @@ public final class SiegeAimingController {
     public void updateClientEntityRotation() {
         float targetYaw = trackedYaw();
         if (host.independentYaw()) {
+            // The turret may turn independently; the chassis must not follow
+            // LivingEntity's automatic head/body yaw adjustment.
+            siege.setYBodyRot(siege.getYRot());
             siege.setYHeadRot(targetYaw);
             siege.lastRiderYaw = targetYaw;
             float pitch = trackedPitch();
