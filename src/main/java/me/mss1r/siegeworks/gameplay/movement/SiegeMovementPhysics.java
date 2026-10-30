@@ -2,15 +2,12 @@ package me.mss1r.siegeworks.gameplay.movement;
 
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import me.mss1r.axiomata.collision.StructureTransform;
@@ -251,13 +248,9 @@ public final class SiegeMovementPhysics {
                 currentSpeed, abstractSiegeEntity.getVisualRotationYInDegrees());
         Vec3 velocity = abstractSiegeEntity.getDeltaMovement();
 
-        double verticalVelocity = velocity.y;
-        if (verticalVelocity <= 0.0D && hasGroundSupport(abstractSiegeEntity)) {
-            verticalVelocity = 0;
-            abstractSiegeEntity.setOnGround(true);
-        } else {
-            verticalVelocity -= 0.08;
-        }
+        // A cached onGround flag is not support: after leaving a ledge it remains
+        // true until a downward move asks the collision solver again.
+        double verticalVelocity = velocity.y - 0.08D;
 
         Vec3 newVelocity = new Vec3(horizontalVelocity.x, verticalVelocity, horizontalVelocity.z);
         Vec3 travel = clampForMounts(abstractSiegeEntity,
@@ -355,31 +348,6 @@ public final class SiegeMovementPhysics {
         double x = -Math.sin(yawRad) * forward;
         double z = Math.cos(yawRad) * forward;
         return new Vec3(x, 0, z);
-    }
-
-    private static boolean hasGroundSupport(AbstractSiegeEntity abstractSiegeEntity) {
-        if (abstractSiegeEntity.onGround()) {
-            return true;
-        }
-
-        Level level = abstractSiegeEntity.level();
-        AABB box = abstractSiegeEntity.getBoundingBox();
-        double y = box.minY - 0.06D;
-        double inset = Math.min(0.5D, Math.min(box.getXsize(), box.getZsize()) * 0.2D);
-        double minX = box.minX + inset;
-        double maxX = box.maxX - inset;
-        double minZ = box.minZ + inset;
-        double maxZ = box.maxZ - inset;
-        return hasSolidTop(level, minX, y, minZ)
-                || hasSolidTop(level, minX, y, maxZ)
-                || hasSolidTop(level, maxX, y, minZ)
-                || hasSolidTop(level, maxX, y, maxZ)
-                || hasSolidTop(level, abstractSiegeEntity.getX(), y, abstractSiegeEntity.getZ());
-    }
-
-    private static boolean hasSolidTop(Level level, double x, double y, double z) {
-        BlockPos pos = BlockPos.containing(x, y, z);
-        return level.getBlockState(pos).isFaceSturdy(level, pos, Direction.UP);
     }
 
     public static void updateWheelRotation(AbstractSiegeEntity abstractSiegeEntity) {

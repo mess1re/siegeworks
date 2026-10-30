@@ -165,6 +165,34 @@ public final class FieldGunCollisionGameTests {
         });
     }
 
+    @GameTest(template = "empty")
+    public static void staleGroundFlagDoesNotLetAnEngineFly(GameTestHelper helper) {
+        var gun = createCulverin(helper);
+        double before = gun.getY();
+        gun.setOnGround(true);
+        gun.setDeltaMovement(Vec3.ZERO);
+        me.mss1r.siegeworks.gameplay.movement.SiegeMovementPhysics.updateSiegeVelocity(gun);
+        helper.assertTrue(gun.getY() < before - .07D, "A stale ground flag suspended the engine in air");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 50)
+    public static void hitchedHorseFallsOntoLowerGroundInsteadOfSnapping(GameTestHelper helper) {
+        var gun = hitchedCulverin(helper, 0);
+        var horse = gun.getTowingMounts().get(0);
+        // A horse has just left a raised step while the wheels remain on the lower floor.
+        Vec3 seat = gun.position().add(me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
+        horse.setPos(seat.x, gun.getY() + 1, seat.z);
+        double before = horse.getY();
+        gun.positionRider(horse);
+        helper.assertTrue(before - horse.getY() > 0 && before - horse.getY() < .1D,
+                "The harness snapped its horse down to the ground: " + (before - horse.getY()));
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(Math.abs(horse.getY() - gun.getY()) < .01D, "The horse did not land on the lower floor");
+            helper.succeed();
+        });
+    }
+
     private static CulverinEntity hitchedCulverin(GameTestHelper helper, float yaw) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);

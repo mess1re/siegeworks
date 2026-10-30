@@ -1439,7 +1439,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         if (this.hasPassenger(entity)) {
             Vec3 seat = position().add(SiegePassengerPhysics.rotatedSeatOffset(this, entity));
             if (isDraftMount(entity)) {
-                seat = SiegePassengerPhysics.mountFooting(this, entity, seat);
+                seat = SiegePassengerPhysics.positionMount(this, entity, seat);
             }
             moveFunction.accept(entity, seat.x, seat.y, seat.z);
         }
