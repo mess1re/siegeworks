@@ -1,6 +1,7 @@
 {
   "formatVersion": 2,
   "maxHealth": 90.0,
+  "waxHoneycomb": 6,
   "baseDamage": 60.0,
   "muzzleVelocity": 120.0,
   "accuracyMultiplier": 0.08,

@@ -19,7 +19,7 @@ public class BatteringRamModel extends TowedSiegeModel<BatteringRamEntity> {
 
     @Override
     public ResourceLocation getTextureResource(BatteringRamEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/battering_ram.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/battering_ram" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override
@@ -29,12 +29,12 @@ public class BatteringRamModel extends TowedSiegeModel<BatteringRamEntity> {
 
     @Override
     protected String leftWheelBone() {
-        return "rotate";
+        return "wheel_2_spin";
     }
 
     @Override
     protected String rightWheelBone() {
-        return "rotate2";
+        return "wheel_1_spin";
     }
 
     @Override

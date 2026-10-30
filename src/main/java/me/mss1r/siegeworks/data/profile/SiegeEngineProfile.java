@@ -11,18 +11,21 @@ import java.util.Optional;
  * @param maxHealth the engine's health; when absent it keeps what its entity type was registered with
  * @param muzzleVelocity launch speed in metres per second; one block is treated as one metre
  * @param burnRate share of the engine's health a fire takes each second; wood burns until it is put out
+ * @param waxHoneycomb honeycombs that wax the engine for good; 0 if it cannot be waxed
+ * @param bronzeCopper copper ingots that give the engine a bronze barrel, for its looks only; 0 if it has none
  */
 public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, double muzzleVelocity,
                                  float accuracyMultiplier,
                                  SiegeDamageRules damageRules, ScattershotProfile scattershot,
-                                 RamImpactProfile ramImpact, double burnRate) {
+                                 RamImpactProfile ramImpact, double burnRate, int waxHoneycomb,
+                                 int bronzeCopper) {
     /** A wooden engine left burning is gone in a little over a minute. */
     public static final double DEFAULT_BURN_RATE = 0.015D;
 
     public SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, double muzzleVelocity,
                               float accuracyMultiplier, SiegeDamageRules damageRules, ScattershotProfile scattershot) {
         this(maxHealth, baseDamage, muzzleVelocity, accuracyMultiplier, damageRules, scattershot,
-                RamImpactProfile.DEFAULT, DEFAULT_BURN_RATE);
+                RamImpactProfile.DEFAULT, DEFAULT_BURN_RATE, 0, 0);
     }
     private static final double DEFAULT_MUZZLE_VELOCITY = 60.0D;
     public static final SiegeEngineProfile DEFAULT = new SiegeEngineProfile(
@@ -42,7 +45,9 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
                     .forGetter(SiegeEngineProfile::scattershot),
             RamImpactProfile.CODEC.optionalFieldOf("ramImpact", RamImpactProfile.DEFAULT)
                     .forGetter(SiegeEngineProfile::ramImpact),
-            Codec.DOUBLE.optionalFieldOf("burnRate", DEFAULT_BURN_RATE).forGetter(SiegeEngineProfile::burnRate)
+            Codec.DOUBLE.optionalFieldOf("burnRate", DEFAULT_BURN_RATE).forGetter(SiegeEngineProfile::burnRate),
+            Codec.INT.optionalFieldOf("waxHoneycomb", 0).forGetter(SiegeEngineProfile::waxHoneycomb),
+            Codec.INT.optionalFieldOf("bronzeCopper", 0).forGetter(SiegeEngineProfile::bronzeCopper)
     ).apply(instance, SiegeEngineProfile::new));
 
     public Optional<String> validationError() {
@@ -66,6 +71,9 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
         if (error.isPresent()) return error;
         if (!(burnRate >= 0.0D && burnRate <= 1.0D)) {
             return Optional.of("burnRate must be from 0 to 1, a share of the engine's health each second");
+        }
+        if (waxHoneycomb < 0 || bronzeCopper < 0) {
+            return Optional.of("waxHoneycomb and bronzeCopper must not be negative");
         }
         return ramImpact.validationError();
     }

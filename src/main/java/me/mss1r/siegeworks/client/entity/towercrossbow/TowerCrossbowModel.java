@@ -20,7 +20,7 @@ public class TowerCrossbowModel extends GeoModel<TowerCrossbowEntity> {
 
     @Override
     public ResourceLocation getTextureResource(TowerCrossbowEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/tower_crossbow.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/tower_crossbow" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override

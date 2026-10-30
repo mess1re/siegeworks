@@ -19,7 +19,7 @@ public class MantletModel extends TowedSiegeModel<MantletEntity> {
 
     @Override
     public ResourceLocation getTextureResource(MantletEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/mantlet.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/mantlet" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override

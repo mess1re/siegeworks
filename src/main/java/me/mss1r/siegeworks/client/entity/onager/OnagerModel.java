@@ -20,7 +20,7 @@ public class OnagerModel extends TowedSiegeModel<OnagerEntity> {
 
     @Override
     public ResourceLocation getTextureResource(OnagerEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/onager" + ".png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/onager" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override

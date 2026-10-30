@@ -20,7 +20,7 @@ public class SiegeTowerModel extends GeoModel<SiegeTowerEntity> {
 
     @Override
     public ResourceLocation getTextureResource(SiegeTowerEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/siege_tower.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/siege_tower" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override

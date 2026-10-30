@@ -19,7 +19,7 @@ public class MonsMegModel extends TowedSiegeModel<MonsMegEntity> {
 
     @Override
     public ResourceLocation getTextureResource(MonsMegEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/mons_meg.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/mons_meg" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override

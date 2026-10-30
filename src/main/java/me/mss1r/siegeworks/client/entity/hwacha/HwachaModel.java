@@ -22,7 +22,7 @@ public class HwachaModel extends TowedSiegeModel<HwachaEntity> {
 
     @Override
     public ResourceLocation getTextureResource(HwachaEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/hwacha.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/hwacha" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override
@@ -37,7 +37,6 @@ public class HwachaModel extends TowedSiegeModel<HwachaEntity> {
         animatable.updateRenderedAim(animationState.getPartialTick());
         getBone("base").ifPresent(bone ->
                 bone.setRotX((float) Math.toRadians(animatable.getRenderedModelPitch())));
-        getBone("lead").ifPresent(bone -> bone.setHidden(true));
         int firstVisible = animatable.isFiring() ? Math.max(0, animatable.getFiringIndex()) : 0;
         for (int slot = 0; slot < HwachaEntity.CAPACITY; slot++) {
             boolean visible = slot >= firstVisible && slot < animatable.getLoadedCount();

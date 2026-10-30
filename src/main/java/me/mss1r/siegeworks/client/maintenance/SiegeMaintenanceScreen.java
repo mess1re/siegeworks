@@ -1,6 +1,7 @@
 package me.mss1r.siegeworks.client.maintenance;
 
 import me.mss1r.siegeworks.Siegeworks;
+import me.mss1r.siegeworks.gameplay.upgrade.EngineFinishController;
 import me.mss1r.siegeworks.network.MaintenanceActionC2SPayload;
 import me.mss1r.siegeworks.network.OpenMaintenanceS2CPayload;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import me.mss1r.siegeworks.network.SiegeworksNetworking;
 
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.io.IOException;
+import org.jetbrains.annotations.Nullable;
 
 public class SiegeMaintenanceScreen extends Screen {
     private static final int PANEL_WIDTH = 280;
@@ -123,6 +126,14 @@ public class SiegeMaintenanceScreen extends Screen {
         );
         guiGraphics.drawString(font, healthLine, left + 14, top + 30, textColor, false);
 
+        int right = left + PANEL_WIDTH - 14;
+        Component finish = finishLine();
+        guiGraphics.drawString(font, finish, right - font.width(finish), top + 30, textColor, false);
+        Component finishDetail = finishDetailLine();
+        if (finishDetail != null) {
+            guiGraphics.drawString(font, finishDetail, right - font.width(finishDetail), top + 44, progressColor, false);
+        }
+
         if (payload.dismantling()) {
             Component progress = Component.translatable(
                     "gui.siegeworks.maintenance.dismantle_progress",
@@ -182,6 +193,41 @@ public class SiegeMaintenanceScreen extends Screen {
             }
         }
         return lines.isEmpty() ? List.of(Component.translatable("gui.siegeworks.maintenance.none")) : lines;
+    }
+
+    private Component finishLine() {
+        byte finish = payload.finish();
+        String state = (finish & EngineFinishController.WAXED) != 0 ? "waxed"
+                : (finish & EngineFinishController.WEATHERED) != 0 ? "weathered" : "fresh";
+        Component line = Component.translatable("gui.siegeworks.maintenance.finish." + state);
+        return (finish & EngineFinishController.BRONZE) != 0
+                ? Component.translatable("gui.siegeworks.maintenance.finish.bronze", line)
+                : line;
+    }
+
+    private @Nullable Component finishDetailLine() {
+        byte finish = payload.finish();
+        if ((finish & EngineFinishController.WEATHERED) != 0) {
+            return Component.translatable("gui.siegeworks.maintenance.finish.repair_restores",
+                    payload.weatheringLossPercent());
+        }
+        List<Component> parts = new ArrayList<>();
+        if ((finish & EngineFinishController.WAXED) == 0 && payload.waxApplied() > 0) {
+            parts.add(Component.translatable("gui.siegeworks.maintenance.finish.wax",
+                    payload.waxApplied(), payload.waxRequired()));
+        }
+        if ((finish & EngineFinishController.BRONZE) == 0 && payload.copperApplied() > 0) {
+            parts.add(Component.translatable("gui.siegeworks.maintenance.finish.copper",
+                    payload.copperApplied(), payload.copperRequired()));
+        }
+        if (parts.isEmpty()) {
+            return null;
+        }
+        MutableComponent joined = parts.get(0).copy();
+        for (int i = 1; i < parts.size(); i++) {
+            joined.append(", ").append(parts.get(i));
+        }
+        return joined;
     }
 
     private void drawSection(GuiGraphics guiGraphics, int x, int y, Component heading, List<Component> lines) {

@@ -1,6 +1,7 @@
 {
   "formatVersion": 2,
   "maxHealth": 80.0,
+  "waxHoneycomb": 8,
   "baseDamage": 45.0,
   "accuracyMultiplier": 1.15,
   "damageConfig": {

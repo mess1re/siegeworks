@@ -13,12 +13,12 @@ import software.bernie.geckolib.animation.AnimationState;
 
 public final class FieldGunModel<T extends AbstractFieldGunEntity> extends TowedSiegeModel<T> {
     private final ResourceLocation modelResource;
-    private final ResourceLocation textureResource;
+    private final String assetName;
     private final ResourceLocation animationResource;
 
     public FieldGunModel(String assetName) {
         this.modelResource = MinecraftVersionCompat.id(Siegeworks.MOD_ID, "geo/" + assetName + ".geo.json");
-        this.textureResource = MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/" + assetName + ".png");
+        this.assetName = assetName;
         this.animationResource = MinecraftVersionCompat.id(Siegeworks.MOD_ID, "animations/" + assetName + ".animation.json");
     }
 
@@ -29,7 +29,8 @@ public final class FieldGunModel<T extends AbstractFieldGunEntity> extends Towed
 
     @Override
     public ResourceLocation getTextureResource(T animatable) {
-        return textureResource;
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID,
+                "textures/entity/" + assetName + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override

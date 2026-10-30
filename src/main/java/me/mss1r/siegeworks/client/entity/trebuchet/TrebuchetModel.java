@@ -20,7 +20,7 @@ public class TrebuchetModel extends GeoModel<TrebuchetEntity> {
 
     @Override
     public ResourceLocation getTextureResource(TrebuchetEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/trebuchet.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/trebuchet" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override
@@ -35,7 +35,5 @@ public class TrebuchetModel extends GeoModel<TrebuchetEntity> {
         String ammo = animatable.getAmmoLoaded();
         getBone("projectile").ifPresent(geoBone -> geoBone.setHidden(
                 !SiegeAmmo.isStoneAmmoKey(ammo) && !SiegeAmmo.isGrapeshotAmmoKey(ammo)));
-        // The pot is drawn as its own block on the projectile bone; this bone of the trebuchet's has no pot texture.
-        getBone("projectile_fire").ifPresent(geoBone -> geoBone.setHidden(true));
     }
 }

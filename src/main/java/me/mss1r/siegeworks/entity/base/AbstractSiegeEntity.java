@@ -11,6 +11,7 @@ import me.mss1r.siegeworks.config.SiegeworksServerConfig;
 import me.mss1r.siegeworks.debug.SiegeworksDebug;
 import me.mss1r.siegeworks.gameplay.collision.SiegeTerrainCollision;
 import me.mss1r.siegeworks.gameplay.crew.SiegeCrewController;
+import me.mss1r.siegeworks.gameplay.upgrade.EngineFinishController;
 import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
 import me.mss1r.siegeworks.gameplay.movement.SiegeMovementPhysics;
 import me.mss1r.siegeworks.gameplay.movement.SiegeTransformInterpolator;
@@ -118,6 +119,8 @@ public abstract class AbstractSiegeEntity extends LivingEntity
             SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.BOOLEAN);
     protected static final EntityDataAccessor<Integer> DISMANTLE_PROGRESS =
             SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> FINISH =
+            SynchedEntityData.defineId(AbstractSiegeEntity.class, EntityDataSerializers.BYTE);
 
     public float lastRiderYaw;
     public float lastRiderPitch;
@@ -224,6 +227,11 @@ public abstract class AbstractSiegeEntity extends LivingEntity
                     AbstractSiegeEntity.this.playSoundToNearbyPlayers(level, sound, range, volume);
                 }
             });
+    private final EngineFinishController finish = new EngineFinishController(new EngineFinishController.Host() {
+        @Override public AbstractSiegeEntity siege() { return AbstractSiegeEntity.this; }
+        @Override public byte finish() { return entityData.get(FINISH); }
+        @Override public void setFinish(byte value) { entityData.set(FINISH, value); }
+    });
     private final SiegeLoadingController loading = new SiegeLoadingController(
             new SiegeLoadingController.Host() {
                 @Override
@@ -330,6 +338,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         data.define(ATTACK_HAPPENED, true);
         data.define(DISMANTLING, false);
         data.define(DISMANTLE_PROGRESS, 0);
+        data.define(FINISH, (byte) 0);
     }
 
     public static final float STEP_HEIGHT = 1.25F;
@@ -595,6 +604,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         deployment.save(tag);
         tag.putBoolean(TAG_DISMANTLING, isDismantling());
         tag.putInt(TAG_DISMANTLE_PROGRESS, getDismantleProgress());
+        finish.save(tag);
     }
 
     @Override
@@ -615,6 +625,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         if (tag.contains(TAG_DISMANTLE_PROGRESS)) {
             setDismantleProgress(tag.getInt(TAG_DISMANTLE_PROGRESS));
         }
+        finish.load(tag);
         loading.clear();
     }
 
@@ -687,6 +698,15 @@ public abstract class AbstractSiegeEntity extends LivingEntity
 
     public boolean hasAttackHappened() {
         return weapon.attackHappened();
+    }
+
+    public EngineFinishController finish() {
+        return finish;
+    }
+
+    /** The suffix of this engine's texture for its synchronized finish, e.g. {@code _bronze_waxed}. */
+    public String finishTextureSuffix() {
+        return EngineFinishController.textureSuffix(entityData.get(FINISH));
     }
 
     public boolean isDismantling() {
@@ -1202,6 +1222,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         followProfileHealth();
         followConstructionHealth();
         keepBurning();
+        finish.tick(serverLevel);
         deployment.tick();
         capture.tick(serverLevel);
         if (tickCount % ABANDONMENT_CHECK_INTERVAL_TICKS == 0) {
@@ -1584,6 +1605,9 @@ public abstract class AbstractSiegeEntity extends LivingEntity
             }
             return boardForCapture(player);
         }
+
+        InteractionResult finishResult = finish.interact(player, hand, serverLevel);
+        if (finishResult != null) return finishResult;
 
         InteractionResult horseResult = towing.interact(player, hand, serverLevel);
         if (horseResult != null) return horseResult;

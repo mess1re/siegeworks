@@ -19,7 +19,7 @@ public class ArcballistaModel extends TowedSiegeModel<ArcballistaEntity> {
 
     @Override
     public ResourceLocation getTextureResource(ArcballistaEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/arcballista.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/arcballista" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override

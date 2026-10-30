@@ -1,12 +1,14 @@
 package me.mss1r.siegeworks.gameplay.maintenance;
 
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition.Material;
+import me.mss1r.siegeworks.config.SiegeworksServerConfig;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.event.SiegeMaintenanceCheckEvent;
 import me.mss1r.siegeworks.event.SiegeMaintenanceCompletedEvent;
 import me.mss1r.siegeworks.event.SiegeMaintenanceEvents;
 import me.mss1r.siegeworks.gameplay.deployment.SiegeDeploymentLimits;
 import me.mss1r.siegeworks.gameplay.ownership.SiegeAccess;
+import me.mss1r.siegeworks.gameplay.upgrade.EngineFinishController;
 import me.mss1r.siegeworks.network.MaintenanceActionC2SPayload;
 import me.mss1r.siegeworks.network.OpenMaintenanceS2CPayload;
 import me.mss1r.siegeworks.network.SiegeworksNetworking;
@@ -69,8 +71,21 @@ public final class SiegeMaintenanceController {
                 siege.getDismantleProgress(),
                 SiegeMaintenanceData.dismantleRequiredHits(siege),
                 SiegeMaintenanceData.formatItems(SiegeMaintenanceData.repairCost(siege)),
-                SiegeMaintenanceData.formatItems(SiegeMaintenanceData.dismantleRefund(siege))
+                SiegeMaintenanceData.formatItems(SiegeMaintenanceData.dismantleRefund(siege)),
+                finishFlags(siege),
+                siege.finish().waxApplied(),
+                siege.finish().waxRequired(),
+                siege.finish().copperApplied(),
+                siege.finish().copperRequired(),
+                (int) Math.round(SiegeworksServerConfig.getWeatheringHealthLoss() * 100.0D)
         ));
+    }
+
+    private static byte finishFlags(AbstractSiegeEntity siege) {
+        EngineFinishController finish = siege.finish();
+        return (byte) ((finish.weathered() ? EngineFinishController.WEATHERED : 0)
+                | (finish.waxed() ? EngineFinishController.WAXED : 0)
+                | (finish.bronze() ? EngineFinishController.BRONZE : 0));
     }
 
     public void handleAction(ServerPlayer player, int action) {
@@ -144,7 +159,9 @@ public final class SiegeMaintenanceController {
 
         MaintenanceMaterials.consume(materials, cost);
         MinecraftVersionCompat.damageHeldItem(worker.getMainHandItem(), 1, worker, InteractionHand.MAIN_HAND);
+        float restored = siege.getMaxHealth() - siege.getHealth();
         siege.setHealth(siege.getMaxHealth());
+        siege.finish().onRepaired(restored);
         playRepairEffects();
         return true;
     }
@@ -203,7 +220,9 @@ public final class SiegeMaintenanceController {
             MinecraftVersionCompat.damageHeldItem(player.getMainHandItem(), 1, player, InteractionHand.MAIN_HAND);
         }
 
+        float restored = siege.getMaxHealth() - siege.getHealth();
         siege.setHealth(siege.getMaxHealth());
+        siege.finish().onRepaired(restored);
         SiegeMaintenanceEvents.COMPLETED.invoker().completed(new SiegeMaintenanceCompletedEvent(
                 player, siege, SiegeMaintenanceCompletedEvent.Action.REPAIR, repairedHealth));
         playRepairEffects();

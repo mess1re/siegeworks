@@ -11,8 +11,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?}
 
 //? if forge {
-/*
-public record OpenMaintenanceS2CPayload(
+
+/*public record OpenMaintenanceS2CPayload(
         int entityId,
         String title,
         int health,
@@ -22,13 +22,20 @@ public record OpenMaintenanceS2CPayload(
         int dismantleProgress,
         int dismantleRequired,
         String repairCost,
-        String dismantleRefund
+        String dismantleRefund,
+        byte finish,
+        int waxApplied,
+        int waxRequired,
+        int copperApplied,
+        int copperRequired,
+        int weatheringLossPercent
 ) {
 *///?} else {
 public record OpenMaintenanceS2CPayload(
         int entityId, String title, int health, int maxHealth, boolean hasRecipe,
         boolean dismantling, int dismantleProgress, int dismantleRequired,
-        String repairCost, String dismantleRefund
+        String repairCost, String dismantleRefund, byte finish, int waxApplied, int waxRequired,
+        int copperApplied, int copperRequired, int weatheringLossPercent
 ) implements CustomPacketPayload {
     public static final Type<OpenMaintenanceS2CPayload> TYPE = new Type<>(MinecraftVersionCompat.id(Siegeworks.MOD_ID, "open_maintenance"));
     public static final StreamCodec<RegistryFriendlyByteBuf, OpenMaintenanceS2CPayload> STREAM_CODEC =
@@ -47,13 +54,20 @@ public record OpenMaintenanceS2CPayload(
         buffer.writeVarInt(packet.dismantleRequired);
         buffer.writeUtf(packet.repairCost);
         buffer.writeUtf(packet.dismantleRefund);
+        buffer.writeByte(packet.finish);
+        buffer.writeVarInt(packet.waxApplied);
+        buffer.writeVarInt(packet.waxRequired);
+        buffer.writeVarInt(packet.copperApplied);
+        buffer.writeVarInt(packet.copperRequired);
+        buffer.writeVarInt(packet.weatheringLossPercent);
     }
 
     public static OpenMaintenanceS2CPayload decode(FriendlyByteBuf buffer) {
         return new OpenMaintenanceS2CPayload(
                 buffer.readVarInt(), buffer.readUtf(), buffer.readVarInt(), buffer.readVarInt(),
                 buffer.readBoolean(), buffer.readBoolean(), buffer.readVarInt(), buffer.readVarInt(),
-                buffer.readUtf(32767), buffer.readUtf(32767));
+                buffer.readUtf(32767), buffer.readUtf(32767), buffer.readByte(), buffer.readVarInt(),
+                buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt());
     }
 
     public static void handle(OpenMaintenanceS2CPayload packet, NetworkManager.PacketContext context) {

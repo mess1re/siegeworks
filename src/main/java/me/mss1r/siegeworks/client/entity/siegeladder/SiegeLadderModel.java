@@ -19,7 +19,7 @@ public class SiegeLadderModel extends GeoModel<SiegeLadderEntity> {
 
     @Override
     public ResourceLocation getTextureResource(SiegeLadderEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/siege_ladder.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/siege_ladder" + animatable.finishTextureSuffix() + ".png");
     }
 
     @Override
