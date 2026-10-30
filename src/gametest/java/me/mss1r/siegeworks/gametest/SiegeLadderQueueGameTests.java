@@ -67,9 +67,11 @@ public final class SiegeLadderQueueGameTests {
     public static void queueSlotsCloseUpWhenAClimberLeaves(GameTestHelper helper) {
         SiegeLadderEntity ladder = deployedLadder(helper);
         LivingEntity first = spawnClimber(helper, ladder.position());
-        LivingEntity second = spawnClimber(helper, ladder.position());
-
         Vec3 firstSlot = ladder.getAutomatedQueuePosition(first, true);
+        // Five parallel lanes: the next member of THIS lane advances, not a neighbour
+        // sent sideways across the queue every time someone leaves.
+        occupyOtherLanes(helper, ladder);
+        LivingEntity second = spawnClimber(helper, ladder.position());
         Vec3 secondSlot = ladder.getAutomatedQueuePosition(second, true);
         helper.assertTrue(firstSlot.distanceToSqr(secondSlot) > 1.0E-6D,
                 "Two queued climbers were given the same place to stand");
@@ -94,8 +96,9 @@ public final class SiegeLadderQueueGameTests {
                 "The test climber did not enter the ladder");
 
         LivingEntity firstWaiting = spawnClimber(helper, ladder.position());
-        LivingEntity secondWaiting = spawnClimber(helper, ladder.position());
         Vec3 firstSlot = ladder.getAutomatedQueuePosition(firstWaiting, true);
+        occupyOtherLanes(helper, ladder);
+        LivingEntity secondWaiting = spawnClimber(helper, ladder.position());
         Vec3 secondSlot = ladder.getAutomatedQueuePosition(secondWaiting, true);
         firstWaiting.moveTo(firstSlot.x, firstSlot.y, firstSlot.z);
         secondWaiting.moveTo(secondSlot.x, secondSlot.y, secondSlot.z);
@@ -120,6 +123,13 @@ public final class SiegeLadderQueueGameTests {
         helper.succeed();
     }
 
+    private static void occupyOtherLanes(GameTestHelper helper, SiegeLadderEntity ladder) {
+        for (int lane = 1; lane < 5; lane++) {
+            LivingEntity waiting = spawnClimber(helper, ladder.position().add(24, 0, 24));
+            ladder.getAutomatedQueuePosition(waiting, true);
+        }
+    }
+
     private static SiegeLadderEntity deployedLadder(GameTestHelper helper) {
         SiegeLadderEntity ladder = SiegeworksEntities.SIEGE_LADDER_ENTITY.get().create(helper.getLevel());
         helper.assertTrue(ladder != null, "Failed to create siege ladder");
@@ -136,7 +146,8 @@ public final class SiegeLadderQueueGameTests {
 
         CompoundTag tag = new CompoundTag();
         ladder.addAdditionalSaveData(tag);
-        tag.putFloat("LeanProgress", 1.0F);
+        tag.putFloat("LeanDegrees", 89.0F);
+        tag.putBoolean("Settled", true);
         tag.putInt("DeployTicks", 200);
         ladder.readAdditionalSaveData(tag);
 

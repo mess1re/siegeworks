@@ -33,6 +33,7 @@ public interface SiegeworksItemGroups {
                             itemStack(SiegeworksItems.WHEEL.get()),
                             itemStack(SiegeworksItems.BARREL.get()),
                             itemStack(SiegeworksItems.RAMROD.get()),
+                            itemStack(SiegeworksItems.FORKED_POLE.get()),
                             itemStack(SiegeworksItems.TOWER_CROSSBOW_BOLT.get()),
                             itemStack(SiegeworksItems.ARCBALLISTA_BOLT.get()),
                             itemStack(SiegeworksItems.SO_SINGIJEON.get()),

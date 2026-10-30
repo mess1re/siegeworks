@@ -1,5 +1,6 @@
 package me.mss1r.siegeworks.mixin.client;
 
+import me.mss1r.siegeworks.client.ladder.LadderBraceClient;
 import me.mss1r.siegeworks.client.ladder.LadderCarryClient;
 import me.mss1r.siegeworks.gameplay.ladder.LadderCarry;
 import me.mss1r.siegeworks.client.pose.ResolvedSiegePose;
@@ -37,6 +38,11 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
         }
         if (LadderCarry.isCarrying(entity)) {
             LadderCarryClient.raiseArms((HumanoidModel<?>) (Object) this);
+            return;
+        }
+        if (LadderBraceClient.isBracing(entity)) {
+            LadderBraceClient.pose((HumanoidModel<?>) (Object) this, entity, headYaw, headPitch);
+            siegeworks$hasAppliedPose = true;
             return;
         }
         AbstractSiegeEntity siege = entity.getVehicle() instanceof AbstractSiegeEntity mountedSiege

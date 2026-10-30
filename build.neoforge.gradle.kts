@@ -39,6 +39,7 @@ base {
 val gameTestSourceSet = sourceSets.create("gametest")
 if (providers.gradleProperty("enable_recruits_compat_runtime").orNull?.toBoolean() != true) {
     gameTestSourceSet.java.exclude("me/mss1r/siegeworks/gametest/RecruitsCrewAndFireGameTests.java")
+    gameTestSourceSet.java.exclude("me/mss1r/siegeworks/gametest/RecruitsLadderTrafficGameTests.java")
 }
 val gameTestDirectory = rootProject.file("run/gametest/${sc.current.version}-neoforge")
 
@@ -106,6 +107,7 @@ neoForge {
     runs {
         register("client") {
             client()
+            systemProperty("siegeworks.debug.recruits", providers.gradleProperty("debug.recruits").getOrElse("false"))
             gameDirectory = rootProject.file("run/${sc.current.version}-neoforge")
             systemProperty("siegeworks.debug.instantFire", "true")
             systemProperty("siegeworks.debug.autoDrive", "true")
@@ -124,7 +126,7 @@ neoForge {
             systemProperty(
                 "neoforge.enabledGameTestNamespaces",
                 providers.gradleProperty("gameTestNamespaces")
-                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder")
+                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb")
             )
         }
     }

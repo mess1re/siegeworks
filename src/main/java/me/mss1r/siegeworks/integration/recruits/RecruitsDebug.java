@@ -3,6 +3,7 @@ package me.mss1r.siegeworks.integration.recruits;
 import com.talhanation.recruits.entities.AbstractRecruitEntity;
 import me.mss1r.siegeworks.Siegeworks;
 import me.mss1r.siegeworks.debug.SiegeworksDebug;
+import me.mss1r.siegeworks.entity.siege.SiegeLadderEntity;
 import net.minecraft.core.BlockPos;
 
 import java.util.Map;
@@ -12,6 +13,7 @@ public final class RecruitsDebug {
     private static final int REPORT_INTERVAL_TICKS = 20;
 
     private static final Map<AbstractRecruitEntity, Report> LAST_REPORT = new WeakHashMap<>();
+    private static final Map<AbstractRecruitEntity, Integer> LAST_LADDER_REPORT = new WeakHashMap<>();
     private static final Map<AbstractRecruitEntity, Map<String, Integer>> LAST_ENGINE_REPORT = new WeakHashMap<>();
 
     private RecruitsDebug() {
@@ -23,6 +25,7 @@ public final class RecruitsDebug {
 
     static void clear() {
         LAST_REPORT.clear();
+        LAST_LADDER_REPORT.clear();
         LAST_ENGINE_REPORT.clear();
     }
 
@@ -46,6 +49,19 @@ public final class RecruitsDebug {
                 recruit.getName().getString(), stage,
                 recruit.position(), recruit.onGround(), recruit.getDeltaMovement(),
                 navigation.isDone(), navigation.getTargetPos(), goal);
+    }
+
+    static void ladder(AbstractRecruitEntity recruit, SiegeLadderEntity ladder,
+                       net.minecraft.world.phys.Vec3 destination) {
+        if (!enabled()) return;
+        Integer previous = LAST_LADDER_REPORT.get(recruit);
+        if (previous != null && recruit.tickCount - previous < REPORT_INTERVAL_TICKS) return;
+        LAST_LADDER_REPORT.put(recruit, recruit.tickCount);
+        Siegeworks.LOG.info("[recruits:ladder] unit={} ladder={} pos={} destination={} follow={} move={} nav={} leased={} | {}",
+                recruit.getUUID(), ladder.getUUID(), recruit.position(), destination,
+                recruit.getFollowState(), recruit.getShouldMovePos(), recruit.getNavigation().getTargetPos(),
+                me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl.ownsNavigation(recruit),
+                ladder.describeAutomatedClimber(recruit));
     }
 
     public static void tower(AbstractRecruitEntity recruit, String stage) {

@@ -45,6 +45,7 @@
   "siege.pot.hint.seal": "Seal it with %s",
   "siege.pot.hint.light": "Light it with flint and steel",
   "item.siegeworks.ramrod": "Ramrod",
+  "item.siegeworks.forked_pole": "Forked Pole",
   "item.siegeworks.black_powder": "Black Powder",
   "item.siegeworks.wheel": "Wheel",
   "item.siegeworks.barrel": "Barrel",
@@ -229,9 +230,13 @@
   "message.siegeworks.recruits.no_siege_engines": "No eligible siege units can use that command.",
   "message.siegeworks.recruits.ladder_invalid_location": "The ladder cannot be placed at that location.",
   "message.siegeworks.ladder.pickup_unavailable": "The ladder cannot be picked up while it is in use.",
+  "message.siegeworks.ladder.push_from_top": "Brace the pole against the ladder's top, from the wall it leans on.",
+  "message.siegeworks.ladder.pushing": "Pushing the ladder off: %s%%",
+  "message.siegeworks.ladder.pushed": "The ladder goes over.",
   "message.siegeworks.ladder.not_owner": "You do not own this ladder.",
   "message.siegeworks.ladder.carrying": "Carrying the ladder: shift + use to set it down",
   "message.siegeworks.ladder.carrying_one": "Your hands are already on a ladder",
+  "message.siegeworks.ladder.carry_out_of_reach": "Come closer to take the ladder up",
   "message.siegeworks.ladder.carry_no_room": "No room to stand the ladder up here",
   "message.siegeworks.deployment_limit_reached": "Deployment limit reached for %1$s (%2$s/%3$s).",
   "message.siegeworks.recruits.build_requires_blueprint": "Hold a Siegeworks blueprint in your offhand.",
@@ -403,6 +408,5 @@
   "gui.siegeworks.recruits.siege_commands.text.flap_open": "Shutter up",
   "gui.siegeworks.recruits.siege_commands.tooltip.flap_open": "Open the mantlet's shield wide, to shoot from behind it.",
   "gui.siegeworks.recruits.siege_commands.text.flap_close": "Shutter down",
-  "gui.siegeworks.recruits.siege_commands.tooltip.flap_close": "Close the mantlet's shield fast, to walk in under arrows.",
-  "message.siegeworks.ladder.carry_from_foot": "Take the ladder up at its foot"
+  "gui.siegeworks.recruits.siege_commands.tooltip.flap_close": "Close the mantlet's shield fast, to walk in under arrows."
 }

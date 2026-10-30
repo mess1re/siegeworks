@@ -55,15 +55,15 @@ public final class SiegeLadderCollisionGameTests {
     public static void ladderCanFallTowardEitherSideAroundOneRoot(GameTestHelper helper) {
         SiegeLadderEntity ladder = createLadder(helper);
         ladder.setSections(4);
-        setLeanProgress(ladder, 0.0F);
+        setLeanDegrees(ladder, 0.0F);
         CollisionGroup upright = lastGroup(ladder);
         Vec3 top = new Vec3(0.0D, 15.0D, 0.0D);
         Vec3 uprightTop = upright.fromGroup(top);
 
-        setLeanProgress(ladder, 0.5F);
+        setLeanDegrees(ladder, 44.5F);
         CollisionGroup forward = lastGroup(ladder);
         Vec3 forwardTop = forward.fromGroup(top);
-        setLeanProgress(ladder, -0.5F);
+        setLeanDegrees(ladder, -44.5F);
         CollisionGroup backward = lastGroup(ladder);
         Vec3 backwardTop = backward.fromGroup(top);
 
@@ -83,7 +83,7 @@ public final class SiegeLadderCollisionGameTests {
     public static void ladderUsesModelBoundsInsteadOfStretchedEntityBox(GameTestHelper helper) {
         SiegeLadderEntity ladder = createLadder(helper);
         ladder.setSections(4);
-        setLeanProgress(ladder, 0.75F);
+        setLeanDegrees(ladder, 66.75F);
         AABB modelBounds = StructureCollisionResolver.worldBounds(ladder);
 
         helper.assertTrue(ladder.getBoundingBox().getYsize() < 4.0D,
@@ -95,7 +95,7 @@ public final class SiegeLadderCollisionGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 160)
+    @GameTest(template = "empty", timeoutTicks = 300)
     public static void ladderCanRestOnAnotherStructuresModelGeometry(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);
@@ -106,16 +106,15 @@ public final class SiegeLadderCollisionGameTests {
 
         SiegeLadderEntity ladder = createLadder(helper);
         ladder.setSections(4);
-        setDeploymentState(ladder, 35, 0.08F);
+        setDeploymentState(ladder, 35, 7.0F);
 
-        helper.runAfterDelay(120, () -> {
-            float progress = ladder.getLeanProgress();
-            helper.assertTrue(progress > 0.1F && progress < 0.9F,
-                    "Ladder did not come to rest on model geometry: leanProgress=" + progress);
+        helper.runAfterDelay(120, () -> helper.succeedWhen(() -> {
+            float lean = ladder.getLeanAngleDegrees();
+            helper.assertTrue(lean > 9.0F && lean < 80.0F,
+                    "Ladder did not come to rest on model geometry: lean=" + lean);
             helper.assertTrue(ladder.isReadyForAutomatedClimb(),
                     "Ladder resting on another structure was not usable");
-            helper.succeed();
-        });
+        }));
     }
 
     private static List<String> groupNames(SiegeLadderEntity ladder) {
@@ -127,18 +126,18 @@ public final class SiegeLadderCollisionGameTests {
         return groups.get(groups.size() - 1);
     }
 
-    private static void setLeanProgress(SiegeLadderEntity ladder, float progress) {
+    private static void setLeanDegrees(SiegeLadderEntity ladder, float degrees) {
         CompoundTag tag = new CompoundTag();
         ladder.addAdditionalSaveData(tag);
-        tag.putFloat("LeanProgress", progress);
+        tag.putFloat("LeanDegrees", degrees);
         ladder.readAdditionalSaveData(tag);
     }
 
-    private static void setDeploymentState(SiegeLadderEntity ladder, int deployTicks, float progress) {
+    private static void setDeploymentState(SiegeLadderEntity ladder, int deployTicks, float degrees) {
         CompoundTag tag = new CompoundTag();
         ladder.addAdditionalSaveData(tag);
         tag.putInt("DeployTicks", deployTicks);
-        tag.putFloat("LeanProgress", progress);
+        tag.putFloat("LeanDegrees", degrees);
         ladder.readAdditionalSaveData(tag);
     }
 

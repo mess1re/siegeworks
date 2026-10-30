@@ -53,6 +53,7 @@ public final class Siegeworks {
       SiegeBallisticsEnvironment.initialize();
       SiegeworksNetworking.register();
       LadderCarry.register();
+      me.mss1r.siegeworks.gameplay.ladder.LadderPush.register();
       CommandRegistrationEvent.EVENT.register(SiegeworksCommands::register);
       LifecycleEvent.SERVER_BEFORE_START.register(server -> SiegeworksDebug.reset());
       SiegeDeploymentLimitEvents.register();

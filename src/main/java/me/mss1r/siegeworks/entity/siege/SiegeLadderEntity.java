@@ -1,14 +1,10 @@
 package me.mss1r.siegeworks.entity.siege;
 
 import me.mss1r.siegeworks.api.SiegeClimbableControl;
-import me.mss1r.axiomata.collision.CollidableStructure;
 import me.mss1r.axiomata.collision.CollisionGroup;
-import me.mss1r.axiomata.collision.CollisionPart;
 import me.mss1r.axiomata.collision.CollisionPose;
 import me.mss1r.axiomata.collision.CollisionShape;
-import me.mss1r.axiomata.collision.StructureCollisionResolver;
 import me.mss1r.axiomata.collision.system.StructureMotionSystem;
-import me.mss1r.axiomata.collision.system.StructureCollisionSystem;
 import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.gameplay.ladder.LadderCarry;
@@ -17,11 +13,11 @@ import me.mss1r.siegeworks.gameplay.ownership.SiegeRelation;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.gameplay.movement.SyncedFloatInterpolator;
 import me.mss1r.siegeworks.gameplay.movement.ladder.LadderAutomatedTraversal;
+import me.mss1r.siegeworks.gameplay.movement.ladder.LadderBody;
 import me.mss1r.siegeworks.gameplay.movement.ladder.LadderClimberSupport;
 import me.mss1r.siegeworks.item.SiegeLadderDeploymentItem;
 import me.mss1r.siegeworks.gameplay.deployment.SiegeDeploymentLimits;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -42,10 +38,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 //? if forge {
@@ -81,40 +74,51 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
 
     private static final EntityDataAccessor<Integer> SECTIONS =
             SynchedEntityData.defineId(SiegeLadderEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Float> LEAN_PROGRESS =
+    /** Lean from vertical, positive toward forward; past 90 the top is below the foot. Not wrapped. */
+    private static final EntityDataAccessor<Float> LEAN_DEGREES =
             SynchedEntityData.defineId(SiegeLadderEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DEPLOY_TICKS =
             SynchedEntityData.defineId(SiegeLadderEntity.class, EntityDataSerializers.INT);
     /** The entity id of whoever carries the ladder in their hands, or -1. */
     private static final EntityDataAccessor<Integer> CARRIER_ID =
             SynchedEntityData.defineId(SiegeLadderEntity.class, EntityDataSerializers.INT);
+    /** The entity id of whoever braces a pole against the ladder now, or -1. */
+    private static final EntityDataAccessor<Integer> BRACER_ID =
+            SynchedEntityData.defineId(SiegeLadderEntity.class, EntityDataSerializers.INT);
 
     private static final String TAG_SECTIONS = "Sections";
-    private static final String TAG_LEAN_PROGRESS = "LeanProgress";
+    private static final String TAG_LEAN_DEGREES = "LeanDegrees";
+    private static final String TAG_SETTLED = "Settled";
     private static final String TAG_DEPLOY_TICKS = "DeployTicks";
     private static final String TAG_LEGACY_RELOCATION_OWNER = "RelocationOwner";
 
     private static final int DEPLOY_DELAY_TICKS = 35;
+    /** How fast a braced ladder is eased off its wall at most. */
+    private static final double BRACED_DEGREES_PER_TICK = 1.0D;
     /** Ticks a ladder stands upright after being put down before it tips forward. */
     private static final int PUT_DOWN_STAND_TICKS = 10;
     private static final double BLOCKBENCH_SECTION_LENGTH = 48.0D / 16.0D;
     private static final double LADDER_HALF_WIDTH = 7.5D / 16.0D;
     private static final double LADDER_HALF_THICKNESS = 1.5D / 16.0D;
     private static final double LADDER_WALK_EXTENSION = 4.0D / 16.0D;
-    private static final double LADDER_SURFACE_SENSOR_EXTENSION = 0.0D;
     private static final double LADDER_PLATFORM_Y_OFFSET = 0.04D;
-    private static final double LADDER_SURFACE_MIN_LOCAL_Y = 3.0D;
-    private static final double LADDER_SURFACE_CONTACT_TOLERANCE = 1.0D / 16.0D;
-    private static final float MIN_LEAN_PROGRESS = -1.0F;
-    private static final float MAX_LEAN_PROGRESS = 1.0F;
-    private static final float MAX_LEAN_DEGREES = 89.0F;
-    private static final float FALL_ACCELERATION_BASE = 0.00045F;
-    private static final float FALL_ACCELERATION_PROGRESS = 0.0031F;
-    private static final float MAX_FORWARD_VELOCITY = 0.030F;
-    private static final float MAX_BACKWARD_VELOCITY = -0.032F;
-    private static final float SURFACE_BACKOFF = 0.001F;
-    private static final float SURFACE_REST_PROBE = 0.003F;
-    private static final int SURFACE_REST_PROBE_INTERVAL_TICKS = 20;
+    /** A short ladder is carried this far from vertical: level overhead. */
+    private static final float CARRY_LEVEL_DEGREES = 89.0F;
+    /** Climbing needs at least this lean; nearer upright the ladder rests on nothing. */
+    private static final double MIN_CLIMB_LEAN_DEGREES = 8.0D;
+    /** The climber support reads lean as a share of this. */
+    private static final double LEVEL_DEGREES = 89.0D;
+    /** How fast whoever stood the ladder up sends its top forward when letting go, in blocks per tick. */
+    private static final double LET_GO_PUSH = 0.03D;
+    /**
+     * Speed added to the top each tick of a push off the wall, until the ladder is past upright the other way: a
+     * steady shove, plus what holds up the ladder's weight leaning on the wall, which grows as it lies flatter.
+     */
+    private static final double SHOVE_PER_TICK = 0.04D;
+    private static final double SHOVE_PER_LEAN = 0.15D;
+    /** How long a push off the wall goes on at most, and how far past upright it carries the ladder. */
+    private static final int SHOVE_TICKS = 60;
+    private static final float SHOVE_PAST_UPRIGHT_DEGREES = 8.0F;
     private static final double FALL_DIRECTION = 1.0D;
 
     private static final SiegeSoundProfile SOUND_PROFILE = SiegeSoundProfile.defaults();
@@ -127,15 +131,11 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
                 @Override public int gameTick() { return tickCount; }
                 @Override public boolean ready() { return isReadyForAutomatedClimb(); }
                 @Override public double ladderLength() { return getLadderLength(); }
-                @Override public double leanAngleRadians() {
-                    return SiegeLadderEntity.this.leanAngleRadians(getLeanProgress());
-                }
+                @Override public double leanAngleRadians() { return climbLeanRadians(); }
                 @Override public Vec3 ladderWorldPoint(double localY) {
                     return SiegeLadderEntity.this.ladderWorldPoint(0.0D, localY, 0.0D);
                 }
-                @Override public double platformY(double localY) {
-                    return ladderPlatformYAtLocal(getLeanProgress(), localY);
-                }
+                @Override public double platformY(double localY) { return ladderPlatformY(localY); }
                 @Override public Vec3 uphillVector() { return getUphillVector(); }
             });
     @Nullable
@@ -148,10 +148,10 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
                 @Override public SiegeLadderEntity ladder() { return SiegeLadderEntity.this; }
                 @Override public Level level() { return SiegeLadderEntity.this.level(); }
                 @Override public int gameTick() { return tickCount; }
-                @Override public float leanProgress() { return getLeanProgress(); }
-                @Override public double leanAngleRadians() {
-                    return SiegeLadderEntity.this.leanAngleRadians(getLeanProgress());
+                @Override public float leanProgress() {
+                    return (float) (Math.toDegrees(climbLeanRadians()) / LEVEL_DEGREES);
                 }
+                @Override public double leanAngleRadians() { return climbLeanRadians(); }
                 @Override public double ladderLength() { return getLadderLength(); }
                 @Override public LadderClimberSupport.LocalPosition localPosition(Vec3 worldPosition) {
                     LadderLocalPosition local = ladderLocalPosition(worldPosition);
@@ -159,9 +159,7 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
                 }
                 @Override public Vec3 forwardVector() { return SiegeLadderEntity.this.forwardVector(); }
                 @Override public Vec3 rightVector() { return SiegeLadderEntity.this.rightVector(); }
-                @Override public double platformY(double localY) {
-                    return ladderPlatformYAtLocal(getLeanProgress(), localY);
-                }
+                @Override public double platformY(double localY) { return ladderPlatformY(localY); }
                 @Override public float uphillYawDegrees(double angle) {
                     return ladderUphillYawDegrees(angle);
                 }
@@ -170,10 +168,22 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
                 }
                 @Override public float randomFloat() { return random.nextFloat(); }
             });
-    private float leanVelocity;
-    private boolean restingOnSurface;
-    private int nextSurfaceRestProbeTick;
-    private final SyncedFloatInterpolator clientLeanProgress = new SyncedFloatInterpolator();
+    private final LadderBody body = new LadderBody(LADDER_HALF_WIDTH, LADDER_HALF_THICKNESS);
+    private final me.mss1r.siegeworks.gameplay.ladder.LadderPush push = new me.mss1r.siegeworks.gameplay.ladder.LadderPush();
+    /** Server only: ticks left of a push off the wall, and which way it pushes the top. */
+    private int shoveTicks;
+    private float shoveSign;
+    /** Server only: the lean, in degrees, the ladder was braced from, and the lean it is held at; NaN when not braced. */
+    private double bracedFrom = Double.NaN;
+    private double bracedLean = Double.NaN;
+    /** Server only: the carried ladder's foot and top last tick, and how far each moved, to let it go moving. */
+    @Nullable
+    private Vec3 carriedFoot;
+    @Nullable
+    private Vec3 carriedTop;
+    private Vec3 carriedFootMotion = Vec3.ZERO;
+    private Vec3 carriedTopMotion = Vec3.ZERO;
+    private final SyncedFloatInterpolator clientLean = new SyncedFloatInterpolator();
     private float previousCollisionLeanDegrees;
     private int previousCollisionStages;
 
@@ -199,30 +209,32 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         var data = builder;
     //?}
         data.define(SECTIONS, 1);
-        data.define(LEAN_PROGRESS, 0.0F);
+        data.define(LEAN_DEGREES, 0.0F);
         data.define(DEPLOY_TICKS, 0);
         data.define(CARRIER_ID, -1);
+        data.define(BRACER_ID, -1);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         setSections(tag.contains(TAG_SECTIONS) ? tag.getInt(TAG_SECTIONS) : 1);
-        setLeanProgress(tag.contains(TAG_LEAN_PROGRESS) ? tag.getFloat(TAG_LEAN_PROGRESS) : 0.0F);
+        setLeanDegrees(tag.contains(TAG_LEAN_DEGREES) ? tag.getFloat(TAG_LEAN_DEGREES)
+                : tag.getFloat("LeanProgress") * (float) LEVEL_DEGREES);
         setDeployTicks(tag.contains(TAG_DEPLOY_TICKS) ? tag.getInt(TAG_DEPLOY_TICKS) : 0);
         if (tag.hasUUID(TAG_LEGACY_RELOCATION_OWNER)) {
             setOwnerUuid(tag.getUUID(TAG_LEGACY_RELOCATION_OWNER));
         }
-        leanVelocity = 0.0F;
-        restingOnSurface = false;
+        body.restore(tag.getBoolean(TAG_SETTLED));
     }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt(TAG_SECTIONS, getSections());
-        tag.putFloat(TAG_LEAN_PROGRESS, getLeanProgress());
+        tag.putFloat(TAG_LEAN_DEGREES, getLeanAngleDegrees());
         tag.putInt(TAG_DEPLOY_TICKS, getDeployTicks());
+        tag.putBoolean(TAG_SETTLED, body.settled());
     }
 
     @Override
@@ -239,11 +251,14 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
             tickCarried();
             return;
         }
+        setDeltaMovement(Vec3.ZERO);
         if (level() instanceof ServerLevel) {
-            tickDeployAndLean();
+            tickBody();
             automatedTraversal.tick();
+            entityData.set(BRACER_ID, push.activeBracer(level().getGameTime()));
         } else {
-            tickClientLeanProgress();
+            tickClientLean();
+            me.mss1r.siegeworks.gameplay.ladder.LadderPush.seen(this);
         }
         StructureMotionSystem.tickStructure(this);
         climberSupport.tick();
@@ -284,27 +299,30 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         carrierUuid = carrier.getUUID();
         this.carrier = carrier;
         ejectPassengers();
-        leanVelocity = 0.0F;
-        restingOnSurface = false;
+        body.stop();
+        carriedFoot = null;
+        carriedTop = null;
+        carriedFootMotion = Vec3.ZERO;
+        carriedTopMotion = Vec3.ZERO;
     }
 
-    /** Stops carrying; the ladder falls and tips from where it is. */
+    /** Stops carrying; the ladder falls from where it is, moving as it was carried. */
     public void endCarry() {
         entityData.set(CARRIER_ID, -1);
         carrierUuid = null;
         carrier = null;
-        leanVelocity = 0.0F;
-        restingOnSurface = false;
+        Vec3 forward = forwardVector();
+        body.launch(carriedFootMotion.dot(forward), carriedFootMotion.y,
+                carriedTopMotion.dot(forward), carriedTopMotion.y);
         setDeployTicks(DEPLOY_DELAY_TICKS);
     }
 
-    /** Stands upright at {@code foot}, facing {@code yaw}, then tips forward shortly after. */
+    /** Stands upright at {@code foot}, facing {@code yaw}, then lets it go to tip forward shortly after. */
     public void standAt(Vec3 foot, float yaw) {
         setPos(foot);
         applyYaw(yaw);
-        setLeanProgress(0.0F);
-        leanVelocity = 0.0F;
-        restingOnSurface = false;
+        setLeanDegrees(0.0F);
+        body.stop();
         setDeployTicks(DEPLOY_DELAY_TICKS - PUT_DOWN_STAND_TICKS);
     }
 
@@ -319,16 +337,22 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         if (carrier == null) {
             return;
         }
-        LadderCarry.Pose pose = LadderCarry.pose(carrier, getSections(), getLadderLength(), MAX_LEAN_DEGREES);
+        LadderCarry.Pose pose = LadderCarry.pose(carrier, getSections(), getLadderLength(), CARRY_LEVEL_DEGREES);
         setPos(pose.foot());
         setDeltaMovement(Vec3.ZERO);
         fallDistance = 0.0F;
         applyYaw(pose.yaw());
-        setLeanProgress((float) (pose.leanDegrees() / MAX_LEAN_DEGREES));
+        setLeanDegrees((float) pose.leanDegrees());
         if (level().isClientSide) {
-            clientLeanProgress.tick(getLeanProgress());
+            clientLean.tick(getLeanAngleDegrees());
             LadderCarry.seen(this);
+            return;
         }
+        Vec3 top = ladderWorldPoint(0.0D, getLadderLength(), 0.0D, Math.toRadians(getLeanAngleDegrees()));
+        carriedFootMotion = carriedFoot == null ? Vec3.ZERO : pose.foot().subtract(carriedFoot);
+        carriedTopMotion = carriedTop == null ? Vec3.ZERO : top.subtract(carriedTop);
+        carriedFoot = pose.foot();
+        carriedTop = top;
     }
 
     @Override
@@ -399,23 +423,19 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         this.entityData.set(SECTIONS, Mth.clamp(sections, MIN_SECTIONS, MAX_SECTIONS));
     }
 
-    public float getLeanProgress() {
-        return Mth.clamp(this.entityData.get(LEAN_PROGRESS), MIN_LEAN_PROGRESS, MAX_LEAN_PROGRESS);
-    }
-
-    private void setLeanProgress(float progress) {
-        this.entityData.set(LEAN_PROGRESS, Mth.clamp(progress, MIN_LEAN_PROGRESS, MAX_LEAN_PROGRESS));
-    }
-
     public float getLeanAngleDegrees() {
-        return MAX_LEAN_DEGREES * getLeanProgress();
+        return this.entityData.get(LEAN_DEGREES);
+    }
+
+    private void setLeanDegrees(float degrees) {
+        this.entityData.set(LEAN_DEGREES, degrees);
     }
 
     public float getRenderedLeanAngleDegrees(float partialTick) {
-        if (!level().isClientSide || !clientLeanProgress.isInitialized()) {
+        if (!level().isClientSide || !clientLean.isInitialized()) {
             return getLeanAngleDegrees();
         }
-        return MAX_LEAN_DEGREES * clientLeanProgress.sample(partialTick);
+        return clientLean.sample(partialTick);
     }
 
     private int getDeployTicks() {
@@ -426,152 +446,126 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         this.entityData.set(DEPLOY_TICKS, Math.max(0, ticks));
     }
 
-    private void tickDeployAndLean() {
+    /** Held upright while being stood up, then let go with a push forward, then left to the body's physics. */
+    private void tickBody() {
+        if (shoveTicks > 0) {
+            shoveTicks--;
+            if (getLeanAngleDegrees() * shoveSign < SHOVE_PAST_UPRIGHT_DEGREES) {
+                double lean = Math.toRadians(getLeanAngleDegrees());
+                body.pushTop(lean, shoveSign * (SHOVE_PER_TICK + SHOVE_PER_LEAN * Math.abs(Math.sin(lean))));
+            } else {
+                shoveTicks = 0;
+            }
+        }
         if (getDeployTicks() < DEPLOY_DELAY_TICKS) {
             setDeployTicks(getDeployTicks() + 1);
+            if (getDeployTicks() == DEPLOY_DELAY_TICKS && Math.abs(getLeanAngleDegrees()) < 1.0F) {
+                body.pushTop(0.0D, LET_GO_PUSH);
+            }
+        }
+        boolean holdUpright = getDeployTicks() < DEPLOY_DELAY_TICKS;
+        double lean = Math.toRadians(getLeanAngleDegrees());
+        double held = holdUpright ? 0.0D : Math.toRadians(tickBraced());
+        LadderBody.Pose pose = body.tick(level(), this, position(), holdUpright ? 0.0D : lean,
+                getLadderLength(), forwardVector(), rightVector(), held, tickCount);
+        if (pose == null) {
             return;
         }
-
-        float current = getLeanProgress();
-        float fallDirection = getFallDirection(current);
-        float motionDirection = Math.signum(leanVelocity);
-        if (restingOnSurface && (motionDirection == 0.0F || motionDirection == fallDirection)) {
-            if (tickCount < nextSurfaceRestProbeTick) {
-                leanVelocity = 0.0F;
-                return;
-            }
-            nextSurfaceRestProbeTick = tickCount + SURFACE_REST_PROBE_INTERVAL_TICKS;
-            float probe = Mth.clamp(current + fallDirection * SURFACE_REST_PROBE, MIN_LEAN_PROGRESS, MAX_LEAN_PROGRESS);
-            if (probe == current || ladderWouldRestOnSurface(probe)) {
-                leanVelocity = 0.0F;
-                return;
-            }
-            restingOnSurface = false;
-        }
-
-        leanVelocity = Mth.clamp(leanVelocity + fallDirection * getFallAcceleration(current), MAX_BACKWARD_VELOCITY, MAX_FORWARD_VELOCITY);
-        float candidate = Mth.clamp(current + leanVelocity, MIN_LEAN_PROGRESS, MAX_LEAN_PROGRESS);
-        float candidateDirection = Math.signum(candidate - current);
-        boolean movingAgainstFall = candidateDirection != 0.0F && candidateDirection != fallDirection;
-
-        if (candidate != current && !movingAgainstFall && ladderWouldRestOnSurface(candidate)) {
-            float contact = findFirstSurfaceContact(current, candidate);
-            setLeanProgress(Math.abs(contact - current) <= SURFACE_BACKOFF ? current : contact);
-            leanVelocity = 0.0F;
-            restingOnSurface = true;
-            nextSurfaceRestProbeTick = tickCount + SURFACE_REST_PROBE_INTERVAL_TICKS;
-            return;
-        }
-
-        restingOnSurface = false;
-        setLeanProgress(candidate);
-        if (candidate <= MIN_LEAN_PROGRESS || candidate >= MAX_LEAN_PROGRESS) {
-            leanVelocity = 0.0F;
-        }
+        setPos(pose.foot());
+        // Kept unwrapped, so a ladder turning end over end renders turning rather than jumping back.
+        double turned = Mth.wrapDegrees(Math.toDegrees(pose.leanRadians()) - getLeanAngleDegrees());
+        setLeanDegrees((float) (getLeanAngleDegrees() + turned));
     }
 
-    private void tickClientLeanProgress() {
-        clientLeanProgress.tick(getLeanProgress());
+    /** The ladder never walks or rolls: it moves only as its body or its carrier moves it. */
+    @Override
+    public void travel(Vec3 travelVector) {
     }
 
-    private float getFallDirection(float progress) {
-        return progress < 0.0F ? -1.0F : 1.0F;
-    }
-
-    private float getFallAcceleration(float progress) {
-        float eased = Math.abs(progress);
-        eased *= eased;
-        return FALL_ACCELERATION_BASE + FALL_ACCELERATION_PROGRESS * eased;
-    }
-
-    private float findFirstSurfaceContact(float safeProgress, float contactProgress) {
-        float safe = safeProgress;
-        float contact = contactProgress;
-        for (int i = 0; i < 7; i++) {
-            float mid = (safe + contact) * 0.5F;
-            if (ladderWouldRestOnSurface(mid)) {
-                contact = mid;
-            } else {
-                safe = mid;
-            }
-        }
-        float direction = Math.signum(contactProgress - safeProgress);
-        return Mth.clamp(safe - direction * SURFACE_BACKOFF, MIN_LEAN_PROGRESS, MAX_LEAN_PROGRESS);
-    }
-
-    private boolean ladderWouldRestOnSurface(float progress) {
-        double angle = leanAngleRadians(progress);
-        if (Math.abs(angle) < Math.toRadians(8.0D)) {
-            return false;
-        }
-
-        double maxLocalY = getLadderLength() + LADDER_SURFACE_SENSOR_EXTENSION;
-        double startLocalY = Math.min(maxLocalY, LADDER_SURFACE_MIN_LOCAL_Y);
-        CollisionShape sensorShape = new CollisionShape(Vec3.ZERO, List.of(
-                CollisionPart.axisAligned(new AABB(
-                        -LADDER_HALF_WIDTH, startLocalY, -LADDER_HALF_THICKNESS,
-                        LADDER_HALF_WIDTH, maxLocalY, LADDER_HALF_THICKNESS))));
-        CollisionGroup sensor = new CollisionGroup("surface_sensor", sensorShape,
-                CollisionPose.aroundX(Vec3.ZERO, (float) angle));
-        List<CollisionGroup> sensorGroups = List.of(sensor);
-        AABB bounds = StructureCollisionResolver.worldBounds(this, sensorGroups)
-                .inflate(LADDER_SURFACE_CONTACT_TOLERANCE);
-        BlockPos minimum = BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ);
-        BlockPos maximum = BlockPos.containing(bounds.maxX, bounds.maxY, bounds.maxZ);
-
-        for (BlockPos pos : BlockPos.betweenClosed(minimum, maximum)) {
-            BlockState state = level().getBlockState(pos);
-            VoxelShape shape = state.getCollisionShape(level(), pos);
-            for (AABB box : shape.toAabbs()) {
-                if (StructureCollisionResolver.intersects(this, sensorGroups, box.move(pos),
-                        LADDER_SURFACE_CONTACT_TOLERANCE)) {
-                    return true;
-                }
-            }
-        }
-        for (CollidableStructure structure : StructureCollisionSystem.structuresNear(this, bounds)) {
-            List<CollisionGroup> solidGroups = structure.solidCollisionGroups();
-            if (!solidGroups.isEmpty() && StructureCollisionResolver.intersects(
-                    this, sensorGroups, structure, solidGroups, LADDER_SURFACE_CONTACT_TOLERANCE)) {
-                return true;
-            }
-        }
+    @Override
+    protected boolean usesSiegeMovement() {
         return false;
+    }
+
+    /**
+     * The foot follows the server in one tick, as the lean does: interpolated over different spans, the drawn ladder
+     * would be a pose it never had, its top swung into the blocks it rests on.
+     */
+    @Override
+    //? if forge {
+    /*public void lerpTo(double x, double y, double z, float yaw, float pitch, int interpolationSteps, boolean teleport) {
+        super.lerpTo(x, y, z, yaw, pitch, 1, teleport);
+    }
+    *///?} else {
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int interpolationSteps) {
+        super.lerpTo(x, y, z, yaw, pitch, 1);
+    }
+    //?}
+
+    private void tickClientLean() {
+        clientLean.tick(getLeanAngleDegrees());
     }
 
     public double getLadderLength() {
         return (1.0D + getSections()) * BLOCKBENCH_SECTION_LENGTH;
     }
 
-    private double ladderPlatformYAtLocal(float progress, double localY) {
-        double angle = leanAngleRadians(progress);
+    /** True when the top end is lower than the foot: the ladder came down the other way up. */
+    private boolean upsideDown() {
+        return Math.cos(Math.toRadians(getLeanAngleDegrees())) < 0.0D;
+    }
+
+    /**
+     * Where climbing starts: the lower end. For a ladder the right way up that is its foot; upside down, its top.
+     */
+    public Vec3 climbFoot() {
+        return upsideDown()
+                ? pointFrom(position(), 0.0D, getLadderLength(), 0.0D, Math.toRadians(getLeanAngleDegrees()))
+                : position();
+    }
+
+    /** The point on the ladder's middle line nearest to {@code point}. */
+    public Vec3 nearestPoint(Vec3 point) {
+        Vec3 foot = position();
+        Vec3 axis = pointFrom(foot, 0.0D, getLadderLength(), 0.0D, Math.toRadians(getLeanAngleDegrees())).subtract(foot);
+        double along = Mth.clamp(point.subtract(foot).dot(axis) / axis.lengthSqr(), 0.0D, 1.0D);
+        return foot.add(axis.scale(along));
+    }
+
+    /** The lean seen from the lower end, within a right angle of vertical. */
+    private double climbLeanRadians() {
+        return Math.toRadians(Mth.wrapDegrees(getLeanAngleDegrees() + (upsideDown() ? 180.0D : 0.0D)));
+    }
+
+    private double ladderPlatformY(double localY) {
+        double angle = climbLeanRadians();
         double clampedLocalY = Mth.clamp(localY, 0.0D, getLadderLength() + LADDER_WALK_EXTENSION);
-        return getY() + clampedLocalY * Math.cos(angle)
+        return climbFoot().y + clampedLocalY * Math.cos(angle)
                 + Math.sin(angle) * LADDER_HALF_THICKNESS
                 + LADDER_PLATFORM_Y_OFFSET;
     }
 
-    private double leanAngleRadians(float progress) {
-        return Math.toRadians(MAX_LEAN_DEGREES * progress);
-    }
-
+    /** A point on the ladder as climbed: {@code localY} up from the lower end. */
     private Vec3 ladderWorldPoint(double side, double localY, double localZ) {
-        double angle = leanAngleRadians(getLeanProgress());
-        return ladderWorldPoint(side, localY, localZ, angle);
+        return pointFrom(climbFoot(), side, localY, localZ, climbLeanRadians());
     }
 
     private Vec3 ladderWorldPoint(double side, double localY, double localZ, double angle) {
+        return pointFrom(position(), side, localY, localZ, angle);
+    }
+
+    private Vec3 pointFrom(Vec3 origin, double side, double localY, double localZ, double angle) {
         float yawRadians = (float) Math.toRadians(getVisualRotationYInDegrees());
         double forwardX = -Math.sin(yawRadians) * FALL_DIRECTION;
         double forwardZ = Math.cos(yawRadians) * FALL_DIRECTION;
         double rightX = Math.cos(yawRadians);
         double rightZ = Math.sin(yawRadians);
         double horizontalForward = localY * Math.sin(angle) - localZ * Math.cos(angle);
-        double y = getY() + localY * Math.cos(angle) + localZ * Math.sin(angle);
+        double y = origin.y + localY * Math.cos(angle) + localZ * Math.sin(angle);
         return new Vec3(
-                getX() + rightX * side + forwardX * horizontalForward,
+                origin.x + rightX * side + forwardX * horizontalForward,
                 y,
-                getZ() + rightZ * side + forwardZ * horizontalForward);
+                origin.z + rightZ * side + forwardZ * horizontalForward);
     }
 
     private LadderLocalPosition ladderLocalPosition(Vec3 worldPosition) {
@@ -580,8 +574,9 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         double forwardZ = Math.cos(yawRadians) * FALL_DIRECTION;
         double rightX = Math.cos(yawRadians);
         double rightZ = Math.sin(yawRadians);
-        double dx = worldPosition.x - getX();
-        double dz = worldPosition.z - getZ();
+        Vec3 foot = climbFoot();
+        double dx = worldPosition.x - foot.x;
+        double dz = worldPosition.z - foot.z;
         return new LadderLocalPosition(dx * rightX + dz * rightZ, dx * forwardX + dz * forwardZ);
     }
 
@@ -641,10 +636,9 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
 
         double side = hitSource.subtract(position()).dot(forwardVector());
         float direction = side >= 0.0D ? -1.0F : 1.0F;
-        float impulse = 0.004F + Math.min(8.0F, Math.max(0.0F, amount)) * 0.0009F;
-        leanVelocity = Mth.clamp(leanVelocity + direction * impulse, MAX_BACKWARD_VELOCITY, MAX_FORWARD_VELOCITY);
-        restingOnSurface = false;
-        setLeanProgress(getLeanProgress() + direction * impulse * 0.14F);
+        // Turning speed in radians per tick, given to the top across the ladder.
+        double turn = Math.toRadians(LEVEL_DEGREES) * (0.004D + Math.min(8.0F, Math.max(0.0F, amount)) * 0.0009D);
+        body.pushTop(Math.toRadians(getLeanAngleDegrees()), direction * turn * getLadderLength());
 
         if (level() instanceof ServerLevel serverLevel) {
             serverLevel.playSound(null, blockPosition(), SoundEvents.LADDER_HIT, SoundSource.BLOCKS, 0.85F, 0.8F + random.nextFloat() * 0.2F);
@@ -653,11 +647,9 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
 
     @Override
     public boolean isReadyForAutomatedClimb() {
-        float absoluteProgress = Math.abs(getLeanProgress());
-        float minimumProgress = 8.0F / MAX_LEAN_DEGREES;
         return getDeployTicks() >= DEPLOY_DELAY_TICKS
-                && absoluteProgress >= minimumProgress
-                && (restingOnSurface || absoluteProgress >= 0.999F);
+                && body.settled()
+                && Math.abs(climbLeanRadians()) >= Math.toRadians(MIN_CLIMB_LEAN_DEGREES);
     }
 
     public boolean canBeRelocated() {
@@ -695,9 +687,18 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         return automatedTraversal.activeClimberCount();
     }
 
+    public String describeAutomatedClimber(Entity climber) {
+        return automatedTraversal.describe(climber.getUUID());
+    }
+
     @Override
     public Vec3 getAutomatedBottomApproach() {
         return automatedTraversal.bottomApproach();
+    }
+
+    @Override
+    public boolean canTraverse(LivingEntity climber, boolean upward) {
+        return isReadyForAutomatedClimb() && automatedTraversal.routeAvailable(climber);
     }
 
     @Override
@@ -721,7 +722,7 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
     }
 
     private Vec3 getUphillVector() {
-        double direction = Math.signum(Math.sin(leanAngleRadians(getLeanProgress())));
+        double direction = Math.signum(Math.sin(climbLeanRadians()));
         return forwardVector().scale(direction == 0.0D ? 1.0D : direction);
     }
 
@@ -733,6 +734,83 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
     @Override
     public boolean isCapturable() {
         return false;
+    }
+
+    /**
+     * Braced with a long weapon, held use pushes the ladder off its wall, without swinging the arm. The forked pole
+     * passes so that its own use holds it braced, both hands forward.
+     */
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        ItemStack held = player.getItemInHand(hand);
+        if (held.getItem() instanceof me.mss1r.siegeworks.item.ForkedPoleItem) {
+            return InteractionResult.PASS;
+        }
+        if (hand == InteractionHand.MAIN_HAND && !isCarried()
+                && me.mss1r.siegeworks.gameplay.ladder.LadderPush.isPusher(player, held)) {
+            braceWith(player, hand);
+            return InteractionResult.CONSUME;
+        }
+        return super.interact(player, hand);
+    }
+
+    /**
+     * The lean, in degrees, bracing holds the ladder at this tick, easing it off the wall as the brace goes on; NaN
+     * once nobody braces it, so it falls back where it leans.
+     */
+    private double tickBraced() {
+        double progress = shoveTicks > 0 ? 0.0D : push.progress();
+        if (progress <= 0.0D) {
+            bracedFrom = Double.NaN;
+            bracedLean = Double.NaN;
+            return Double.NaN;
+        }
+        if (Double.isNaN(bracedFrom)) {
+            bracedFrom = getLeanAngleDegrees();
+            bracedLean = bracedFrom;
+        }
+        double target = me.mss1r.siegeworks.gameplay.ladder.LadderPush.heldLean(bracedFrom, getLadderLength(), progress);
+        // A brace that only lands every few ticks still moves the ladder evenly
+        bracedLean += Mth.clamp(target - bracedLean, -BRACED_DEGREES_PER_TICK, BRACED_DEGREES_PER_TICK);
+        return bracedLean;
+    }
+
+    /** One tick or held use of {@code player}'s pole braced against this ladder. */
+    public void braceWith(Player player, InteractionHand hand) {
+        if (!isCarried() && level() instanceof ServerLevel serverLevel) {
+            push.brace(this, player, hand, serverLevel.getGameTime());
+        }
+    }
+
+    /** The entity id of whoever braces a pole against the ladder now, or -1. */
+    public int bracerId() {
+        return entityData.get(BRACER_ID);
+    }
+
+    /** The middle of the ladder's top end, where a pole braces against it. */
+    public Vec3 topPoint() {
+        return ladderWorldPoint(0.0D, getLadderLength(), 0.0D, Math.toRadians(getLeanAngleDegrees()));
+    }
+
+    /** Horizontal direction from the ladder's foot toward what it leans on. */
+    public Vec3 uphillVector() {
+        return getUphillVector();
+    }
+
+    /** Everyone on the ladder now: players held on it and those it leads. */
+    public int climberCount() {
+        return climberSupport.climberCount() + automatedTraversal.activeClimberCount();
+    }
+
+    /** Pushes the ladder's top away from what it leans on, letting go of everyone on it. */
+    public void pushOffWall() {
+        climberSupport.letGo();
+        if (level() instanceof ServerLevel serverLevel) {
+            automatedTraversal.letGoAll(uuid -> serverLevel.getEntity(uuid) instanceof LivingEntity living ? living : null);
+        }
+        shoveSign = -Math.signum(getLeanAngleDegrees());
+        shoveTicks = SHOVE_TICKS;
+        body.stop();
     }
 
     @Override

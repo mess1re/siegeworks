@@ -1668,7 +1668,6 @@ public final class SiegeworksGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 260)
     public static void ladderTraversesBothDirections(GameTestHelper helper) {
         buildFloor(helper);
         buildLadderWall(helper);
@@ -1689,12 +1688,13 @@ public final class SiegeworksGameTests {
             Vec3 top = ladder.getAutomatedTopExit();
             helper.assertTrue(top.y > bottom.y + 1.0D,
                     "Settled ladder does not gain elevation: bottom=" + bottom + ", top=" + top
-                            + ", lean=" + ladder.getLeanProgress() + ", yaw=" + ladder.getYRot());
+                            + ", lean=" + ladder.getLeanAngleDegrees() + ", yaw=" + ladder.getYRot());
             climber.setPos(bottom.x, bottom.y, bottom.z);
 
             SiegeClimbableControl.ClimbResult result = climbToCompletion(ladder, climber, true);
             helper.assertTrue(result == SiegeClimbableControl.ClimbResult.COMPLETE,
-                    "Automated climber did not reach the top");
+                    "Automated climber did not reach the top: " + ladder.describeAutomatedClimber(climber)
+                            + " pos=" + climber.position() + " top=" + top + " lean=" + ladder.getLeanAngleDegrees());
             helper.assertTrue(climber.position().distanceToSqr(top) < 0.25D,
                     "Automated climber left the ladder at the wrong top position");
 
@@ -1711,6 +1711,7 @@ public final class SiegeworksGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 700, batch = "recruits_ladder")
     public static void recruitsRelocateLadder(GameTestHelper helper) {
+        GameTestQuiet.keep(helper);
         if (!Platform.isModLoaded("recruits")) {
             helper.succeed();
             return;
@@ -1778,8 +1779,8 @@ public final class SiegeworksGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 2800, batch = "recruits_ladder")
-    public static void recruitsTraverseLadderBothDirections(GameTestHelper helper) {
+    public static void recruitsTraverseLadderBothDirections(GameTestHelper helper, int count) {
+        GameTestQuiet.keep(helper);
         if (!Platform.isModLoaded("recruits")) {
             helper.succeed();
             return;
@@ -1788,8 +1789,15 @@ public final class SiegeworksGameTests {
         buildFloor(helper);
         buildLadderWall(helper);
         ServerLevel level = helper.getLevel();
+        // Build the complete wall walk before placing the ladder. Adding support blocks
+        // after it settles legitimately wakes its rigid body and invalidates a timed fixture.
+        buildUpperLanding(level, helper.absoluteVec(new Vec3(8, 1, 6.75)),
+                helper.absoluteVec(new Vec3(8, 5, 13.25)));
         SiegeLadderEntity ladder = SiegeworksEntities.SIEGE_LADDER_ENTITY.get().create(level);
-        LivingEntity[] recruits = new LivingEntity[6];
+        LivingEntity[] recruits = new LivingEntity[count];
+        boolean[] usedDownwardPassage = new boolean[count];
+        boolean[] landedUpward = new boolean[count];
+        boolean[] holdingUpward = new boolean[count];
         int[] maxSimultaneousClimbers = {0};
         for (int i = 0; i < recruits.length; i++) {
             recruits[i] = createLivingEntity(level, "recruits:recruit");
@@ -1812,10 +1820,8 @@ public final class SiegeworksGameTests {
 
         helper.runAfterDelay(100, () -> {
             helper.assertTrue(ladder.isReadyForAutomatedClimb(),
-                    "Ladder did not settle for the Recruits traversal test");
-            Vec3 bottom = ladder.getAutomatedBottomApproach();
-            Vec3 top = ladder.getAutomatedTopExit();
-            buildUpperLanding(level, bottom, top);
+                    "Ladder did not settle for the Recruits traversal test: " + ladder.position()
+                            + " lean=" + ladder.getLeanAngleDegrees());
         });
 
         helper.runAfterDelay(125, () -> {
@@ -1826,11 +1832,12 @@ public final class SiegeworksGameTests {
             Vec3 forward = top.subtract(bottom).multiply(1.0D, 0.0D, 1.0D).normalize();
             Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
             for (int i = 0; i < recruits.length; i++) {
-                double side = (i % 3 - 1) * 2.4D;
-                double depth = 4.0D + (i / 3) * 2.0D;
+                double side = (i % 5 - 2) * .9D;
+                double depth = 2.0D + (i / 5) * .9D;
                 Vec3 start = bottom.add(right.scale(side)).subtract(forward.scale(depth));
                 recruits[i].setPos(start.x, start.y, start.z);
-                orderRecruitToMove(recruits[i], BlockPos.containing(top.add(forward.scale(2.0D))).below());
+                Vec3 goal = top.add(forward.scale(6.0D + (i / 5) * .4D)).add(right.scale(side));
+                orderRecruitToMove(recruits[i], BlockPos.containing(goal).below());
             }
         });
 
@@ -1845,8 +1852,44 @@ public final class SiegeworksGameTests {
                 int simultaneousClimbers = getActiveAutomatedClimberCount(ladder);
                 maxSimultaneousClimbers[0] = Math.max(maxSimultaneousClimbers[0],
                         simultaneousClimbers);
+                for (int a = 0; a < recruits.length; a++) for (int b = a + 1; b < recruits.length; b++) {
+                    if (me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl.controls(recruits[a])
+                            && me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl.controls(recruits[b]))
+                        helper.assertTrue(!recruits[a].getBoundingBox().deflate(.03).intersects(recruits[b].getBoundingBox().deflate(.03)),
+                                "Two guided recruits overlapped on the ladder");
+                }
             });
         }
+
+        for (int tick = 150; tick < 1250; tick++) helper.runAfterDelay(tick, () -> {
+            for (int i = 0; i < recruits.length; i++) {
+                LivingEntity recruit = recruits[i];
+                if (recruit.isAlive() && !isRecruitTraversingLadder(recruit)
+                        && recruit.getY() >= ladder.getAutomatedTopExit().y - .75D
+                        && level.getBlockCollisions(recruit, recruit.getBoundingBox().move(0, -.05D, 0)).iterator().hasNext()
+                        && !level.getBlockCollisions(recruit, recruit.getBoundingBox().deflate(.0001D)).iterator().hasNext())
+                    landedUpward[i] = true;
+                if (landedUpward[i] && !holdingUpward[i] && !isRecruitTraversingLadder(recruit)) {
+                    try {
+                        // Once the normal move order finishes, guard here while the rest arrive.
+                        // Otherwise a successful early arrival may wander off before the reverse order.
+                        if (!(boolean) recruit.getClass().getMethod("getShouldMovePos").invoke(recruit)) {
+                            recruit.getClass().getMethod("setFollowState", int.class).invoke(recruit, 2);
+                            holdingUpward[i] = true;
+                        }
+                    } catch (ReflectiveOperationException exception) {
+                        throw new AssertionError("Could not hold the recruit after its move order", exception);
+                    }
+                }
+                helper.assertTrue(recruit.isAlive() && recruit.getHealth() >= recruit.getMaxHealth() - .01F,
+                        "A recruit took damage during the upward passage or queue: " + recruit.position()
+                                + " hp=" + recruit.getHealth() + " source="
+                                + (recruit.getLastDamageSource() == null ? null : recruit.getLastDamageSource().getMsgId())
+                                + " by=" + (recruit.getLastHurtByMob() == null ? "nobody" : net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(recruit.getLastHurtByMob().getType()) + " at " + recruit.getLastHurtByMob().position())
+                                + " state=" + ladder.describeAutomatedClimber(recruit)
+                                + " {" + describeRecruitTraversal(recruit) + "}");
+            }
+        });
 
         helper.runAfterDelay(1250, () -> {
             helper.assertTrue(maxSimultaneousClimbers[0] >= 2,
@@ -1858,28 +1901,115 @@ public final class SiegeworksGameTests {
             Vec3 top = ladder.getAutomatedTopExit();
             Vec3 bottom = ladder.getAutomatedBottomApproach();
             Vec3 forward = top.subtract(bottom).multiply(1.0D, 0.0D, 1.0D).normalize();
-            for (LivingEntity recruit : recruits) {
+            for (int i = 0; i < recruits.length; i++) {
+                LivingEntity recruit = recruits[i];
                 helper.assertTrue(recruit.getY() >= top.y - 0.75D,
-                        "A recruit did not climb to the upper surface: " + recruit.position());
-                helper.assertTrue(recruit.position().subtract(top).dot(forward) > -1.5D,
-                        "A recruit stopped before the safe upper ladder landing: " + recruit.position());
+                        "A recruit did not climb to the upper surface: " + recruit.position() + " alive=" + recruit.isAlive()
+                                + " hp=" + recruit.getHealth() + " state=" + ladder.describeAutomatedClimber(recruit)
+                                + " top=" + top + " {" + describeRecruitTraversal(recruit) + "}");
+                helper.assertTrue(recruit.isAlive() && recruit.getHealth() >= recruit.getMaxHealth() - .01F,
+                        "Upward passage injured or killed a recruit");
+                helper.assertTrue(landedUpward[i],
+                        "A recruit did not stand outside solid blocks on a real upper landing: " + recruit.position()
+                                + " state=" + ladder.describeAutomatedClimber(recruit)
+                                + " {" + describeRecruitTraversal(recruit) + "}");
                 helper.assertTrue(!isRecruitTraversingLadder(recruit),
                         "A recruit did not finish its upward ladder route");
-                orderRecruitToMove(recruit, BlockPos.containing(bottom.subtract(forward.scale(3.0D))));
+                orderRecruitToMove(recruit, BlockPos.containing(bottom.subtract(forward.scale(6.0D))));
+            }
+        });
+
+        for (int tick = 1251; tick < 2400; tick++) helper.runAfterDelay(tick, () -> {
+            for (int i = 0; i < recruits.length; i++) {
+                helper.assertTrue(recruits[i].isAlive() && recruits[i].getHealth() >= recruits[i].getMaxHealth() - .01F,
+                        "A recruit took damage during the downward passage or queue: " + recruits[i].position()
+                                + " source=" + (recruits[i].getLastDamageSource() == null ? null : recruits[i].getLastDamageSource().getMsgId())
+                                + " by=" + (recruits[i].getLastHurtByMob() == null ? "nobody" : net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(recruits[i].getLastHurtByMob().getType()) + " at " + recruits[i].getLastHurtByMob().position())
+                                + " state=" + ladder.describeAutomatedClimber(recruits[i]));
+                if (me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl.controls(recruits[i])
+                        && recruits[i].getY() < ladder.getAutomatedTopExit().y - .25D) usedDownwardPassage[i] = true;
+            }
+            for (int a = 0; a < recruits.length; a++) for (int b = a + 1; b < recruits.length; b++) {
+                if (me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl.controls(recruits[a])
+                        && me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl.controls(recruits[b]))
+                    helper.assertTrue(!recruits[a].getBoundingBox().deflate(.03).intersects(recruits[b].getBoundingBox().deflate(.03)),
+                            "Two guided recruits overlapped while descending");
             }
         });
 
         helper.runAfterDelay(2400, () -> helper.succeedWhen(() -> {
                 Vec3 bottom = ladder.getAutomatedBottomApproach();
-                for (LivingEntity recruit : recruits) {
+                for (int i = 0; i < recruits.length; i++) {
+                    LivingEntity recruit = recruits[i];
                     helper.assertTrue(recruit.getY() <= bottom.y + 0.75D,
                             "A recruit did not descend from the ladder: " + recruit.position()
-                                    + " {" + describeRecruitTraversal(recruit) + "}");
+                                    + " state=" + ladder.describeAutomatedClimber(recruit)
+                                    + " {" + describeRecruitTraversal(recruit) + "} active="
+                                    + java.util.Arrays.stream(recruits)
+                                    .filter(me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl::controls)
+                                    .map(other -> other.position() + " " + ladder.describeAutomatedClimber(other)).toList());
                     helper.assertTrue(!isRecruitTraversingLadder(recruit),
                             "A recruit did not finish its downward ladder route: " + recruit.position()
                                     + " {" + describeRecruitTraversal(recruit) + "}");
+                    helper.assertTrue(recruit.isAlive() && recruit.getHealth() >= recruit.getMaxHealth() - .01F,
+                            "Downward passage injured or killed a recruit");
+                    helper.assertTrue(usedDownwardPassage[i], "A recruit fell or walked off instead of using the downward ladder passage");
                 }
             }));
+    }
+
+    /** Ordered onto a wall walk, recruits climb the ladder leaning on the wall instead of waiting under it. */
+    public static void recruitsOrderedOntoAWallClimbItsLadder(GameTestHelper helper) {
+        GameTestQuiet.keep(helper);
+        if (!Platform.isModLoaded("recruits")) {
+            helper.succeed();
+            return;
+        }
+        buildFloor(helper);
+        for (int x = 2; x <= 20; x++) {
+            for (int z = 14; z <= 16; z++) {
+                for (int y = 1; y <= 4; y++) {
+                    helper.setBlock(new BlockPos(x, y, z), Blocks.STONE);
+                }
+            }
+        }
+        ServerLevel level = helper.getLevel();
+        SiegeLadderEntity ladder = SiegeworksEntities.SIEGE_LADDER_ENTITY.get().create(level);
+        LivingEntity[] recruits = new LivingEntity[4];
+        for (int i = 0; i < recruits.length; i++) {
+            recruits[i] = createLivingEntity(level, "recruits:recruit");
+        }
+        helper.assertTrue(ladder != null && java.util.Arrays.stream(recruits).allMatch(java.util.Objects::nonNull),
+                "Failed to create the wall test entities");
+        ladder.setSections(1);
+        ladder.applyYaw(0.0F);
+        moveToRelative(helper, ladder, 10.5D, 1.0D, 9.5D);
+        level.addFreshEntity(ladder);
+        for (int i = 0; i < recruits.length; i++) {
+            moveToRelative(helper, recruits[i], 8.5D + i * 1.3D, 1.0D, 4.5D);
+            if (recruits[i] instanceof Mob mob) {
+                mob.setPersistenceRequired();
+            }
+            level.addFreshEntity(recruits[i]);
+        }
+        helper.runAfterDelay(100, () -> {
+            helper.assertTrue(ladder.isReadyForAutomatedClimb(), "The ladder did not settle against the wall");
+            for (LivingEntity recruit : recruits) {
+                orderRecruitToMove(recruit, helper.absolutePos(new BlockPos(10, 4, 15)));
+            }
+        });
+        helper.runAfterDelay(850, () -> {
+            double walk = helper.absolutePos(BlockPos.ZERO).getY() + 5.0D;
+            for (LivingEntity recruit : recruits) {
+                helper.assertTrue(recruit.getY() >= walk - 0.1D,
+                        "A recruit did not get onto the wall: " + recruit.position() + " {"
+                                + describeRecruitTraversal(recruit) + "}, state=" + ladder.describeAutomatedClimber(recruit)
+                                + ", ladder " + ladder.position() + " lean "
+                                + ladder.getLeanAngleDegrees() + " bottom " + ladder.getAutomatedBottomApproach()
+                                + " top " + ladder.getAutomatedTopExit());
+            }
+            helper.succeed();
+        });
     }
 
     @GameTest(template = "empty", timeoutTicks = 260)
@@ -2521,6 +2651,7 @@ public final class SiegeworksGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 600, batch = "recruits_tower")
     public static void recruitsDriveAndDisembarkTower(GameTestHelper helper) {
+        GameTestQuiet.keep(helper);
         if (!Platform.isModLoaded("recruits")) {
             helper.succeed();
             return;
@@ -2626,6 +2757,7 @@ public final class SiegeworksGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 700, batch = "recruits_tower_stay")
     public static void recruitsStayAboardWhenTheBridgeReachesNothing(GameTestHelper helper) {
+        GameTestQuiet.keep(helper);
         if (!Platform.isModLoaded("recruits")) {
             helper.succeed();
             return;
@@ -2692,6 +2824,7 @@ public final class SiegeworksGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 500, batch = "recruits_tower_leave_map")
     public static void recruitsLeaveATowerWithoutAnEngineerFromTheMap(GameTestHelper helper) {
+        GameTestQuiet.keep(helper);
         recruitsLeaveATowerWithoutAnEngineer(helper, true);
     }
 
@@ -2763,6 +2896,7 @@ public final class SiegeworksGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 600, batch = "recruits_tower_no_driver_up")
     public static void recruitsStayInWithoutADriverWhileTheBridgeIsUp(GameTestHelper helper) {
+        GameTestQuiet.keep(helper);
         recruitsUnloadWithoutADriver(helper, false);
     }
 
@@ -2824,6 +2958,7 @@ public final class SiegeworksGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 460, batch = "recruits_tower_states")
     public static void towerCommandStatesFollowWhatTheOrdersCanDo(GameTestHelper helper) {
+        GameTestQuiet.keep(helper);
         if (!Platform.isModLoaded("recruits")) {
             helper.succeed();
             return;
@@ -3163,8 +3298,10 @@ public final class SiegeworksGameTests {
 
     private static void buildLadderWall(GameTestHelper helper) {
         for (int x = 6; x <= 10; x++) {
-            for (int y = 1; y <= 8; y++) {
-                helper.setBlock(new BlockPos(x, y, 13), Blocks.STONE);
+            // Reachable by the six-metre ladder, but too high for a safe ordinary drop down.
+            // The old eight-block wall five metres away only passed by teleporting through it.
+            for (int y = 1; y <= 4; y++) {
+                helper.setBlock(new BlockPos(x, y, 12), Blocks.STONE);
             }
         }
     }
@@ -3172,14 +3309,29 @@ public final class SiegeworksGameTests {
     private static void buildUpperLanding(ServerLevel level, Vec3 bottomEntrance, Vec3 topExit) {
         Vec3 forward = topExit.subtract(bottomEntrance).multiply(1.0D, 0.0D, 1.0D).normalize();
         Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
-        int floorY = BlockPos.containing(topExit).getY() - 2;
-        for (int depth = 0; depth < 4; depth++) {
-            for (int side = -2; side <= 2; side++) {
+        int floorY = BlockPos.containing(topExit).getY() - 1;
+        // Space for twenty waiting bodies and for the normal move destination beyond the exit.
+        for (int depth = 0; depth < 14; depth++) {
+            for (int side = -4; side <= 4; side++) {
                 Vec3 point = topExit.add(forward.scale(depth - 0.65D)).add(right.scale(side));
                 level.setBlockAndUpdate(new BlockPos(
                                 (int) Math.floor(point.x), floorY, (int) Math.floor(point.z)),
                         Blocks.OAK_LEAVES.defaultBlockState()
                                 .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
+            }
+        }
+        // A parapet round the far and outer sides, as on a wall walk, so a crowd is not pushed off the landing.
+        for (int depth = 0; depth <= 14; depth++) {
+            for (int side = -5; side <= 5; side++) {
+                if (depth < 14 && Math.abs(side) < 5) {
+                    continue;
+                }
+                Vec3 point = topExit.add(forward.scale(depth - 0.65D)).add(right.scale(side));
+                for (int up = 1; up <= 2; up++) {
+                    level.setBlockAndUpdate(new BlockPos(
+                            (int) Math.floor(point.x), floorY + up, (int) Math.floor(point.z)),
+                            Blocks.STONE.defaultBlockState());
+                }
             }
         }
     }

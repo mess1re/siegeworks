@@ -46,6 +46,7 @@
   "siege.pot.hint.seal": "Запечатайте горшок: %s",
   "siege.pot.hint.light": "Подожгите огнивом",
   "item.siegeworks.ramrod": "Шомпол",
+  "item.siegeworks.forked_pole": "Рогатина",
   "item.siegeworks.black_powder": "Черный порох",
   "item.siegeworks.wheel": "Колесо",
   "item.siegeworks.barrel": "Ствол",
@@ -229,9 +230,13 @@
   "message.siegeworks.recruits.no_siege_engines": "Нет подходящих осадных подразделений для этой команды.",
   "message.siegeworks.recruits.ladder_invalid_location": "Лестницу нельзя поставить в этом месте.",
   "message.siegeworks.ladder.pickup_unavailable": "Нельзя поднять лестницу, пока её используют.",
+  "message.siegeworks.ladder.push_from_top": "Упирайте шест в верх лестницы со стены, на которую она опирается.",
+  "message.siegeworks.ladder.pushing": "Сталкиваете лестницу: %s%%",
+  "message.siegeworks.ladder.pushed": "Лестница опрокинута.",
   "message.siegeworks.ladder.not_owner": "Эта лестница принадлежит другому игроку.",
   "message.siegeworks.ladder.carrying": "Несёте лестницу: Shift+ПКМ, чтобы поставить",
   "message.siegeworks.ladder.carrying_one": "Руки уже заняты лестницей",
+  "message.siegeworks.ladder.carry_out_of_reach": "Подойдите ближе, чтобы взять лестницу",
   "message.siegeworks.ladder.carry_no_room": "Здесь лестницу не поставить: не хватает места",
   "message.siegeworks.deployment_limit_reached": "Достигнут лимит размещения для %1$s (%2$s/%3$s).",
   "message.siegeworks.recruits.build_requires_blueprint": "Возьмите чертёж Siegeworks в левую руку.",
@@ -403,6 +408,5 @@
   "gui.siegeworks.recruits.siege_commands.text.flap_open": "Щит вверх",
   "gui.siegeworks.recruits.siege_commands.tooltip.flap_open": "Открыть щит мантлета до упора, чтобы стрелять из-за него.",
   "gui.siegeworks.recruits.siege_commands.text.flap_close": "Щит вниз",
-  "gui.siegeworks.recruits.siege_commands.tooltip.flap_close": "Закрыть щит мантлета наглухо, чтобы идти под стрелами.",
-  "message.siegeworks.ladder.carry_from_foot": "Лестницу берут у подножия"
+  "gui.siegeworks.recruits.siege_commands.tooltip.flap_close": "Закрыть щит мантлета наглухо, чтобы идти под стрелами."
 }

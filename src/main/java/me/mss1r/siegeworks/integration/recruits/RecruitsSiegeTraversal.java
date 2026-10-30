@@ -1,17 +1,21 @@
 package me.mss1r.siegeworks.integration.recruits;
 
 import com.talhanation.recruits.entities.AbstractRecruitEntity;
+import com.talhanation.recruits.pathfinding.AsyncPath;
 import me.mss1r.siegeworks.api.SiegeClimbableControl;
 import me.mss1r.siegeworks.api.SiegeTransportControl;
 import me.mss1r.siegeworks.entity.siege.SiegeLadderEntity;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.entity.siege.SiegeTowerEntity;
+import me.mss1r.siegeworks.gameplay.movement.ladder.LadderTraversalControl;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.pathfinder.Node;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -23,13 +27,22 @@ import java.util.WeakHashMap;
 final class RecruitsSiegeTraversal {
     private static final double MIN_ELEVATION_CHANGE = 1.25D;
     private static final double LADDER_SEARCH_RANGE = 32.0D;
-    private static final double LADDER_APPROACH_DISTANCE_SQR = 2.25D * 2.25D;
     private static final double ROUTE_ENDPOINT_PROGRESS_MARGIN = 0.15D;
     private static final double DESTINATION_CHANGE_DISTANCE_SQR = 8.0D * 8.0D;
     private static final int FAILED_ROUTE_RETRY_TICKS = 40;
     private static final int COMPLETED_ROUTE_RETRY_TICKS = 600;
+    /** How long a recruit may walk toward a ladder without getting any closer before giving up. */
     private static final int APPROACH_TIMEOUT_TICKS = 240;
-    private static final int CLIMB_TIMEOUT_TICKS = 600;
+    /** A recruit joins a ladder's line within this distance of its entrance; the ladder stages it from there. */
+    private static final double JOIN_LINE_DISTANCE_SQR = 8.0D * 8.0D;
+    /** How long a recruit waits in a line that does not move before giving up. */
+    private static final int STALLED_LINE_TICKS = 400;
+    /** How long a walk found to the destination is trusted before it is looked for again. */
+    private static final int WALK_RECHECK_TICKS = 100;
+    /** A walking path that ends this close to the destination reaches it. */
+    private static final double WALK_ARRIVAL_DISTANCE_SQR = 2.0D * 2.0D;
+    /** A walk still being looked for after this long counts as none. */
+    private static final int WALK_SEARCH_TICKS = 60;
     private static final int ROUTE_HANDOFF_TICKS = 40;
     private static final double ROUTE_HANDOFF_DISTANCE_SQR = 2.5D * 2.5D;
     private static final int TOWER_RETURN_TIMEOUT_TICKS = 1200;
@@ -50,6 +63,7 @@ final class RecruitsSiegeTraversal {
     private static final Map<AbstractRecruitEntity, RouteHandoff> ROUTE_HANDOFFS = new WeakHashMap<>();
     private static final Map<AbstractRecruitEntity, TowerReturnRoute> TOWER_RETURN_ROUTES = new WeakHashMap<>();
     private static final Map<AbstractRecruitEntity, BoardRoute> BOARD_ROUTES = new WeakHashMap<>();
+    private static final Map<AbstractRecruitEntity, WalkSearch> WALK_SEARCHES = new WeakHashMap<>();
 
     private RecruitsSiegeTraversal() {
     }
@@ -63,6 +77,7 @@ final class RecruitsSiegeTraversal {
         ROUTE_HANDOFFS.clear();
         TOWER_RETURN_ROUTES.clear();
         BOARD_ROUTES.clear();
+        WALK_SEARCHES.clear();
     }
 
     static boolean hasTowerTraffic(SiegeTowerEntity tower) {
@@ -188,7 +203,10 @@ final class RecruitsSiegeTraversal {
             boolean receivedNewMoveOrder = route.suspendedMoveOrder && recruit.getShouldMovePos();
             Vec3 currentDestination = getRouteDestination(recruit, route);
             if (receivedNewMoveOrder) {
-                if (currentDestination == null || !route.climbing || route.waiting) {
+                // A repeated formation/point command is not a cancellation of this passage.
+                // Only a materially different destination needs a new route while on the ground.
+                if (currentDestination == null || currentDestination.distanceToSqr(route.destination)
+                        > DESTINATION_CHANGE_DISTANCE_SQR && (!route.climbing || route.waiting)) {
                     cancelLadderRoute(recruit, serverLevel);
                     RETRY_AFTER_TICK.put(recruit, recruit.tickCount + FAILED_ROUTE_RETRY_TICKS);
                     return;
@@ -215,27 +233,55 @@ final class RecruitsSiegeTraversal {
                 failRoute(recruit, routeEntity instanceof SiegeClimbableControl climbable ? climbable : null);
                 return;
             }
+            RecruitsDebug.ladder(recruit, ladder, destination);
 
             if (!route.climbing) {
-                if (recruit.tickCount - route.createdTick > APPROACH_TIMEOUT_TICKS) {
+                // Off the ladder, it is only worth going on with while the climb still gets it somewhere.
+                if (Math.abs(destination.y - recruit.getY()) < MIN_ELEVATION_CHANGE
+                        || !isUsefulRoute(recruit.position(), destination, ladder, route.upward)) {
+                    cancelLadderRoute(recruit, serverLevel);
+                    RETRY_AFTER_TICK.put(recruit, recruit.tickCount + FAILED_ROUTE_RETRY_TICKS);
+                    return;
+                }
+                Vec3 entrance = route.upward ? ladder.getAutomatedBottomApproach() : ladder.getAutomatedTopExit();
+                double distance = recruit.distanceToSqr(entrance);
+                if (distance < route.closestApproachSqr - 0.25D) {
+                    route.closestApproachSqr = distance;
+                    route.approachProgressTick = recruit.tickCount;
+                }
+                if (recruit.tickCount - route.approachProgressTick > APPROACH_TIMEOUT_TICKS) {
                     failRoute(recruit, ladder);
                     return;
                 }
-                Vec3 approach = ladder.getAutomatedQueuePosition(recruit, route.upward);
-                if (recruit.distanceToSqr(approach) > LADDER_APPROACH_DISTANCE_SQR) {
-                    RecruitsWalkOrders.walkTo(recruit, approach, 1.15D);
+                if (distance > JOIN_LINE_DISTANCE_SQR) {
+                    LadderTraversalControl.approach(recruit, ladder);
+                    RecruitsWalkOrders.walkTo(recruit, entrance, 1.15D);
                     return;
                 }
+                // Close enough to join the line: the ladder brings it to its place in the line itself.
                 route.climbing = true;
                 route.waiting = true;
-                route.climbStartedTick = recruit.tickCount;
+                route.lineProgressTick = recruit.tickCount;
                 RecruitsWalkOrders.stop(recruit);
             }
 
             SiegeClimbableControl.ClimbResult result = ladder.advanceAutomatedClimber(recruit, route.upward);
             if (result == SiegeClimbableControl.ClimbResult.WAITING) {
+                Vec3 place = ladder.getAutomatedQueuePosition(recruit, route.upward);
+                if (route.linePlace == null || place.distanceToSqr(route.linePlace) > 0.25D) {
+                    route.linePlace = place;
+                    route.lineProgressTick = recruit.tickCount;
+                    route.closestLineDistanceSqr = Double.MAX_VALUE;
+                }
+                double distanceToPlace = recruit.distanceToSqr(place);
+                if (distanceToPlace < route.closestLineDistanceSqr - .25D) {
+                    route.closestLineDistanceSqr = distanceToPlace;
+                    route.lineProgressTick = recruit.tickCount;
+                }
                 route.waiting = true;
-                route.climbStartedTick = recruit.tickCount;
+                if (recruit.tickCount - route.lineProgressTick > STALLED_LINE_TICKS) {
+                    failRoute(recruit, ladder);
+                }
             } else if (result == SiegeClimbableControl.ClimbResult.COMPLETE) {
                 LADDER_ROUTES.remove(recruit);
                 RETRY_AFTER_TICK.put(recruit, recruit.tickCount + FAILED_ROUTE_RETRY_TICKS);
@@ -247,12 +293,9 @@ final class RecruitsSiegeTraversal {
             } else if (result == SiegeClimbableControl.ClimbResult.FAILED) {
                 failRoute(recruit, ladder);
             } else {
-                if (route.waiting) {
-                    route.waiting = false;
-                    route.climbStartedTick = recruit.tickCount;
-                } else if (recruit.tickCount - route.climbStartedTick > CLIMB_TIMEOUT_TICKS) {
-                    failRoute(recruit, ladder);
-                }
+                // The ladder owns blockage recovery and returns a blocked stream to a safe
+                // landing. A wall-clock timeout here would release long-ladder users in mid-air.
+                route.waiting = false;
             }
             return;
         }
@@ -263,6 +306,7 @@ final class RecruitsSiegeTraversal {
 
         Vec3 destination = getDestination(recruit);
         if (destination == null) {
+            WALK_SEARCHES.remove(recruit);
             COMPLETED_ROUTES.remove(recruit);
             RETRY_AFTER_TICK.remove(recruit);
             return;
@@ -280,6 +324,16 @@ final class RecruitsSiegeTraversal {
             return;
         }
 
+        Boolean walks = walkReaches(recruit, destination);
+        if (walks == null) {
+            return;
+        }
+        if (walks) {
+            // It can walk there: no ladder for this destination for a while.
+            RETRY_AFTER_TICK.put(recruit, recruit.tickCount + WALK_RECHECK_TICKS);
+            return;
+        }
+
         boolean upward = destination.y > recruit.getY();
         CompletedLadderRoute suppressedRoute = completedRoute;
         AABB searchBox = recruit.getBoundingBox().inflate(LADDER_SEARCH_RANGE);
@@ -288,6 +342,7 @@ final class RecruitsSiegeTraversal {
                 .filter(candidate -> suppressedRoute == null
                         || !suppressedRoute.matches(candidate.getUUID(), upward))
                 .filter(candidate -> isUsefulRoute(recruit.position(), destination, candidate, upward))
+                .filter(candidate -> candidate.canTraverse(recruit, upward))
                 .min(Comparator.comparingDouble(candidate -> routeScore(recruit.position(), destination, candidate, upward)))
                 .orElse(null);
         if (ladder != null) {
@@ -296,9 +351,48 @@ final class RecruitsSiegeTraversal {
             LADDER_ROUTES.put(recruit, newRoute);
             if (newRoute.suspendedMoveOrder) {
                 recruit.setShouldMovePos(false);
-                RecruitsWalkOrders.stop(recruit);
             }
+            RecruitsWalkOrders.stop(recruit);
+            LadderTraversalControl.approach(recruit, ladder);
+        } else {
+            // A failed search is a result too. Do not start an async path job for every recruit
+            // on every tick while no ladder can bridge this height difference.
+            RETRY_AFTER_TICK.put(recruit, recruit.tickCount + FAILED_ROUTE_RETRY_TICKS);
         }
+    }
+
+    /**
+     * Whether the recruit can walk to {@code destination} by its own pathfinder: true or false, or null while the
+     * search, which Recruits may run off the main thread, is still under way.
+     */
+    private static Boolean walkReaches(AbstractRecruitEntity recruit, Vec3 destination) {
+        WalkSearch search = WALK_SEARCHES.get(recruit);
+        if (search == null || search.destination.distanceToSqr(destination) > WALK_ARRIVAL_DISTANCE_SQR) {
+            Path path = recruit.getNavigation().createPath(BlockPos.containing(destination), 1);
+            if (path == null) {
+                WALK_SEARCHES.remove(recruit);
+                return false;
+            }
+            search = new WalkSearch(destination, path, recruit.tickCount, shouldSuspendMoveOrder(recruit));
+            WALK_SEARCHES.put(recruit, search);
+        }
+        if (search.path instanceof AsyncPath async && !async.isProcessed()) {
+            if (recruit.tickCount - search.startedTick <= WALK_SEARCH_TICKS) {
+                // Recruits' move goal considers horizontal arrival sufficient and clears the
+                // command even when the requested floor is still above/below us. Protect it
+                // while its async route query is pending, not just after selecting a ladder.
+                if (search.suspendedMoveOrder) recruit.setShouldMovePos(false);
+                return null;
+            }
+            WALK_SEARCHES.remove(recruit);
+            if (search.suspendedMoveOrder) recruit.setShouldMovePos(true);
+            return false;
+        }
+        WALK_SEARCHES.remove(recruit);
+        if (search.suspendedMoveOrder) recruit.setShouldMovePos(true);
+        Node end = search.path.getEndNode();
+        return end != null
+                && Vec3.atBottomCenterOf(end.asBlockPos()).distanceToSqr(destination) <= WALK_ARRIVAL_DISTANCE_SQR;
     }
 
     private static boolean shouldSuspendMoveOrder(AbstractRecruitEntity recruit) {
@@ -310,7 +404,7 @@ final class RecruitsSiegeTraversal {
     }
 
     private static Vec3 getRouteDestination(AbstractRecruitEntity recruit, LadderRoute route) {
-        if (!route.suspendedMoveOrder) {
+        if (!route.suspendedMoveOrder || recruit.getFollowState() != 0) {
             return getDestination(recruit);
         }
         if (recruit.getMovePos() == null) {
@@ -345,13 +439,17 @@ final class RecruitsSiegeTraversal {
     }
 
     private static Vec3 getDestination(AbstractRecruitEntity recruit) {
+        // A fight takes a recruit up or down a ladder only when it has no order of where to be: one told to hold a
+        // position, go somewhere or follow does not leave it to chase a spider on the wall.
         LivingEntity target = recruit.getTarget();
-        if (target != null && target.isAlive()) {
+        boolean free = recruit.getFollowState() == 0 && !(recruit.getShouldMovePos() && recruit.getMovePos() != null);
+        if (free && target != null && target.isAlive()) {
             return target.position();
         }
 
         return switch (recruit.getFollowState()) {
-            case 0 -> recruit.getShouldMovePos() && recruit.getMovePos() != null
+            case 0 -> recruit.getMovePos() != null && (recruit.getShouldMovePos()
+                    || WALK_SEARCHES.containsKey(recruit) && WALK_SEARCHES.get(recruit).suspendedMoveOrder)
                     ? recruit.getMovePos().getCenter() : null;
             case 1 -> recruit.getOwner() == null ? null : recruit.getOwner().position();
             case 2, 3, 4 -> recruit.getHoldPos();
@@ -441,7 +539,8 @@ final class RecruitsSiegeTraversal {
     }
 
     private static void resumeMoveOrder(AbstractRecruitEntity recruit, LadderRoute route, Vec3 destination) {
-        if (!route.suspendedMoveOrder || recruit.getMovePos() == null || recruit.getShouldMovePos()) {
+        if (!route.suspendedMoveOrder || recruit.getFollowState() != 0
+                || recruit.getMovePos() == null || recruit.getShouldMovePos()) {
             return;
         }
         recruit.setMovePos(BlockPos.containing(destination));
@@ -767,20 +866,27 @@ final class RecruitsSiegeTraversal {
         private final UUID ladderUuid;
         private final boolean upward;
         private Vec3 destination;
-        private final int createdTick;
         private final boolean suspendedMoveOrder;
         private boolean climbing;
         private boolean waiting;
-        private int climbStartedTick;
+        private double closestApproachSqr = Double.MAX_VALUE;
+        private int approachProgressTick;
+        /** Where the ladder last placed it in its line, and when that last changed. */
+        private Vec3 linePlace;
+        private int lineProgressTick;
+        private double closestLineDistanceSqr = Double.MAX_VALUE;
 
         private LadderRoute(UUID ladderUuid, boolean upward, Vec3 destination, int createdTick,
                             boolean suspendedMoveOrder) {
             this.ladderUuid = ladderUuid;
             this.upward = upward;
             this.destination = destination;
-            this.createdTick = createdTick;
             this.suspendedMoveOrder = suspendedMoveOrder;
+            this.approachProgressTick = createdTick;
         }
+    }
+
+    private record WalkSearch(Vec3 destination, Path path, int startedTick, boolean suspendedMoveOrder) {
     }
 
     private record CompletedLadderRoute(UUID ladderUuid, boolean upward, Vec3 destination, int expiresTick) {

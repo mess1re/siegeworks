@@ -46,6 +46,24 @@ public final class MinecraftVersionCompat {
         //?}
     }
 
+    public static double blockInteractionRange(Player player) {
+        //? if forge {
+        /*return player.getBlockReach();
+        *///?} else {
+        return player.blockInteractionRange();
+        //?}
+    }
+
+    /** How much farther than a bare hand the player reaches entities with what they wear and hold, as a polearm gives. */
+    public static double entityReachBonus(Player player) {
+        //? if forge {
+        /*var reach = player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_REACH.get());
+        *///?} else {
+        var reach = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ENTITY_INTERACTION_RANGE);
+        //?}
+        return reach == null ? 0.0D : reach.getValue() - reach.getBaseValue();
+    }
+
     public static void damageHeldItem(ItemStack stack, int amount, LivingEntity owner, InteractionHand hand) {
         //? if forge {
         /*stack.hurtAndBreak(amount, owner, entity -> entity.broadcastBreakEvent(hand));

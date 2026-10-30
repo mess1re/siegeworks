@@ -1230,10 +1230,12 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         }
 
         aiming.updateFromController();
-        if (tickCount % UNSTICK_INTERVAL_TICKS == 0) {
-            SiegeTerrainCollision.unstick(this);
+        if (usesSiegeMovement()) {
+            if (tickCount % UNSTICK_INTERVAL_TICKS == 0) {
+                SiegeTerrainCollision.unstick(this);
+            }
+            SiegeMovementPhysics.updateSiegeVelocity(this);
         }
-        SiegeMovementPhysics.updateSiegeVelocity(this);
 
         aiming.updateServerEntityRotation();
         this.wheelRotation = this.getWheelRotation();
@@ -1652,6 +1654,11 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     @Override
     public boolean isPushable() {
         return false;
+    }
+
+    /** False for an engine that works out its own motion instead of rolling on the ground under gravity. */
+    protected boolean usesSiegeMovement() {
+        return true;
     }
 
     @Override

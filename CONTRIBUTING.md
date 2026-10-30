@@ -31,6 +31,20 @@ Do not duplicate a value in code when it already comes from a data definition or
 
 Collision, terrain movement, deployment, ladders, siege-tower ramps and projectile behavior have deterministic tests or GameTests. Changes in those areas should update the relevant coverage rather than rely only on a manual client check.
 
+To exercise ladder traffic with real Recruits, including three separate groups of twenty walking up and down:
+
+```sh
+./gradlew :1.20.1-forge:runGameTestServer :1.21.1-neoforge:runGameTestServer -PgameTestNamespaces=siegeworks_ladder,siegeworks_ladder_regression,siegeworks_collision -Penable_recruits_compat_runtime=true
+```
+
+These tests check health throughout the passage, spacing, actual supported landings, blocked entrances and exits, and cancellation of transient movement control. Keep the ordinary AI enabled in the movement scenarios; making the actors invulnerable or replacing their walk with teleports defeats the checks.
+
+The regression namespace also exercises owned troops following their commander, formation orders, repeated point orders,
+and a fifteen-metre ladder leading to a thin suspended platform. It checks ownership of the distant approach, unexpected
+route loss and prolonged stalls, rather than only eventual arrival. For a live reproduction, use
+`-Pdebug.recruits=true` with `runClient`, or `/siegeworks debug recruits true` in the world. Ladder traces are opt-in and
+limited to one report per troop per second, with route phase, progress, blockage, destination and navigation ownership.
+
 ### Working with unpublished Axiomata changes
 
 When SW needs Axiomata changes that are not published yet, build the matching Axiomata checkout

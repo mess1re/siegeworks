@@ -22,6 +22,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 //? if forge {
@@ -50,9 +52,10 @@ public final class LadderCarry {
     public static final int OVERHEAD_SECTIONS = 2;
     /** Grip position on a long ladder, as a fraction of its length from the foot. */
     private static final double GRIP_SHARE = 2.0D / 3.0D;
-    /** Max distance from the foot to pick a ladder up. */
-    private static final double FOOT_REACH = 2.0D;
-    private static final double FOOT_REACH_UP = 2.0D;
+    /** How far from the ladder a player can take it up: across, and down to or up to it. */
+    private static final double TAKE_REACH = 2.5D;
+    private static final double TAKE_REACH_DOWN = 1.0D;
+    private static final double TAKE_REACH_UP = 2.5D;
     /** Distance in front of the player where the ladder is put down. */
     private static final double PUT_DOWN_REACH = 1.0D;
     private static final double LADDER_HALF_WIDTH = 0.45D;
@@ -94,17 +97,18 @@ public final class LadderCarry {
         return new Pose(foot, yaw, Math.toDegrees(lean));
     }
 
-    /** Picks the ladder up if the player is at its foot and not already carrying one. */
+    /** Picks the ladder up if the player can reach some part of it and is not already carrying one. */
     public static boolean tryPickUp(Player player, SiegeLadderEntity ladder) {
         if (carried(player) != null) {
             player.displayClientMessage(Component.translatable("message.siegeworks.ladder.carrying_one"), true);
             return false;
         }
-        double dx = player.getX() - ladder.getX();
-        double dz = player.getZ() - ladder.getZ();
-        double dy = player.getY() - ladder.getY();
-        if (dx * dx + dz * dz > FOOT_REACH * FOOT_REACH || dy < -1.0D || dy > FOOT_REACH_UP) {
-            player.displayClientMessage(Component.translatable("message.siegeworks.ladder.carry_from_foot"), true);
+        Vec3 grip = ladder.nearestPoint(player.getEyePosition());
+        double dx = grip.x - player.getX();
+        double dz = grip.z - player.getZ();
+        double dy = grip.y - player.getY();
+        if (dx * dx + dz * dz > TAKE_REACH * TAKE_REACH || dy < -TAKE_REACH_DOWN || dy > TAKE_REACH_UP) {
+            player.displayClientMessage(Component.translatable("message.siegeworks.ladder.carry_out_of_reach"), true);
             return false;
         }
         take(player, ladder);
@@ -119,15 +123,24 @@ public final class LadderCarry {
         slow(player, ladder.getSections());
     }
 
-    /** Puts the carried ladder down upright in front of the player; it then leans onto whatever is ahead. */
+    /**
+     * Puts the carried ladder down upright on the block looked at, as its item places one, or just ahead when no block
+     * is in reach; it then leans onto whatever is ahead.
+     */
     public static void putDown(Player player) {
         SiegeLadderEntity ladder = carried(player);
         if (ladder == null) {
             return;
         }
-        double yawRadians = Math.toRadians(player.getYRot());
-        Vec3 foot = player.position().add(-Math.sin(yawRadians) * PUT_DOWN_REACH, 0.0D,
-                Math.cos(yawRadians) * PUT_DOWN_REACH);
+        Vec3 foot;
+        HitResult aimed = player.pick(me.mss1r.siegeworks.platform.MinecraftVersionCompat.blockInteractionRange(player), 1.0F, false);
+        if (aimed instanceof BlockHitResult block && aimed.getType() == HitResult.Type.BLOCK) {
+            foot = Vec3.atBottomCenterOf(block.getBlockPos().above());
+        } else {
+            double yawRadians = Math.toRadians(player.getYRot());
+            foot = player.position().add(-Math.sin(yawRadians) * PUT_DOWN_REACH, 0.0D,
+                    Math.cos(yawRadians) * PUT_DOWN_REACH);
+        }
         AABB upright = new AABB(foot.x - LADDER_HALF_WIDTH, foot.y + 0.01D, foot.z - LADDER_HALF_WIDTH,
                 foot.x + LADDER_HALF_WIDTH, foot.y + ladder.getLadderLength(), foot.z + LADDER_HALF_WIDTH);
         if (!player.level().noCollision(upright)) {

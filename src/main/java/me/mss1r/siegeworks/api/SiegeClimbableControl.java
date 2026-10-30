@@ -7,6 +7,9 @@ import net.minecraft.world.phys.Vec3;
 public interface SiegeClimbableControl {
     boolean isReadyForAutomatedClimb();
 
+    /** Whether this body fits the passage and both ends have real landings; other users may be queued there. */
+    default boolean canTraverse(LivingEntity climber, boolean upward) { return isReadyForAutomatedClimb(); }
+
     Vec3 getAutomatedBottomApproach();
 
     Vec3 getAutomatedTopExit();

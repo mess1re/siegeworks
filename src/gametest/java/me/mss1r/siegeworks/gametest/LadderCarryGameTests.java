@@ -5,6 +5,7 @@ import me.mss1r.siegeworks.gameplay.ladder.LadderCarry;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -62,11 +63,27 @@ public final class LadderCarryGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 20, batch = BATCH)
-    public static void ladderIsTakenUpOnlyAtItsFoot(GameTestHelper helper) {
+    public static void ladderIsTakenUpOnlyWithinReach(GameTestHelper helper) {
         SiegeLadderEntity ladder = ladder(helper, 2);
         Player carrier = carrier(helper, ladder.position().add(4.0D, 0.0D, 0.0D));
         helper.assertTrue(!LadderCarry.tryPickUp(carrier, ladder) && !ladder.isCarried(),
-                "A ladder was taken up away from its foot");
+                "A ladder was taken up out of reach");
+        finish(helper, ladder, carrier);
+    }
+
+    /** A ladder lying down is taken up from beside its middle, not only at its foot. */
+    @GameTest(template = "empty", timeoutTicks = 20, batch = BATCH)
+    public static void lyingLadderIsTakenUpAnywhereAlongIt(GameTestHelper helper) {
+        SiegeLadderEntity ladder = ladder(helper, 2);
+        CompoundTag tag = new CompoundTag();
+        ladder.addAdditionalSaveData(tag);
+        tag.putFloat("LeanDegrees", 90.0F);
+        tag.putInt("DeployTicks", 35);
+        ladder.readAdditionalSaveData(tag);
+        Vec3 middle = ladder.nearestPoint(ladder.position().add(0.0D, 0.0D, ladder.getLadderLength()));
+        Player carrier = carrier(helper, new Vec3(middle.x + 1.5D, ladder.getY(), ladder.getZ() + 4.5D));
+        helper.assertTrue(LadderCarry.tryPickUp(carrier, ladder) && ladder.isCarried(),
+                "A lying ladder was not taken up from beside its middle");
         finish(helper, ladder, carrier);
     }
 
@@ -88,6 +105,22 @@ public final class LadderCarryGameTests {
             helper.assertTrue(ladder.getLeanAngleDegrees() != 0.0F, "A ladder set down never tipped");
             finish(helper, ladder, carrier);
         });
+    }
+
+    /** Set down where the carrier looks, as its item places a ladder, not just ahead of them. */
+    @GameTest(template = "empty", timeoutTicks = 20, batch = BATCH)
+    public static void ladderSetDownStandsOnTheBlockLookedAt(GameTestHelper helper) {
+        SiegeLadderEntity ladder = ladder(helper, 1);
+        Player carrier = carrier(helper, ladder.position());
+        LadderCarry.tryPickUp(carrier, ladder);
+        helper.setBlock(new net.minecraft.core.BlockPos(4, 0, 5), net.minecraft.world.level.block.Blocks.STONE);
+        Vec3 aimed = helper.absoluteVec(new Vec3(4.5D, 1.0D, 5.5D));
+        carrier.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, aimed);
+        LadderCarry.putDown(carrier);
+
+        helper.assertTrue(!ladder.isCarried() && ladder.position().distanceTo(aimed) < 0.01D,
+                "The ladder was set down at " + ladder.position() + ", not on the block looked at, " + aimed);
+        finish(helper, ladder, carrier);
     }
 
     @GameTest(template = "empty", timeoutTicks = 20, batch = BATCH)
