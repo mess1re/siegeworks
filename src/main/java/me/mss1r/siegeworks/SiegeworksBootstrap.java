@@ -3,6 +3,8 @@ package me.mss1r.siegeworks;
 import dev.architectury.platform.Platform;
 import me.mss1r.siegeworks.config.SiegeworksClientConfig;
 import me.mss1r.siegeworks.config.SiegeworksServerConfig;
+import me.mss1r.siegeworks.config.SiegeworksEngineConfig;
+import me.mss1r.siegeworks.config.MigratingServerConfigSpec;
 import me.mss1r.siegeworks.event.MantletProtectionHandler;
 import me.mss1r.siegeworks.registry.IdMigrations;
 import me.mss1r.siegeworks.integration.recruits.RecruitsCompat;
@@ -30,7 +32,8 @@ public final class SiegeworksBootstrap {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         EventBuses.registerModEventBus(Siegeworks.MOD_ID, modBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SiegeworksClientConfig.SPEC.unwrap());
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SiegeworksServerConfig.SPEC.unwrap());
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, new MigratingServerConfigSpec(SiegeworksServerConfig.SPEC.unwrap()));
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SiegeworksEngineConfig.SPEC.unwrap(), SiegeworksEngineConfig.FILE_NAME);
         initialize(modBus, MinecraftForge.EVENT_BUS);
         if (Platform.isModLoaded("recruits")) {
             RecruitsCompat.register(modBus);
@@ -42,7 +45,8 @@ public final class SiegeworksBootstrap {
     *///?} else {
     public SiegeworksBootstrap(IEventBus modBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, SiegeworksClientConfig.SPEC.unwrap());
-        modContainer.registerConfig(ModConfig.Type.SERVER, SiegeworksServerConfig.SPEC.unwrap());
+        modContainer.registerConfig(ModConfig.Type.SERVER, new MigratingServerConfigSpec(SiegeworksServerConfig.SPEC.unwrap()));
+        modContainer.registerConfig(ModConfig.Type.SERVER, SiegeworksEngineConfig.SPEC.unwrap(), SiegeworksEngineConfig.FILE_NAME);
         initialize(modBus, NeoForge.EVENT_BUS);
         if (Platform.isModLoaded("recruits")) {
             RecruitsCompat.register(modBus);

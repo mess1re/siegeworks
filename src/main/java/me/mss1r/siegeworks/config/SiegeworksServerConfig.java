@@ -8,11 +8,7 @@ import java.util.Map;
 
 public final class SiegeworksServerConfig {
     public static final SiegeworksConfigSpec SPEC;
-    private static final Map<String, EngineSettings> ENGINES = new HashMap<>();
     private static final Map<String, SiegeworksConfigSpec.IntValue> DEPLOYMENT_LIMITS = new HashMap<>();
-    private static final SiegeworksConfigSpec.IntValue TOWER_MINIMUM_CREW;
-    private static final SiegeworksConfigSpec.IntValue TOWER_FULL_SPEED_CREW;
-    private static final SiegeworksConfigSpec.DoubleValue TOWER_MINIMUM_CREW_SPEED_MULTIPLIER;
     private static final SiegeworksConfigSpec.BooleanValue GEOMETRY_TERRAIN_COLLISION;
     private static final SiegeworksConfigSpec.BooleanValue FLYING_BLOCK_DEBRIS_ENABLED;
     private static final SiegeworksConfigSpec.IntValue MAX_FLYING_BLOCK_DEBRIS_PER_TICK;
@@ -28,51 +24,20 @@ public final class SiegeworksServerConfig {
     private static final SiegeworksConfigSpec.EnumValue<SiegeBlockDamage> BLOCK_DAMAGE;
     private static final SiegeworksConfigSpec.DoubleValue STONE_FRACTURE_ENERGY;
     private static final SiegeworksConfigSpec.IntValue INCENDIARY_FUSE_TICKS;
+    private static final SiegeworksConfigSpec.BooleanValue WEATHERING_ENABLED;
+    private static final SiegeworksConfigSpec.DoubleValue WEATHERING_DAYS;
+    private static final SiegeworksConfigSpec.DoubleValue WEATHERING_RAIN_MULTIPLIER;
+    private static final SiegeworksConfigSpec.DoubleValue WEATHERING_HEALTH_LOSS;
+    private static final SiegeworksConfigSpec.DoubleValue LADDER_PUSH_SECONDS;
+    private static final SiegeworksConfigSpec.DoubleValue LADDER_PUSH_PER_CLIMBER;
+    private static final SiegeworksConfigSpec.DoubleValue LADDER_PUSH_PER_45_DEGREES;
+    private static final SiegeworksConfigSpec.DoubleValue LADDER_PUSH_MIN_REACH_BONUS;
+    private static final SiegeworksConfigSpec.DoubleValue LADDER_PUSH_LIFT_BLOCKS;
 
     static {
         SiegeworksConfigSpec.Builder builder = new SiegeworksConfigSpec.Builder();
-        builder.comment("Per-engine operation settings. Durations are measured in ticks (20 ticks = 1 second).")
-                .push("engines");
-
-        register(builder, "serpentine", 0.045D, 0.19D, 105, 60,
-                stage("powder", 115), stage("ramCharge", 82), stage("ammunition", 80),
-                stage("ramProjectile", 70), stage("priming", 30));
-        register(builder, "culverin", 0.065D, 0.23D, 75, 60,
-                stage("powder", 90), stage("ramCharge", 65), stage("ammunition", 65),
-                stage("ramProjectile", 55), stage("priming", 25));
-        register(builder, "mons_meg", 0.018D, 0.11D, 600,
-                stage("powder", 190), stage("ramCharge", 145), stage("ammunition", 160),
-                stage("ramProjectile", 130), stage("priming", 50));
-        register(builder, "tower_crossbow", 0.0D, 0.0D, 95,
-                stage("bolt", 115), stage("winding", 100));
-        register(builder, "arcballista", 0.075D, 0.21D, 48,
-                stage("bolt", 72), stage("winding", 60));
-        register(builder, "onager", 0.055D, 0.17D, 10, 4,
-                stage("stone", 95), stage("fireProjectile", 105), stage("winding", 170));
-        register(builder, "trebuchet", 0.0D, 0.0D, 60, 16,
-                stage("stone", 150), stage("fireProjectile", 165), stage("winding", 320));
-        register(builder, "battering_ram", 0.03D, 0.09D, 80, 80);
-        register(builder, "mantlet", 0.085D, 0.21D, 0);
-        register(builder, "siege_tower", 0.022D, 0.12D, 0);
-        register(builder, "siege_ladder", 0.0D, 0.0D, 0);
-        register(builder, "hwacha", 0.055D, 0.19D, 100,
-                stage("rocket", 10), stage("priming", 24));
-
-        builder.push("siege_tower").push("crew");
-        TOWER_MINIMUM_CREW = builder
-                .comment("Minimum number of active crew members required to move the tower. The driver counts as crew.")
-                .defineInRange("minimumCrew", 2, 1, 6);
-        TOWER_FULL_SPEED_CREW = builder
-                .comment("Active crew required to reach the configured player speed. The tower has six pushing positions, including the driver.")
-                .defineInRange("fullSpeedCrew", 6, 1, 6);
-        TOWER_MINIMUM_CREW_SPEED_MULTIPLIER = builder
-                .comment("Fraction of configured player speed available at the minimum crew size. Speed scales linearly to full speed.")
-                .defineInRange("minimumCrewSpeedMultiplier", 0.30D, 0.0D, 1.0D);
-        builder.pop(2);
-
-        builder.pop();
-
-        builder.comment("Gameplay rules that apply across all siege engines.")
+        builder.comment("Gameplay rules. Machine speeds, loading times and crew settings are in siegeworks-engines.toml.",
+                        "Damage, ammunition, materials and construction requirements use datapack profiles; see the wiki Data Pack Reference.")
                 .push("rules");
         builder.comment("Maximum deployed siege engines owned by one scoreboard team.",
                         "Players without a team are counted individually. Set a value to 0 for no limit.")
@@ -147,6 +112,46 @@ public final class SiegeworksServerConfig {
                 .comment("How long a lit pot's fuse burns, in ticks, before it bursts wherever it is:",
                         "where it was placed, loaded in a stone thrower, or in flight.")
                 .defineInRange("fuseTicks", 200, 20, 1200);
+        builder.pop();
+
+        builder.comment("Wood left under the open sky weathers once, losing a share of the engine's health.",
+                        "A repair of at least that share makes it fresh again; wax keeps it from weathering at all.")
+                .push("weathering");
+        WEATHERING_ENABLED = builder
+                .comment("Whether engines weather.")
+                .define("enabled", true);
+        WEATHERING_DAYS = builder
+                .comment("In-game days under the open sky before an engine weathers. Time under a roof does not count.")
+                .defineInRange("daysUnderOpenSky", 20.0D, 0.05D, 3650.0D);
+        WEATHERING_RAIN_MULTIPLIER = builder
+                .comment("How much faster an engine weathers while it rains on it.")
+                .defineInRange("rainMultiplier", 2.0D, 1.0D, 100.0D);
+        WEATHERING_HEALTH_LOSS = builder
+                .comment("Share of its maximum health an engine loses when it weathers, never dropping below 1.",
+                        "A repair restoring at least this share makes it fresh again.")
+                .defineInRange("healthLoss", 0.35D, 0.0D, 1.0D);
+        builder.pop();
+
+        builder.comment("Pushing a siege ladder off a wall by bracing a pole against its top, holding use.")
+                .push("ladderPushing");
+        LADDER_PUSH_SECONDS = builder
+                .comment("Seconds of bracing that push an empty, upright ladder away.")
+                .defineInRange("baseSeconds", 1.5D, 0.0D, 60.0D);
+        LADDER_PUSH_PER_CLIMBER = builder
+                .comment("Share of that time each climber on the ladder adds: 0.5 makes three climbers take 2.5 times as long.")
+                .defineInRange("perClimber", 0.5D, 0.0D, 10.0D);
+        LADDER_PUSH_PER_45_DEGREES = builder
+                .comment("Share of that time 45 degrees of lean from upright adds: a shallow ladder is heavier to lift off.")
+                .defineInRange("per45Degrees", 1.0D, 0.0D, 10.0D);
+        LADDER_PUSH_MIN_REACH_BONUS = builder
+                .comment("Weapons whose reach is at least this much longer than a bare hand push ladders too, such as",
+                        "pikes and halberds of other mods. Items in #siegeworks:ladder_pushers always do. Set to 0 to allow",
+                        "only the tag.")
+                .defineInRange("minReachBonus", 1.0D, 0.0D, 16.0D);
+        LADDER_PUSH_LIFT_BLOCKS = builder
+                .comment("Blocks the ladder's top is eased away from the wall while bracing goes on, before the last push",
+                        "sends it over. Let go early, and it falls back.")
+                .defineInRange("liftBlocks", 1.0D, 0.0D, 8.0D);
         builder.pop(2);
 
         builder.push("movement");
@@ -187,73 +192,35 @@ public final class SiegeworksServerConfig {
     }
 
     public static double getMovementSpeed(EntityType<?> type, boolean horse) {
-        EngineSettings settings = ENGINES.get(getEngineId(type));
-        if (settings == null) {
-            return 0.0D;
-        }
-        MovementSettings movement = settings.movement();
-        return horse ? movement.horseSpeed().get() : movement.playerSpeed().get();
+        return SiegeworksEngineConfig.getMovementSpeed(type, horse);
     }
 
     public static int getRecoveryTicks(EntityType<?> type) {
-        EngineSettings settings = ENGINES.get(getEngineId(type));
-        return settings == null ? 0 : settings.operation().recoveryTicks().get();
+        return SiegeworksEngineConfig.getRecoveryTicks(type);
     }
 
     public static double getMovementAcceleration(EntityType<?> type, boolean horse) {
-        EngineSettings settings = ENGINES.get(getEngineId(type));
-        if (settings == null) {
-            return 0.005D;
-        }
-        MovementSettings movement = settings.movement();
-        return horse ? movement.horseAcceleration().get() : movement.playerAcceleration().get();
+        return SiegeworksEngineConfig.getMovementAcceleration(type, horse);
     }
 
     public static double getMovementDeceleration(EntityType<?> type, boolean horse) {
-        EngineSettings settings = ENGINES.get(getEngineId(type));
-        if (settings == null) {
-            return 0.004D;
-        }
-        MovementSettings movement = settings.movement();
-        return horse ? movement.horseDeceleration().get() : movement.playerDeceleration().get();
+        return SiegeworksEngineConfig.getMovementDeceleration(type, horse);
     }
 
     public static double getReverseSpeedMultiplier(EntityType<?> type) {
-        EngineSettings settings = ENGINES.get(getEngineId(type));
-        return settings == null ? 0.55D : settings.movement().reverseSpeedMultiplier().get();
+        return SiegeworksEngineConfig.getReverseSpeedMultiplier(type);
     }
 
     public static double getSteeringSpeedDegrees(EntityType<?> type, boolean horse) {
-        EngineSettings settings = ENGINES.get(getEngineId(type));
-        if (settings == null) {
-            return horse ? 0.65D : 1.0D;
-        }
-        MovementSettings movement = settings.movement();
-        return horse ? movement.horseTurnDegreesPerTick().get() : movement.playerTurnDegreesPerTick().get();
+        return SiegeworksEngineConfig.getSteeringSpeedDegrees(type, horse);
     }
 
     public static double getTowerCrewSpeedMultiplier(int activeCrew) {
-        int minimumCrew = TOWER_MINIMUM_CREW.get();
-        int fullSpeedCrew = Math.max(minimumCrew, TOWER_FULL_SPEED_CREW.get());
-        if (activeCrew < minimumCrew) {
-            return 0.0D;
-        }
-        if (activeCrew >= fullSpeedCrew || fullSpeedCrew == minimumCrew) {
-            return 1.0D;
-        }
-
-        double progress = (double) (activeCrew - minimumCrew) / (fullSpeedCrew - minimumCrew);
-        double minimumMultiplier = TOWER_MINIMUM_CREW_SPEED_MULTIPLIER.get();
-        return minimumMultiplier + (1.0D - minimumMultiplier) * progress;
+        return SiegeworksEngineConfig.getTowerCrewSpeedMultiplier(activeCrew);
     }
 
     public static int getLoadingRequirementTicks(EntityType<?> type, String stageKey) {
-        EngineSettings settings = ENGINES.get(getEngineId(type));
-        if (settings == null) {
-            return 1;
-        }
-        SiegeworksConfigSpec.IntValue configured = settings.operation().loadingStages().get(stageKey);
-        return configured == null ? 1 : configured.get();
+        return SiegeworksEngineConfig.getLoadingRequirementTicks(type, stageKey);
     }
 
     public static boolean isOwnershipEnforced() {
@@ -289,6 +256,42 @@ public final class SiegeworksServerConfig {
 
     public static void setBlockDamage(SiegeBlockDamage blockDamage) {
         BLOCK_DAMAGE.set(blockDamage);
+    }
+
+    public static boolean isWeatheringEnabled() {
+        return WEATHERING_ENABLED.get();
+    }
+
+    public static double getWeatheringDays() {
+        return WEATHERING_DAYS.get();
+    }
+
+    public static double getWeatheringRainMultiplier() {
+        return WEATHERING_RAIN_MULTIPLIER.get();
+    }
+
+    public static double getWeatheringHealthLoss() {
+        return WEATHERING_HEALTH_LOSS.get();
+    }
+
+    public static double getLadderPushSeconds() {
+        return LADDER_PUSH_SECONDS.get();
+    }
+
+    public static double getLadderPushPerClimber() {
+        return LADDER_PUSH_PER_CLIMBER.get();
+    }
+
+    public static double getLadderPushPer45Degrees() {
+        return LADDER_PUSH_PER_45_DEGREES.get();
+    }
+
+    public static double getLadderPushMinReachBonus() {
+        return LADDER_PUSH_MIN_REACH_BONUS.get();
+    }
+
+    public static double getLadderPushLiftBlocks() {
+        return LADDER_PUSH_LIFT_BLOCKS.get();
     }
 
     public static int getIncendiaryFuseTicks() {
@@ -328,148 +331,7 @@ public final class SiegeworksServerConfig {
         DEPLOYMENT_LIMITS.put(id, builder.defineInRange(id, 0, 0, 100000));
     }
 
-    private static void register(SiegeworksConfigSpec.Builder builder, String id, double playerSpeed,
-                                 double horseSpeed, int recoveryTicks, StageDefault... stages) {
-        register(builder, id, playerSpeed, horseSpeed, recoveryTicks, 0, stages);
-    }
-
-    private static void register(SiegeworksConfigSpec.Builder builder, String id, double playerSpeed,
-                                 double horseSpeed, int recoveryTicks, int minimumRecoveryTicks,
-                                 StageDefault... stages) {
-        builder.push(id);
-        builder.comment("Movement and steering settings.")
-                .push("movement");
-        SiegeworksConfigSpec.DoubleValue playerSpeedValue = builder
-                .comment("Movement speed when operated by a player.")
-                .defineInRange("playerSpeed", playerSpeed, 0.0D, 10.0D);
-        SiegeworksConfigSpec.DoubleValue horseSpeedValue = builder
-                .comment("Movement speed when pulled by a horse.")
-                .defineInRange("horseSpeed", horseSpeed, 0.0D, 10.0D);
-        MovementDefaults movement = movementDefaults(id, playerSpeed, horseSpeed);
-        SiegeworksConfigSpec.DoubleValue playerAccelerationValue = builder
-                .comment("Speed gained per tick while a player is driving.")
-                .defineInRange("playerAcceleration", movement.playerAcceleration(), 0.0D, 10.0D);
-        SiegeworksConfigSpec.DoubleValue horseAccelerationValue = builder
-                .comment("Speed gained per tick while a horse is pulling.")
-                .defineInRange("horseAcceleration", movement.horseAcceleration(), 0.0D, 10.0D);
-        SiegeworksConfigSpec.DoubleValue playerDecelerationValue = builder
-                .comment("Speed lost per tick after a direct operator releases forward or backward.")
-                .defineInRange("playerDeceleration", movement.playerDeceleration(), 0.0D, 10.0D);
-        SiegeworksConfigSpec.DoubleValue horseDecelerationValue = builder
-                .comment("Speed lost per tick after a draft-mount rider releases forward or backward.")
-                .defineInRange("horseDeceleration", movement.horseDeceleration(), 0.0D, 10.0D);
-        SiegeworksConfigSpec.DoubleValue reverseSpeedMultiplierValue = builder
-                .comment("Maximum reverse speed as a fraction of forward speed.")
-                .defineInRange("reverseSpeedMultiplier", 0.55D, 0.0D, 1.0D);
-        SiegeworksConfigSpec.DoubleValue playerTurnSpeedValue = builder
-                .comment("Degrees turned per tick while driven by a player.")
-                .defineInRange("playerTurnDegreesPerTick", movement.playerTurnSpeedDegrees(), 0.0D, 180.0D);
-        SiegeworksConfigSpec.DoubleValue horseTurnSpeedValue = builder
-                .comment("Degrees turned per tick while pulled by a horse.")
-                .defineInRange("horseTurnDegreesPerTick", movement.horseTurnSpeedDegrees(), 0.0D, 180.0D);
-        builder.pop();
-
-        builder.comment("Firing, activation and loading timings.")
-                .push("operation");
-        SiegeworksConfigSpec.IntValue recoveryValue = builder
-                .comment("Recovery time after firing or activating. Loading cannot begin during recovery.",
-                        minimumRecoveryTicks > 0
-                                ? "The minimum preserves the fixed firing or impact event in the animation."
-                                : "Set to 0 to disable recovery.")
-                .defineInRange("recoveryTicks", recoveryTicks, minimumRecoveryTicks, 72000);
-
-        Map<String, SiegeworksConfigSpec.IntValue> stageValues = new HashMap<>();
-        if (stages.length > 0) {
-            builder.comment("Loading stage durations. Winding stages also scale their reload animation to match.")
-                    .push("loading");
-            for (StageDefault stage : stages) {
-                stageValues.put(stage.key(), builder.defineInRange(stage.key() + "Ticks", stage.ticks(), 1, 72000));
-            }
-            builder.pop();
-        }
-
-        builder.pop(2);
-        MovementSettings movementSettings = new MovementSettings(playerSpeedValue, horseSpeedValue,
-                playerAccelerationValue, horseAccelerationValue,
-                playerDecelerationValue, horseDecelerationValue,
-                reverseSpeedMultiplierValue, playerTurnSpeedValue, horseTurnSpeedValue);
-        OperationSettings operationSettings = new OperationSettings(recoveryValue, stageValues);
-        ENGINES.put(id, new EngineSettings(movementSettings, operationSettings, movement));
-    }
-
-    private static MovementDefaults movementDefaults(String id, double playerSpeed, double horseSpeed) {
-        return switch (id) {
-            case "mantlet" -> movement(playerSpeed, horseSpeed, 12, 24, 16, 28, 0.85D);
-            case "culverin" -> movement(playerSpeed, horseSpeed, 16, 28, 16, 28, 1.0D);
-            case "arcballista" -> movement(playerSpeed, horseSpeed, 18, 30, 18, 30, 1.15D);
-            case "hwacha" -> movement(playerSpeed, horseSpeed, 20, 32, 20, 34, 0.65D);
-            case "serpentine" -> movement(playerSpeed, horseSpeed, 22, 34, 22, 34, 0.62D);
-            case "onager" -> movement(playerSpeed, horseSpeed, 26, 38, 24, 36, 0.36D);
-            case "battering_ram" -> movement(playerSpeed, horseSpeed, 36, 50, 36, 46, 0.16D);
-            case "mons_meg" -> movement(playerSpeed, horseSpeed, 50, 64, 44, 56, 0.14D);
-            case "siege_tower" -> movement(playerSpeed, horseSpeed, 60, 80, 50, 70, 0.10D);
-            case "tower_crossbow", "trebuchet", "siege_ladder" ->
-                    movement(playerSpeed, horseSpeed, 1, 1, 1, 1, 0.0D);
-            default -> movement(playerSpeed, horseSpeed, 20, 32, 20, 32, 0.25D);
-        };
-    }
-
-    private static final double TOWED_TURN_CIRCLE_FACTOR = 2.0D;
-
-    private static MovementDefaults movement(double playerSpeed, double horseSpeed,
-                                             int playerAccelerationTicks, int horseAccelerationTicks,
-                                             int playerDecelerationTicks, int horseDecelerationTicks,
-                                             double playerTurnSpeedDegrees) {
-        double horseTurnSpeedDegrees = playerSpeed <= 0.0D
-                ? 0.0D
-                : playerTurnSpeedDegrees * (horseSpeed / playerSpeed) / TOWED_TURN_CIRCLE_FACTOR;
-        return new MovementDefaults(
-                playerSpeed, horseSpeed,
-                perTick(playerSpeed, playerAccelerationTicks),
-                perTick(horseSpeed, horseAccelerationTicks),
-                perTick(playerSpeed, playerDecelerationTicks),
-                perTick(horseSpeed, horseDecelerationTicks),
-                playerTurnSpeedDegrees, horseTurnSpeedDegrees);
-    }
-
-    private static double perTick(double speed, int ticks) {
-        return speed <= 0.0D ? 0.0D : speed / Math.max(1, ticks);
-    }
-
-    private static StageDefault stage(String key, int ticks) {
-        return new StageDefault(key, ticks);
-    }
-
     private static String getEngineId(EntityType<?> type) {
         return BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath();
-    }
-
-    private record EngineSettings(MovementSettings movement, OperationSettings operation,
-                                  MovementDefaults defaults) {
-    }
-
-    private record MovementSettings(SiegeworksConfigSpec.DoubleValue playerSpeed,
-                                    SiegeworksConfigSpec.DoubleValue horseSpeed,
-                                    SiegeworksConfigSpec.DoubleValue playerAcceleration,
-                                    SiegeworksConfigSpec.DoubleValue horseAcceleration,
-                                    SiegeworksConfigSpec.DoubleValue playerDeceleration,
-                                    SiegeworksConfigSpec.DoubleValue horseDeceleration,
-                                    SiegeworksConfigSpec.DoubleValue reverseSpeedMultiplier,
-                                    SiegeworksConfigSpec.DoubleValue playerTurnDegreesPerTick,
-                                    SiegeworksConfigSpec.DoubleValue horseTurnDegreesPerTick) {
-    }
-
-    private record OperationSettings(SiegeworksConfigSpec.IntValue recoveryTicks,
-                                     Map<String, SiegeworksConfigSpec.IntValue> loadingStages) {
-    }
-
-    private record MovementDefaults(double playerSpeed, double horseSpeed,
-                                    double playerAcceleration, double horseAcceleration,
-                                    double playerDeceleration, double horseDeceleration,
-                                    double playerTurnSpeedDegrees,
-                                    double horseTurnSpeedDegrees) {
-    }
-
-    private record StageDefault(String key, int ticks) {
     }
 }

@@ -1,0 +1,18 @@
+// Use with -PgameTestNamespaces=siegeworks_config,siegeworks_config_upgrade and runGameTestServer.
+// Seeds only the disposable GameTest world, after its normal reset, before the loader opens its configs.
+gradle.projectsEvaluated {
+    allprojects { project ->
+        if (project.tasks.findByName('prepareGameTestStructures') != null) {
+            project.tasks.named('prepareGameTestStructures').configure {
+                outputs.upToDateWhen { false }
+                doLast {
+                    def worldConfigs = project.rootProject.file("run/gametest/${project.name}/world/serverconfig")
+                    project.copy {
+                        from(project.rootProject.file('src/gametest/resources/config-migration'))
+                        into(worldConfigs)
+                    }
+                }
+            }
+        }
+    }
+}

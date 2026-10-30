@@ -1,0 +1,30 @@
+configVersion = 1
+
+[engines.culverin.movement]
+playerSpeed = 0.08
+horseSpeed = 0.24
+playerAcceleration = 0.004
+horseAcceleration = 0.006
+playerDeceleration = 0.002
+horseDeceleration = 0.003
+playerTurnDegreesPerTick = 1.125
+horseTurnDegreesPerTick = 2.25
+
+[engines.culverin.operation]
+recoveryTicks = 91
+[engines.culverin.operation.loading]
+powderTicks = 37
+
+[engines.mangonel.movement]
+playerSpeed = 0.06
+horseSpeed = 0.18
+
+[engines.siege_tower.crew]
+minimumCrew = 3
+fullSpeedCrew = 5
+minimumCrewSpeedMultiplier = 0.4
+
+[rules.deploymentLimits]
+mangonel = 7
+[rules.incendiary]
+fuseTicks = 140

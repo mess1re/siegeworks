@@ -1,0 +1,4 @@
+configVersion = 1
+
+[culverin.operation]
+recoverySeconds = 4.25
