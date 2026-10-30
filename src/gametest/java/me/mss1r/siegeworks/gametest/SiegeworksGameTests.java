@@ -32,7 +32,7 @@ import me.mss1r.siegeworks.entity.siege.CulverinEntity;
 import me.mss1r.siegeworks.entity.siege.TowerCrossbowEntity;
 import me.mss1r.siegeworks.entity.siege.SerpentineEntity;
 import me.mss1r.siegeworks.entity.siege.HwachaEntity;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.entity.siege.MantletEntity;
 import me.mss1r.siegeworks.entity.siege.MonsMegEntity;
 import me.mss1r.siegeworks.entity.siege.SiegeLadderEntity;
@@ -495,7 +495,7 @@ public final class SiegeworksGameTests {
     public static void draftMountsRequireRidersToControlSieges(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         AbstractSiegeEntity[] sieges = {
-                SiegeworksEntities.MANGONEL_ENTITY.get().create(level),
+                SiegeworksEntities.ONAGER_ENTITY.get().create(level),
                 SiegeworksEntities.HWACHA_ENTITY.get().create(level),
                 SiegeworksEntities.MANTLET_ENTITY.get().create(level),
                 SiegeworksEntities.SERPENTINE_ENTITY.get().create(level),
@@ -757,16 +757,16 @@ public final class SiegeworksGameTests {
         ServerLevel level = helper.getLevel();
         SerpentineEntity cannon = SiegeworksEntities.SERPENTINE_ENTITY.get().create(level);
         TowerCrossbowEntity towerCrossbow = SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(level);
-        MangonelEntity mangonel = SiegeworksEntities.MANGONEL_ENTITY.get().create(level);
+        OnagerEntity onager = SiegeworksEntities.ONAGER_ENTITY.get().create(level);
         Player operator = SiegeGameTestPlayers.createRideable(level);
-        helper.assertTrue(cannon != null && towerCrossbow != null && mangonel != null,
+        helper.assertTrue(cannon != null && towerCrossbow != null && onager != null,
                 "Failed to create mounted loading test entities");
 
         assertMountedLoading(helper, level, operator, cannon,
                 new ItemStack(SiegeworksItems.BLACK_POWDER.get(), 64));
         assertMountedLoading(helper, level, operator, towerCrossbow,
                 SiegeworksItems.TOWER_CROSSBOW_BOLT.get().getDefaultInstance());
-        assertMountedLoading(helper, level, operator, mangonel,
+        assertMountedLoading(helper, level, operator, onager,
                 Items.STONE.getDefaultInstance());
         helper.succeed();
     }
@@ -861,10 +861,10 @@ public final class SiegeworksGameTests {
                 "Stone grapeshot no longer stacks to two");
         SerpentineEntity serpentine = SiegeworksEntities.SERPENTINE_ENTITY.get().create(level);
         MonsMegEntity monsMeg = SiegeworksEntities.MONS_MEG_ENTITY.get().create(level);
-        MangonelEntity mangonel = SiegeworksEntities.MANGONEL_ENTITY.get().create(level);
+        OnagerEntity onager = SiegeworksEntities.ONAGER_ENTITY.get().create(level);
         TrebuchetEntity trebuchet = SiegeworksEntities.TREBUCHET_ENTITY.get().create(level);
         Player operator = SiegeGameTestPlayers.createRideable(level);
-        helper.assertTrue(serpentine != null && monsMeg != null && mangonel != null && trebuchet != null,
+        helper.assertTrue(serpentine != null && monsMeg != null && onager != null && trebuchet != null,
                 "Failed to create scattershot loading test entities");
         helper.assertTrue(serpentine.getScattershotProfile().pelletsPerLoadedItemMin() == 2
                         && serpentine.getScattershotProfile().pelletsPerLoadedItemMax() == 3,
@@ -872,8 +872,8 @@ public final class SiegeworksGameTests {
         helper.assertTrue(monsMeg.getScattershotProfile().pelletsPerLoadedItemMin() == 2
                         && monsMeg.getScattershotProfile().pelletsPerLoadedItemMax() == 3,
                 "Mons Meg iron nuggets are not configured to split into two or three pellets");
-        helper.assertTrue(mangonel.getScattershotProfile().minPellets() == 48
-                        && mangonel.getScattershotProfile().maxPellets() == 64
+        helper.assertTrue(onager.getScattershotProfile().minPellets() == 48
+                        && onager.getScattershotProfile().maxPellets() == 64
                         && trebuchet.getScattershotProfile().minPellets() == 48
                         && trebuchet.getScattershotProfile().maxPellets() == 64,
                 "Stone grapeshot is not configured for a 48-64 pellet volley");
@@ -885,14 +885,14 @@ public final class SiegeworksGameTests {
         assertMountedLoading(helper, level, operator, monsMeg,
                 new ItemStack(Items.IRON_NUGGET, 8));
 
-        mangonel.setPos(helper.absolutePos(new BlockPos(7, 1, 7)).getCenter());
+        onager.setPos(helper.absolutePos(new BlockPos(7, 1, 7)).getCenter());
         trebuchet.setPos(helper.absolutePos(new BlockPos(11, 1, 7)).getCenter());
-        level.addFreshEntity(mangonel);
+        level.addFreshEntity(onager);
         level.addFreshEntity(trebuchet);
         operator.stopRiding();
         operator.setItemInHand(InteractionHand.MAIN_HAND, SiegeworksItems.GRAPESHOT.get().getDefaultInstance());
-        helper.assertTrue(mangonel.handleSiegeInteraction(operator, InteractionHand.MAIN_HAND, level).consumesAction(),
-                "Mangonel rejected stone grapeshot");
+        helper.assertTrue(onager.handleSiegeInteraction(operator, InteractionHand.MAIN_HAND, level).consumesAction(),
+                "Onager rejected stone grapeshot");
         helper.assertTrue(trebuchet.handleSiegeInteraction(operator, InteractionHand.MAIN_HAND, level).consumesAction(),
                 "Trebuchet rejected stone grapeshot");
         helper.assertTrue(SiegeAmmo.projectileBlockState(SiegeAmmo.AMMO_GRAPESHOT)
@@ -1233,7 +1233,7 @@ public final class SiegeworksGameTests {
                 SiegeworksEntities.SERPENTINE_ENTITY.get(),
                 SiegeworksEntities.CULVERIN_ENTITY.get(),
                 SiegeworksEntities.BATTERING_RAM_ENTITY.get(),
-                SiegeworksEntities.MANGONEL_ENTITY.get(),
+                SiegeworksEntities.ONAGER_ENTITY.get(),
                 SiegeworksEntities.TREBUCHET_ENTITY.get(),
                 SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get(),
                 SiegeworksEntities.ARCBALLISTA_ENTITY.get(),

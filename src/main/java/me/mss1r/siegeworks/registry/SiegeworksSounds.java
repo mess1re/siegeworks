@@ -16,8 +16,8 @@ public final class SiegeworksSounds {
     public static final RegistrySupplier<SoundEvent> RAM_RELEASE = register("ram_release");
     public static final RegistrySupplier<SoundEvent> ROPE_CHARGE_BR = register("rope_charge_br");
     public static final RegistrySupplier<SoundEvent> SIEGE_ENGINE_MOVE = register("siege_engine_move");
-    public static final RegistrySupplier<SoundEvent> MANGONEL_SHOOT = registerFixed("mangonel_shoot", 180.0F);
-    public static final RegistrySupplier<SoundEvent> MANGONEL_RELOAD = register("mangonel_reload");
+    public static final RegistrySupplier<SoundEvent> ONAGER_SHOOT = registerFixed("onager_shoot", 180.0F);
+    public static final RegistrySupplier<SoundEvent> ONAGER_RELOAD = register("onager_reload");
     public static final RegistrySupplier<SoundEvent> TREBUCHET_SHOOT = registerFixed("trebuchet_shoot", 220.0F);
     public static final RegistrySupplier<SoundEvent> TREBUCHET_RELOAD = registerFixed("trebuchet_reload", 32.0F);
     public static final RegistrySupplier<SoundEvent> TOWER_CROSSBOW_SHOOT = registerFixed("tower_crossbow_shoot", 24.0F);

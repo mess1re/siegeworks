@@ -6,7 +6,7 @@ import me.mss1r.siegeworks.entity.siege.TowerCrossbowEntity;
 import me.mss1r.siegeworks.entity.siege.BatteringRamEntity;
 import me.mss1r.siegeworks.entity.siege.CulverinEntity;
 import me.mss1r.siegeworks.entity.siege.SerpentineEntity;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.entity.siege.MantletEntity;
 import me.mss1r.siegeworks.entity.siege.MonsMegEntity;
 import me.mss1r.siegeworks.entity.siege.HwachaEntity;
@@ -26,7 +26,7 @@ public final class EntityAttributesHandler {
       EntityAttributeRegistry.register(SiegeworksEntities.CULVERIN_ENTITY, CulverinEntity::createAttributes);
       EntityAttributeRegistry.register(SiegeworksEntities.MONS_MEG_ENTITY, MonsMegEntity::createAttributes);
       EntityAttributeRegistry.register(SiegeworksEntities.BATTERING_RAM_ENTITY, BatteringRamEntity::createAttributes);
-      EntityAttributeRegistry.register(SiegeworksEntities.MANGONEL_ENTITY, MangonelEntity::createAttributes);
+      EntityAttributeRegistry.register(SiegeworksEntities.ONAGER_ENTITY, OnagerEntity::createAttributes);
       EntityAttributeRegistry.register(SiegeworksEntities.TREBUCHET_ENTITY, TrebuchetEntity::createAttributes);
       EntityAttributeRegistry.register(SiegeworksEntities.TOWER_CROSSBOW_ENTITY, TowerCrossbowEntity::createAttributes);
       EntityAttributeRegistry.register(SiegeworksEntities.ARCBALLISTA_ENTITY, ArcballistaEntity::createAttributes);

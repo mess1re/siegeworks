@@ -67,7 +67,7 @@
             "0.25": {"vector":[0,0,0],"easing":"easeInElastic"}
           }
         },
-        "mangonel": {
+        "onager": {
           "rotation": {
             "0.125": {"vector":[0,0,0]},
             "0.2083": {"vector":[-1,0,0],"easing":"easeInElastic"},

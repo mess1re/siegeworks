@@ -51,12 +51,12 @@ public final class SiegeImpactBalanceGameTests {
             MinecraftVersionCompat.id(Siegeworks.MOD_ID, "giant_cannon_ball_projectile");
     private static final ResourceLocation TREBUCHET_STONE =
             MinecraftVersionCompat.id(Siegeworks.MOD_ID, "trebuchet_projectile");
-    private static final ResourceLocation MANGONEL_STONE =
-            MinecraftVersionCompat.id(Siegeworks.MOD_ID, "mangonel_projectile");
+    private static final ResourceLocation ONAGER_STONE =
+            MinecraftVersionCompat.id(Siegeworks.MOD_ID, "onager_projectile");
     private static final double CULVERIN_SPEED = 300.0D;
     private static final double MONS_MEG_SPEED = 315.0D;
     private static final double TREBUCHET_SPEED = 43.0D;
-    private static final double MANGONEL_SPEED = 30.0D;
+    private static final double ONAGER_SPEED = 30.0D;
     private static final int HALF_WIDTH = 7;
     private static final int THICKNESS = 9;
     private static final String MAPS = "impact-balance-maps.txt";
@@ -81,7 +81,7 @@ public final class SiegeImpactBalanceGameTests {
             Crater monsMegSand = ground(helper, Blocks.SANDSTONE, GIANT_CANNON_BALL, MONS_MEG_SPEED, false, maps);
             Crater monsMegSlope = ground(helper, Blocks.SANDSTONE, GIANT_CANNON_BALL, MONS_MEG_SPEED, true, maps);
             Crater culverinSlope = ground(helper, Blocks.SANDSTONE, CANNON_BALL, CULVERIN_SPEED, true, maps);
-            Crater mangonelPlanks = wall(helper, Blocks.OAK_PLANKS, MANGONEL_STONE, MANGONEL_SPEED, maps);
+            Crater onagerPlanks = wall(helper, Blocks.OAK_PLANKS, ONAGER_STONE, ONAGER_SPEED, maps);
             Siegeworks.LOG.info("Impact balance: culverin stone {}, earth {}, deepslate bricks {}, sandstone slope {};"
                             + " Mons Meg stone {}, terracotta {}, stone ground {}, sandstone ground {}, slope {}",
                     culverinStone, culverinEarth, culverinBricks, culverinSlope, monsMegStone, monsMegTerracotta,
@@ -92,16 +92,16 @@ public final class SiegeImpactBalanceGameTests {
             int monsMegBreach = shotsToBreach(helper, GIANT_CANNON_BALL, MONS_MEG_SPEED, BREACHED_WALL);
             int trebuchetBreach = shotsToBreach(helper, TREBUCHET_STONE, TREBUCHET_SPEED, BREACHED_WALL);
             Siegeworks.LOG.info("Breach tempo, six-block stone wall: culverin {} shots, Mons Meg {} shots,"
-                    + " trebuchet {} stones; a mangonel stone into planks {}", culverinBreach, monsMegBreach,
-                    trebuchetBreach, mangonelPlanks);
+                    + " trebuchet {} stones; an onager stone into planks {}", culverinBreach, monsMegBreach,
+                    trebuchetBreach, onagerPlanks);
             helper.assertTrue(culverinBreach >= 12 && culverinBreach <= 18,
                     "A culverin breached a six-block stone wall in " + culverinBreach + " shots, not 12 to 18");
             helper.assertTrue(monsMegBreach >= 5 && monsMegBreach <= 9,
                     "Mons Meg breached a six-block stone wall in " + monsMegBreach + " shots, not 5 to 9");
             helper.assertTrue(trebuchetBreach >= 12 && trebuchetBreach <= 22,
                     "A trebuchet breached a six-block stone wall in " + trebuchetBreach + " stones, not 12 to 22");
-            helper.assertTrue(mangonelPlanks.gone() >= 1,
-                    "A mangonel stone broke no block of a plank wall: " + mangonelPlanks);
+            helper.assertTrue(onagerPlanks.gone() >= 1,
+                    "An onager stone broke no block of a plank wall: " + onagerPlanks);
             helper.assertTrue(culverinStone.gone() >= 1 && culverinStone.gone() <= 2,
                     "A culverin shot broke " + culverinStone + " of a stone wall, not 1 or 2 blocks");
             helper.assertTrue(monsMegStone.gone() >= 3 && monsMegStone.gone() <= 9,

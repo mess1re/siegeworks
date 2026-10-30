@@ -1,14 +1,19 @@
 package me.mss1r.siegeworks.gametest;
 
+import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinitions;
 import me.mss1r.siegeworks.Siegeworks;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
+import me.mss1r.siegeworks.registry.SiegeworksSounds;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 //? if forge {
@@ -32,7 +37,8 @@ public final class UpgradeSaveGameTests {
     public static void renamedSingijeonStacksKeepTheirCountAndData(GameTestHelper helper) {
         Map<String, Item> renamed = Map.of(
                 "singijeon", SiegeworksItems.SO_SINGIJEON.get(),
-                "explosive_singijeon", SiegeworksItems.JUNG_SINGIJEON.get());
+                "explosive_singijeon", SiegeworksItems.JUNG_SINGIJEON.get(),
+                "mangonel_spawner", SiegeworksItems.ONAGER_SPAWNER.get());
         renamed.forEach((oldPath, item) -> {
             String oldId = Siegeworks.MOD_ID + ":" + oldPath;
             CompoundTag old = new CompoundTag();
@@ -68,7 +74,8 @@ public final class UpgradeSaveGameTests {
     public static void oldSingijeonIdsAreAliasesNotDuplicateItems(GameTestHelper helper) {
         Map<String, Item> renamed = Map.of(
                 "singijeon", SiegeworksItems.SO_SINGIJEON.get(),
-                "explosive_singijeon", SiegeworksItems.JUNG_SINGIJEON.get());
+                "explosive_singijeon", SiegeworksItems.JUNG_SINGIJEON.get(),
+                "mangonel_spawner", SiegeworksItems.ONAGER_SPAWNER.get());
         renamed.forEach((oldPath, item) -> {
             //? if forge {
             /*ResourceLocation oldId = new ResourceLocation(Siegeworks.MOD_ID, oldPath);
@@ -81,6 +88,47 @@ public final class UpgradeSaveGameTests {
                     "Legacy ID was registered as a second item: " + oldId);
         });
         helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = ITEM_MIGRATION_NAMESPACE)
+    public static void oldMangonelIdsAreAliasesOfTheOnager(GameTestHelper helper) {
+        assertAliases(helper, BuiltInRegistries.ENTITY_TYPE, Map.of(
+                "mangonel", SiegeworksEntities.ONAGER_ENTITY.get(),
+                "mangonel_projectile", SiegeworksEntities.ONAGER_PROJECTILE.get(),
+                "mangonel_passenger_projectile", SiegeworksEntities.ONAGER_PASSENGER_PROJECTILE.get()));
+        assertAliases(helper, BuiltInRegistries.SOUND_EVENT, Map.of(
+                "mangonel_shoot", SiegeworksSounds.ONAGER_SHOOT.get(),
+                "mangonel_reload", SiegeworksSounds.ONAGER_RELOAD.get()));
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = ITEM_MIGRATION_NAMESPACE)
+    public static void savedMangonelLoadsAsAnOnager(GameTestHelper helper) {
+        CompoundTag old = new CompoundTag();
+        old.putString("id", Siegeworks.MOD_ID + ":mangonel");
+        var loaded = EntityType.create(old, helper.getLevel()).orElse(null);
+        helper.assertTrue(loaded instanceof OnagerEntity, "A saved mangonel did not load as an onager: " + loaded);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = ITEM_MIGRATION_NAMESPACE)
+    public static void catapultBlueprintsAndSitesReadAsTheOnager(GameTestHelper helper) {
+        String old = Siegeworks.MOD_ID + ":catapult";
+        String onager = Siegeworks.MOD_ID + ":onager";
+        helper.assertTrue(BlueprintDefinitions.canonicalId(old).equals(onager),
+                "The catapult blueprint id does not lead to the onager");
+        helper.assertTrue(BlueprintDefinitions.get(old) != null
+                        && BlueprintDefinitions.get(old) == BlueprintDefinitions.get(onager),
+                "A drawn catapult blueprint does not read as the onager's");
+        helper.succeed();
+    }
+
+    private static <T> void assertAliases(GameTestHelper helper, Registry<T> registry, Map<String, T> renamed) {
+        renamed.forEach((oldPath, value) -> {
+            ResourceLocation oldId = MinecraftVersionCompat.id(Siegeworks.MOD_ID, oldPath);
+            helper.assertTrue(registry.get(oldId) == value, "Legacy ID does not resolve: " + oldId);
+            helper.assertTrue(!registry.keySet().contains(oldId), "Legacy ID was registered twice: " + oldId);
+        });
     }
 
     @GameTest(template = "empty")

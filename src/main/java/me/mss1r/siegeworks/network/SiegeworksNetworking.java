@@ -21,7 +21,7 @@ public final class SiegeworksNetworking {
     private static final ResourceLocation SIEGE_YAW = id("siege_yaw");
     private static final ResourceLocation SIEGE_MOVEMENT = id("siege_movement");
     private static final ResourceLocation BOLT_THROWER_FIRE = id("bolt_thrower_fire");
-    private static final ResourceLocation MANGONEL_FIRE = id("mangonel_fire");
+    private static final ResourceLocation ONAGER_FIRE = id("onager_fire");
     private static final ResourceLocation MANTLET_ACTION = id("mantlet_action");
     private static final ResourceLocation MAINTENANCE_ACTION = id("maintenance_action");
     private static final ResourceLocation LADDER_PUT_DOWN = id("ladder_put_down");
@@ -34,14 +34,14 @@ public final class SiegeworksNetworking {
 
     public static void register() {
         //? if forge {
-        /*
-        register(NetworkManager.c2s(), SIEGE_YAW, SiegeYawC2SPayload::decode, SiegeYawC2SPayload::handle);
+
+        /*register(NetworkManager.c2s(), SIEGE_YAW, SiegeYawC2SPayload::decode, SiegeYawC2SPayload::handle);
         register(NetworkManager.c2s(), SIEGE_MOVEMENT,
                 SiegeMovementC2SPayload::decode, SiegeMovementC2SPayload::handle);
         register(NetworkManager.c2s(), BOLT_THROWER_FIRE,
                 BoltThrowerFireC2SPayload::decode, BoltThrowerFireC2SPayload::handle);
-        register(NetworkManager.c2s(), MANGONEL_FIRE,
-                MangonelFireC2SPayload::decode, MangonelFireC2SPayload::handle);
+        register(NetworkManager.c2s(), ONAGER_FIRE,
+                OnagerFireC2SPayload::decode, OnagerFireC2SPayload::handle);
         register(NetworkManager.c2s(), MANTLET_ACTION,
                 MantletActionC2SPayload::decode, MantletActionC2SPayload::handle);
         register(NetworkManager.c2s(), MAINTENANCE_ACTION,
@@ -55,8 +55,8 @@ public final class SiegeworksNetworking {
                 SiegeMovementC2SPayload.STREAM_CODEC, SiegeMovementC2SPayload::handle);
         NetworkManager.registerReceiver(NetworkManager.c2s(), BoltThrowerFireC2SPayload.TYPE,
                 BoltThrowerFireC2SPayload.STREAM_CODEC, BoltThrowerFireC2SPayload::handle);
-        NetworkManager.registerReceiver(NetworkManager.c2s(), MangonelFireC2SPayload.TYPE,
-                MangonelFireC2SPayload.STREAM_CODEC, MangonelFireC2SPayload::handle);
+        NetworkManager.registerReceiver(NetworkManager.c2s(), OnagerFireC2SPayload.TYPE,
+                OnagerFireC2SPayload.STREAM_CODEC, OnagerFireC2SPayload::handle);
         NetworkManager.registerReceiver(NetworkManager.c2s(), MantletActionC2SPayload.TYPE,
                 MantletActionC2SPayload.STREAM_CODEC, MantletActionC2SPayload::handle);
         NetworkManager.registerReceiver(NetworkManager.c2s(), MaintenanceActionC2SPayload.TYPE,
@@ -77,8 +77,8 @@ public final class SiegeworksNetworking {
 
     private static void registerClientReceivers() {
         //? if forge {
-        /*
-        register(NetworkManager.s2c(), OPEN_MAINTENANCE,
+
+        /*register(NetworkManager.s2c(), OPEN_MAINTENANCE,
                 OpenMaintenanceS2CPayload::decode, OpenMaintenanceS2CPayload::handle);
         register(NetworkManager.s2c(), PROJECTILE_PROFILES,
                 ProjectileProfilesS2CPayload::decode, ProjectileProfilesS2CPayload::handle);
@@ -94,8 +94,8 @@ public final class SiegeworksNetworking {
     }
 
     //? if forge {
-    /*
-    private static <T> void register(NetworkManager.Side side, ResourceLocation id,
+
+    /*private static <T> void register(NetworkManager.Side side, ResourceLocation id,
                                      Function<FriendlyByteBuf, T> decoder,
                                      BiConsumer<T, NetworkManager.PacketContext> handler) {
         NetworkManager.registerReceiver(side, id,
@@ -105,8 +105,8 @@ public final class SiegeworksNetworking {
 
     public static void sendToServer(Object packet) {
         //? if forge {
-        /*
-        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+
+        /*FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         ResourceLocation id;
         if (packet instanceof SiegeYawC2SPayload value) {
             SiegeYawC2SPayload.encode(value, buffer);
@@ -117,9 +117,9 @@ public final class SiegeworksNetworking {
         } else if (packet instanceof BoltThrowerFireC2SPayload value) {
             BoltThrowerFireC2SPayload.encode(value, buffer);
             id = BOLT_THROWER_FIRE;
-        } else if (packet instanceof MangonelFireC2SPayload value) {
-            MangonelFireC2SPayload.encode(value, buffer);
-            id = MANGONEL_FIRE;
+        } else if (packet instanceof OnagerFireC2SPayload value) {
+            OnagerFireC2SPayload.encode(value, buffer);
+            id = ONAGER_FIRE;
         } else if (packet instanceof MantletActionC2SPayload value) {
             MantletActionC2SPayload.encode(value, buffer);
             id = MANTLET_ACTION;
@@ -140,8 +140,8 @@ public final class SiegeworksNetworking {
 
     public static void sendToPlayer(ServerPlayer player, Object packet) {
         //? if forge {
-        /*
-        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+
+        /*FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         ResourceLocation id;
         if (packet instanceof OpenMaintenanceS2CPayload value) {
             OpenMaintenanceS2CPayload.encode(value, buffer);

@@ -117,9 +117,9 @@ public final class SiegeBallisticsBench {
         run(helper, "mons_meg", SiegeworksEntities.MONS_MEG_ENTITY::get);
     }
 
-    @GameTest(template = "empty", timeoutTicks = 1100, batch = "ballistics_mangonel")
-    public static void mangonel(GameTestHelper helper) {
-        run(helper, "mangonel", SiegeworksEntities.MANGONEL_ENTITY::get);
+    @GameTest(template = "empty", timeoutTicks = 1100, batch = "ballistics_onager")
+    public static void onager(GameTestHelper helper) {
+        run(helper, "onager", SiegeworksEntities.ONAGER_ENTITY::get);
     }
 
     @GameTest(template = "empty", timeoutTicks = 1100, batch = "ballistics_trebuchet")

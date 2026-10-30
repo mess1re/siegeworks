@@ -41,16 +41,16 @@
       "siegeworks:siege_engine_move_4"
     ]
   },
-  "mangonel_shoot": {
-    "subtitle": "sounds.siegeworks.mangonel_shoot",
+  "onager_shoot": {
+    "subtitle": "sounds.siegeworks.onager_shoot",
     "sounds": [
-      "siegeworks:mangonel_shoot"
+      "siegeworks:onager_shoot"
     ]
   },
-  "mangonel_reload": {
-    "subtitle": "sounds.siegeworks.mangonel_reload",
+  "onager_reload": {
+    "subtitle": "sounds.siegeworks.onager_reload",
     "sounds": [
-      "siegeworks:mangonel_reload"
+      "siegeworks:onager_reload"
     ]
   },
   "trebuchet_shoot": {

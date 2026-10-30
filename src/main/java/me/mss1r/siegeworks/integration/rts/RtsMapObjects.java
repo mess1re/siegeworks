@@ -135,7 +135,7 @@ final class RtsMapObjects {
     }
 
     private static ResourceLocation fallbackItem() {
-        return MinecraftVersionCompat.id("siegeworks", "catapult_spawner");
+        return MinecraftVersionCompat.id("siegeworks", "onager_spawner");
     }
 
     private static MapObjectSnapshot describe(ServerPlayer player, AbstractSiegeEntity siege) {

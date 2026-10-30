@@ -22,7 +22,7 @@ public interface SiegeworksItems {
     RegistrySupplier<Item> SERPENTINE_SPAWNER = ITEMS.register("serpentine_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.SERPENTINE_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> CULVERIN_SPAWNER = ITEMS.register("culverin_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.CULVERIN_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> BATTERING_RAM_SPAWNER = ITEMS.register("battering_ram_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.BATTERING_RAM_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> MANGONEL_SPAWNER = ITEMS.register("mangonel_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.MANGONEL_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> ONAGER_SPAWNER = ITEMS.register("onager_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.ONAGER_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> TREBUCHET_SPAWNER = ITEMS.register("trebuchet_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.TREBUCHET_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> TOWER_CROSSBOW_SPAWNER = ITEMS.register("tower_crossbow_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.TOWER_CROSSBOW_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> ARCBALLISTA_SPAWNER = ITEMS.register("arcballista_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.ARCBALLISTA_ENTITY, new Item.Properties()));

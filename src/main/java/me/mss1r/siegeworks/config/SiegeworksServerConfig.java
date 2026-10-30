@@ -47,7 +47,7 @@ public final class SiegeworksServerConfig {
                 stage("bolt", 115), stage("winding", 100));
         register(builder, "arcballista", 0.075D, 0.21D, 48,
                 stage("bolt", 72), stage("winding", 60));
-        register(builder, "mangonel", 0.055D, 0.17D, 10, 4,
+        register(builder, "onager", 0.055D, 0.17D, 10, 4,
                 stage("stone", 95), stage("fireProjectile", 105), stage("winding", 170));
         register(builder, "trebuchet", 0.0D, 0.0D, 60, 16,
                 stage("stone", 150), stage("fireProjectile", 165), stage("winding", 320));
@@ -82,7 +82,7 @@ public final class SiegeworksServerConfig {
         registerDeploymentLimit(builder, "mons_meg");
         registerDeploymentLimit(builder, "tower_crossbow");
         registerDeploymentLimit(builder, "arcballista");
-        registerDeploymentLimit(builder, "mangonel");
+        registerDeploymentLimit(builder, "onager");
         registerDeploymentLimit(builder, "trebuchet");
         registerDeploymentLimit(builder, "battering_ram");
         registerDeploymentLimit(builder, "mantlet");
@@ -404,7 +404,7 @@ public final class SiegeworksServerConfig {
             case "arcballista" -> movement(playerSpeed, horseSpeed, 18, 30, 18, 30, 1.15D);
             case "hwacha" -> movement(playerSpeed, horseSpeed, 20, 32, 20, 34, 0.65D);
             case "serpentine" -> movement(playerSpeed, horseSpeed, 22, 34, 22, 34, 0.62D);
-            case "mangonel" -> movement(playerSpeed, horseSpeed, 26, 38, 24, 36, 0.36D);
+            case "onager" -> movement(playerSpeed, horseSpeed, 26, 38, 24, 36, 0.36D);
             case "battering_ram" -> movement(playerSpeed, horseSpeed, 36, 50, 36, 46, 0.16D);
             case "mons_meg" -> movement(playerSpeed, horseSpeed, 50, 64, 44, 56, 0.14D);
             case "siege_tower" -> movement(playerSpeed, horseSpeed, 60, 80, 50, 70, 0.10D);

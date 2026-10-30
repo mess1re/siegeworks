@@ -157,8 +157,8 @@ public final class SiegeDeploymentLimits extends SavedData {
 
     private static SiegeDeploymentLimits data(ServerLevel level) {
         //? if forge {
-        /*
-        return level.getServer().overworld().getDataStorage().computeIfAbsent(
+
+        /*return level.getServer().overworld().getDataStorage().computeIfAbsent(
                 SiegeDeploymentLimits::load, SiegeDeploymentLimits::new, DATA_NAME);
         *///?} else {
         return level.getServer().overworld().getDataStorage().computeIfAbsent(

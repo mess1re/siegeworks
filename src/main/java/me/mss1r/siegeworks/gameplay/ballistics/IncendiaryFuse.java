@@ -114,12 +114,12 @@ public final class IncendiaryFuse {
         level.addFreshEntity(pot);
     }
 
-    /** Bursts a placed pot using the mangonel pot's profile. */
+    /** Bursts a placed pot using the onager pot's profile. */
     public static void burstPlaced(ServerLevel level, Vec3 at, PotFilling filling, int delayTicks,
                                    @Nullable UUID responsible) {
-        burst(level, at, filling, delayTicks, SiegeworksEntities.MANGONEL_PROJECTILE.get(),
-                ProjectileVariants.MANGONEL_FIRE_PROJECTILE,
-                SiegeProfileCatalogs.ENGINES.forEntity(SiegeworksEntities.MANGONEL_ENTITY.get()).baseDamage(), null,
+        burst(level, at, filling, delayTicks, SiegeworksEntities.ONAGER_PROJECTILE.get(),
+                ProjectileVariants.ONAGER_FIRE_PROJECTILE,
+                SiegeProfileCatalogs.ENGINES.forEntity(SiegeworksEntities.ONAGER_ENTITY.get()).baseDamage(), null,
                 responsible);
     }
 }

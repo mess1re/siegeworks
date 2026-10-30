@@ -23,7 +23,7 @@ released under
 ### CC0 1.0
 
 The following recordings are used in the ballista, tower crossbow, and
-mangonel loading sounds:
+onager loading sounds:
 
 - `Wooden Crank, Handle with rope, winding.wav` by aUREa:
   https://freesound.org/s/491705/
@@ -51,7 +51,7 @@ https://creativecommons.org/publicdomain/zero/1.0/
 
 ### CC BY 4.0
 
-The mangonel release sound uses `catapult.wav` by cetsoundcrew:
+The onager release sound uses `catapult.wav` by cetsoundcrew:
 https://freesound.org/s/521321/
 
 License: https://creativecommons.org/licenses/by/4.0/

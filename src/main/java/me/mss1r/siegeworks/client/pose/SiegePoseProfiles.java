@@ -29,8 +29,8 @@ public final class SiegePoseProfiles {
             SiegeHeadPolicy.aim(true),
             10.0F
     );
-    public static final SiegePoseProfile MANGONEL = profile(
-            GeneratedSiegePoses.MANGONEL,
+    public static final SiegePoseProfile ONAGER = profile(
+            GeneratedSiegePoses.ONAGER,
             SiegeAimBinding.NONE,
             SiegeHeadPolicy.look(35.0F, 35.0F),
             8.0F
@@ -73,9 +73,9 @@ public final class SiegePoseProfiles {
             towerPushing(GeneratedSiegePoses.TOWER_PUSHING_5),
             towerPushing(GeneratedSiegePoses.TOWER_PUSHING_6)
     };
-    public static final SiegePoseProfile MANGONEL_PAYLOAD = profile(
+    public static final SiegePoseProfile ONAGER_PAYLOAD = profile(
             pose(
-                    "runtime/mangonel_payload",
+                    "runtime/onager_payload",
                     rotation(0.0F, 0.0F, 0.0F),
                     rotation(0.0F, 0.0F, 0.0F),
                     rotation(0.0F, 0.0F, 0.0F),

@@ -36,7 +36,7 @@ public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProject
 
     public void render(TrebuchetProjectile entity, float yaw, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, int light) {
         BlockState stoneState = SiegeAmmo.projectileBlockState(entity.getTextureName());
-        if (stoneState != null && (entity.getType() == SiegeworksEntities.MANGONEL_PROJECTILE.get()
+        if (stoneState != null && (entity.getType() == SiegeworksEntities.ONAGER_PROJECTILE.get()
                 || entity.getType() == SiegeworksEntities.TREBUCHET_PROJECTILE.get())) {
             poseStack.pushPose();
             // A load keeps tumbling forward after release, around the axis perpendicular to its flight.

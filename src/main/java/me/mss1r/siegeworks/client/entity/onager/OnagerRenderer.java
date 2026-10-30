@@ -1,4 +1,4 @@
-package me.mss1r.siegeworks.client.entity.mangonel;
+package me.mss1r.siegeworks.client.entity.onager;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -9,7 +9,7 @@ import me.mss1r.axiomata.blueprint.api.construction.ConstructionGeometry;
 import me.mss1r.siegeworks.client.rope.RopeRenderer;
 import me.mss1r.siegeworks.client.rope.SiegeRopeAnchors;
 import me.mss1r.siegeworks.client.entity.TowedSiegeRenderer;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.client.projectile.TrebuchetProjectileRenderer;
 import me.mss1r.siegeworks.item.SiegeAmmo;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
 
-public class MangonelRenderer extends TowedSiegeRenderer<MangonelEntity> {
+public class OnagerRenderer extends TowedSiegeRenderer<OnagerEntity> {
     private static final float LOADED_STONE_SCALE = 0.96F;
     private static final float LOADED_GRAPESHOT_SCALE = LOADED_STONE_SCALE * 16.0F / 10.0F;
     private static final double LOADED_STONE_Y_OFFSET = 5.0D / 16.0D;
@@ -56,37 +56,37 @@ public class MangonelRenderer extends TowedSiegeRenderer<MangonelEntity> {
                 ARM_PIVOT_BEHIND_DRUM + ARM_RADIUS * Math.sin(armAngle));
     }
 
-    public MangonelRenderer(EntityRendererProvider.Context renderManager) {
-        super(renderManager, new MangonelModel());
-        addRenderLayer(new BlockAndItemGeoLayer<MangonelEntity>(this) {
+    public OnagerRenderer(EntityRendererProvider.Context renderManager) {
+        super(renderManager, new OnagerModel());
+        addRenderLayer(new BlockAndItemGeoLayer<OnagerEntity>(this) {
             @Override
-            protected BlockState getBlockForBone(GeoBone bone, MangonelEntity mangonel) {
-                if (!"load".equals(bone.getName()) || mangonel.getWindingTime() > 0) {
+            protected BlockState getBlockForBone(GeoBone bone, OnagerEntity onager) {
+                if (!"load".equals(bone.getName()) || onager.getWindingTime() > 0) {
                     return null;
                 }
-                return SiegeAmmo.projectileBlockState(mangonel.getAmmoLoaded());
+                return SiegeAmmo.projectileBlockState(onager.getAmmoLoaded());
             }
 
             @Override
             protected void renderBlockForBone(PoseStack poseStack, GeoBone bone, BlockState state,
-                                              MangonelEntity mangonel, MultiBufferSource bufferSource,
+                                              OnagerEntity onager, MultiBufferSource bufferSource,
                                               float partialTick, int packedLight, int packedOverlay) {
-                boolean grapeshot = SiegeAmmo.isGrapeshotAmmoKey(mangonel.getAmmoLoaded());
+                boolean grapeshot = SiegeAmmo.isGrapeshotAmmoKey(onager.getAmmoLoaded());
                 poseStack.pushPose();
                 double yOffset = grapeshot ? LOADED_GRAPESHOT_Y_OFFSET : LOADED_STONE_Y_OFFSET;
                 float scale = grapeshot ? LOADED_GRAPESHOT_SCALE : LOADED_STONE_SCALE;
                 poseStack.translate(0.0D, yOffset, 0.0D);
                 poseStack.scale(scale, scale, scale);
-                if (SiegeAmmo.isFireAmmoKey(mangonel.getAmmoLoaded())) {
+                if (SiegeAmmo.isFireAmmoKey(onager.getAmmoLoaded())) {
                     // The pot sits bottom-down in the cup with the wick pointing out.
                     poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
                     poseStack.translate(0.0F, -0.25F, 0.0F);
-                    poseStack.scale(MangonelEntity.POT_IN_CUP_SCALE, MangonelEntity.POT_IN_CUP_SCALE,
-                            MangonelEntity.POT_IN_CUP_SCALE);
+                    poseStack.scale(OnagerEntity.POT_IN_CUP_SCALE, OnagerEntity.POT_IN_CUP_SCALE,
+                            OnagerEntity.POT_IN_CUP_SCALE);
                     poseStack.translate(0.0F, 0.25F, 0.0F);
                     TrebuchetProjectileRenderer.renderFirePot(poseStack, state, bufferSource, packedLight, packedOverlay);
                 } else {
-                    super.renderBlockForBone(poseStack, bone, state, mangonel, bufferSource,
+                    super.renderBlockForBone(poseStack, bone, state, onager, bufferSource,
                             partialTick, packedLight, packedOverlay);
                 }
                 poseStack.popPose();
@@ -95,13 +95,13 @@ public class MangonelRenderer extends TowedSiegeRenderer<MangonelEntity> {
     }
 
     @Override
-    protected void renderInModelSpace(PoseStack poseStack, MangonelEntity animatable,
+    protected void renderInModelSpace(PoseStack poseStack, OnagerEntity animatable,
                                       MultiBufferSource bufferSource, float partialTick,
                                       int packedLight) {
         renderWinchRope(poseStack, animatable, bufferSource, packedLight);
     }
 
-    private void renderWinchRope(PoseStack poseStack, MangonelEntity animatable,
+    private void renderWinchRope(PoseStack poseStack, OnagerEntity animatable,
                                  MultiBufferSource bufferSource, int packedLight) {
         Optional<Vec3> arm = SiegeRopeAnchors.modelPosition(getGeoModel(), ARM_ANCHOR);
         Optional<Vec3> drum = SiegeRopeAnchors.modelPosition(getGeoModel(), DRUM_ANCHOR);
@@ -121,7 +121,7 @@ public class MangonelRenderer extends TowedSiegeRenderer<MangonelEntity> {
         poseStack.popPose();
     }
 
-    private double renderedRopeLength(MangonelEntity animatable, double anchorSpan) {
+    private double renderedRopeLength(OnagerEntity animatable, double anchorSpan) {
         SiegeOperationState state = animatable.getOperationState();
         if (state == SiegeOperationState.WINDING) {
             double takeUp = Mth.clamp(woundTurns() / SLACK_TAKE_UP_TURNS, 0.0D, 1.0D);

@@ -215,7 +215,7 @@ public final class GeneratedCollisionShapes {
             )
     );
 
-    public static final CollisionShape MANGONEL_BODY = new CollisionShape(
+    public static final CollisionShape ONAGER_BODY = new CollisionShape(
             new Vec3(0D, 0.25D, 0D),
             List.of(
                     orientedBox(-0.5625D, 0.5625D, 0D, 0.125D, 0.1875D, 1.5D, -1D, 0D, 0D, 0D, 1D, 0D, 0D, 0D, -1D),
@@ -233,7 +233,7 @@ public final class GeneratedCollisionShapes {
             )
     );
 
-    public static final CollisionShape MANGONEL_ARM = new CollisionShape(
+    public static final CollisionShape ONAGER_ARM = new CollisionShape(
             new Vec3(0D, 0.5625D, 0.4375D),
             List.of(
                     orientedBox(0D, 0.5625D, 0.4375D, 0.4375D, 0.125D, 0.125D, -1D, 0D, 0D, 0D, 1D, 0D, 0D, 0D, -1D),

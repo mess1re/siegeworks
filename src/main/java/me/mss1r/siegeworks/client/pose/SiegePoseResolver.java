@@ -5,7 +5,7 @@ import me.mss1r.siegeworks.entity.siege.ArcballistaEntity;
 import me.mss1r.siegeworks.entity.siege.BatteringRamEntity;
 import me.mss1r.siegeworks.entity.siege.CulverinEntity;
 import me.mss1r.siegeworks.entity.siege.HwachaEntity;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.entity.siege.MantletEntity;
 import me.mss1r.siegeworks.entity.siege.MonsMegEntity;
 import me.mss1r.siegeworks.entity.siege.SiegeTowerEntity;
@@ -71,10 +71,10 @@ public final class SiegePoseResolver {
                     ? SiegePoseProfiles.BATTERING_RAM_SECOND
                     : SiegePoseProfiles.BATTERING_RAM_FIRST);
         }
-        if (siege instanceof MangonelEntity mangonel) {
-            return fixed(mangonel.isLaunchPayload(rider)
-                    ? SiegePoseProfiles.MANGONEL_PAYLOAD
-                    : SiegePoseProfiles.MANGONEL);
+        if (siege instanceof OnagerEntity onager) {
+            return fixed(onager.isLaunchPayload(rider)
+                    ? SiegePoseProfiles.ONAGER_PAYLOAD
+                    : SiegePoseProfiles.ONAGER);
         }
         if (siege instanceof MantletEntity) {
             return fixed(SiegePoseProfiles.MANTLET);

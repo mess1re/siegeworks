@@ -12,7 +12,7 @@ import me.mss1r.siegeworks.data.profile.ProjectileVariants;
 import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.entity.projectile.TrebuchetProjectile;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.entity.siege.TrebuchetEntity;
 import me.mss1r.siegeworks.gameplay.ballistics.IncendiaryFuse;
 import me.mss1r.siegeworks.item.PotFilling;
@@ -260,9 +260,9 @@ public final class IncendiaryFuseGameTests {
     @GameTest(template = "empty", timeoutTicks = 40)
     public static void litPotBurstsInFlightWhenItsFuseRunsOut(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        TrebuchetProjectile pot = SiegeworksEntities.MANGONEL_PROJECTILE.get().create(level);
+        TrebuchetProjectile pot = SiegeworksEntities.ONAGER_PROJECTILE.get().create(level);
         helper.assertTrue(pot != null, "Failed to create the pot");
-        pot.setPhysicsProfile(ProjectileVariants.MANGONEL_FIRE_PROJECTILE);
+        pot.setPhysicsProfile(ProjectileVariants.ONAGER_FIRE_PROJECTILE);
         pot.setFilling(PotFilling.standard());
         pot.setNoGravity(true);
         Vec3 at = helper.absoluteVec(new Vec3(2.5D, 6.0D, 2.5D));
@@ -275,12 +275,12 @@ public final class IncendiaryFuseGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 260)
-    public static void potLitInAMangonelBurstsThereIfNotThrown(GameTestHelper helper) {
+    public static void potLitInAOnagerBurstsThereIfNotThrown(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        MangonelEntity mangonel = SiegeworksEntities.MANGONEL_ENTITY.get().create(level);
-        helper.assertTrue(mangonel != null, "Failed to create the mangonel");
-        assertLitPotBurstsInEngine(helper, mangonel, new BlockPos(3, 1, 3),
-                crew -> mangonel.handleSiegeInteraction(crew, InteractionHand.MAIN_HAND, level));
+        OnagerEntity onager = SiegeworksEntities.ONAGER_ENTITY.get().create(level);
+        helper.assertTrue(onager != null, "Failed to create the onager");
+        assertLitPotBurstsInEngine(helper, onager, new BlockPos(3, 1, 3),
+                crew -> onager.handleSiegeInteraction(crew, InteractionHand.MAIN_HAND, level));
     }
 
     @GameTest(template = "empty", timeoutTicks = 260)
@@ -293,20 +293,20 @@ public final class IncendiaryFuseGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 60)
-    public static void mangonelThrowsItsPotStillBurning(GameTestHelper helper) {
+    public static void onagerThrowsItsPotStillBurning(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        MangonelEntity mangonel = SiegeworksEntities.MANGONEL_ENTITY.get().create(level);
-        helper.assertTrue(mangonel != null, "Failed to create the mangonel");
-        Player crew = placeLoadedEngine(helper, mangonel, new BlockPos(3, 1, 3));
+        OnagerEntity onager = SiegeworksEntities.ONAGER_ENTITY.get().create(level);
+        helper.assertTrue(onager != null, "Failed to create the onager");
+        Player crew = placeLoadedEngine(helper, onager, new BlockPos(3, 1, 3));
 
-        helper.assertTrue(mangonel.handleSiegeInteraction(crew, InteractionHand.MAIN_HAND, level).consumesAction(),
-                "The mangonel would not light its pot");
+        helper.assertTrue(onager.handleSiegeInteraction(crew, InteractionHand.MAIN_HAND, level).consumesAction(),
+                "The onager would not light its pot");
         crew.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        helper.assertTrue(mangonel.handleSiegeInteraction(crew, InteractionHand.MAIN_HAND, level).consumesAction(),
-                "The mangonel would not throw its lit pot");
+        helper.assertTrue(onager.handleSiegeInteraction(crew, InteractionHand.MAIN_HAND, level).consumesAction(),
+                "The onager would not throw its lit pot");
 
         helper.succeedWhen(() -> {
-            AABB around = mangonel.getBoundingBox().inflate(48.0D);
+            AABB around = onager.getBoundingBox().inflate(48.0D);
             helper.assertTrue(!level.getEntitiesOfClass(TrebuchetProjectile.class, around,
                     shot -> shot.isLit() && PotFilling.standard().equals(shot.filling())).isEmpty(),
                     "The thrown pot left its fuse or its filling behind");
@@ -337,11 +337,11 @@ public final class IncendiaryFuseGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 20)
     public static void siegeEnginesNeitherFreezeNorDrownNorTakePotions(GameTestHelper helper) {
-        MangonelEntity mangonel = SiegeworksEntities.MANGONEL_ENTITY.get().create(helper.getLevel());
-        helper.assertTrue(mangonel != null, "Failed to create the mangonel");
-        helper.assertTrue(!mangonel.canFreeze(), "A siege engine freezes in powder snow");
-        helper.assertTrue(mangonel.canBreatheUnderwater(), "A siege engine drowns");
-        helper.assertTrue(!mangonel.addEffect(new MobEffectInstance(MobEffects.POISON, 100)),
+        OnagerEntity onager = SiegeworksEntities.ONAGER_ENTITY.get().create(helper.getLevel());
+        helper.assertTrue(onager != null, "Failed to create the onager");
+        helper.assertTrue(!onager.canFreeze(), "A siege engine freezes in powder snow");
+        helper.assertTrue(onager.canBreatheUnderwater(), "A siege engine drowns");
+        helper.assertTrue(!onager.addEffect(new MobEffectInstance(MobEffects.POISON, 100)),
                 "A siege engine was poisoned");
         helper.succeed();
     }
@@ -504,9 +504,9 @@ public final class IncendiaryFuseGameTests {
 
     private static TrebuchetProjectile dropPot(GameTestHelper helper, boolean lit) {
         ServerLevel level = helper.getLevel();
-        TrebuchetProjectile pot = SiegeworksEntities.MANGONEL_PROJECTILE.get().create(level);
+        TrebuchetProjectile pot = SiegeworksEntities.ONAGER_PROJECTILE.get().create(level);
         helper.assertTrue(pot != null, "Failed to create the pot");
-        pot.setPhysicsProfile(ProjectileVariants.MANGONEL_FIRE_PROJECTILE);
+        pot.setPhysicsProfile(ProjectileVariants.ONAGER_FIRE_PROJECTILE);
         pot.setFilling(PotFilling.standard());
         Vec3 at = helper.absoluteVec(new Vec3(2.5D, 3.0D, 2.5D));
         pot.setPos(at.x, at.y, at.z);

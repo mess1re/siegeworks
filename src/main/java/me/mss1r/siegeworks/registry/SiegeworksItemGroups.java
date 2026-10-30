@@ -54,7 +54,7 @@ public interface SiegeworksItemGroups {
                             itemStack(SiegeworksItems.SERPENTINE_SPAWNER.get()),
                             itemStack(SiegeworksItems.CULVERIN_SPAWNER.get()),
                             itemStack(SiegeworksItems.BATTERING_RAM_SPAWNER.get()),
-                            itemStack(SiegeworksItems.MANGONEL_SPAWNER.get()),
+                            itemStack(SiegeworksItems.ONAGER_SPAWNER.get()),
                             itemStack(SiegeworksItems.TREBUCHET_SPAWNER.get()),
                             itemStack(SiegeworksItems.TOWER_CROSSBOW_SPAWNER.get()),
                             itemStack(SiegeworksItems.ARCBALLISTA_SPAWNER.get()),

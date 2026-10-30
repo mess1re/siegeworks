@@ -31,7 +31,7 @@ public final class SiegeMaintenanceData {
             Map.entry("siegeworks:serpentine", "siegeworks:serpentine_spawner"),
             Map.entry("siegeworks:culverin", "siegeworks:culverin_spawner"),
             Map.entry("siegeworks:battering_ram", "siegeworks:battering_ram_spawner"),
-            Map.entry("siegeworks:mangonel", "siegeworks:mangonel_spawner"),
+            Map.entry("siegeworks:onager", "siegeworks:onager_spawner"),
             Map.entry("siegeworks:trebuchet", "siegeworks:trebuchet_spawner"),
             Map.entry("siegeworks:tower_crossbow", "siegeworks:tower_crossbow_spawner"),
             Map.entry("siegeworks:arcballista", "siegeworks:arcballista_spawner"),

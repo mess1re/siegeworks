@@ -1,5 +1,5 @@
 {
-  "model": "siegeworks:geo/mangonel.geo.json",
+  "model": "siegeworks:geo/onager.geo.json",
   "boneCubes": {
     "base": 12,
     "catapult": 4,

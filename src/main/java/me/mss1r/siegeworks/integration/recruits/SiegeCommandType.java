@@ -24,7 +24,7 @@ enum SiegeCommandType {
             Kind.ARTILLERY),
     MONS_MEG(SiegeworksEntities.MONS_MEG_ENTITY, SiegeworksItems.MONS_MEG_SPAWNER,
             Kind.ARTILLERY),
-    MANGONEL(SiegeworksEntities.MANGONEL_ENTITY, SiegeworksItems.MANGONEL_SPAWNER,
+    ONAGER(SiegeworksEntities.ONAGER_ENTITY, SiegeworksItems.ONAGER_SPAWNER,
             Kind.ARTILLERY, SiegeAmmunitionMode.AUTO, SiegeAmmunitionMode.STANDARD,
             SiegeAmmunitionMode.INCENDIARY),
     TREBUCHET(SiegeworksEntities.TREBUCHET_ENTITY, SiegeworksItems.TREBUCHET_SPAWNER,

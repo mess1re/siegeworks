@@ -155,7 +155,7 @@ public final class SiegeDeploymentItemRenderer extends BlockEntityWithoutLevelRe
             case "serpentine" -> new PreviewTransform(0.175F, 0.85F, 0.0F, 0.12F, 1.15F, 0.27F);
             case "tower_crossbow" -> new PreviewTransform(0.145F, 0.95F, 0.0F, 0.0F, 1.15F, 0.29F);
             case "hwacha" -> new PreviewTransform(0.135F, 1.45F, -0.05F, 0.0F, 1.25F, 0.31F);
-            case "mangonel" -> new PreviewTransform(0.180F, 1.50F, 0.0F, 0.0F, 1.05F, 0.31F);
+            case "onager" -> new PreviewTransform(0.180F, 1.50F, 0.0F, 0.0F, 1.05F, 0.31F);
             case "mantlet" -> new PreviewTransform(0.120F, 2.10F, 0.0F, -0.05F, 1.00F, 0.35F);
             case "mons_meg" -> new PreviewTransform(0.115F, 1.30F, -0.05F, 0.0F, 1.00F, 0.31F);
             case "battering_ram" -> new PreviewTransform(0.080F, 2.80F, 0.0F, 0.0F, 1.00F, 0.37F);

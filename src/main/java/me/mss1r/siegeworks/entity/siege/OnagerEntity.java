@@ -11,7 +11,7 @@ import me.mss1r.siegeworks.api.MountedSiegeItemControl;
 import me.mss1r.siegeworks.api.SiegeOperationState;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
-import me.mss1r.siegeworks.entity.projectile.MangonelPassengerProjectile;
+import me.mss1r.siegeworks.entity.projectile.OnagerPassengerProjectile;
 import me.mss1r.siegeworks.entity.projectile.TrebuchetProjectile;
 import me.mss1r.siegeworks.gameplay.ballistics.EnginePot;
 import me.mss1r.siegeworks.gameplay.ballistics.IncendiaryFuse;
@@ -91,7 +91,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, SiegeAmmunitionControl,
+public class OnagerEntity extends AbstractSiegeEntity implements GeoEntity, SiegeAmmunitionControl,
         MountedSiegeItemControl {
     private static final String TAG_LAUNCH_PAYLOAD = "LaunchPayload";
     private static final String TAG_SHOOT_ANIMATION_TICK = "ShootAnimationTick";
@@ -102,7 +102,7 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
     private static final double UNLOADED_ARM_ANGLE = 0.0D;
     private static final double LOADED_ARM_ANGLE = -60.0D;
     private static final TagKey<Item> PASSENGER_LOADING_ITEMS = TagKey.create(Registries.ITEM,
-            MinecraftVersionCompat.id(Siegeworks.MOD_ID, "mangonel_passenger_loading_items"));
+            MinecraftVersionCompat.id(Siegeworks.MOD_ID, "onager_passenger_loading_items"));
     private static final Vec3 ARM_PIVOT = new Vec3(0.0D, 9.0D / 16.0D, -7.0D / 16.0D);
     private static final Vec3 LOAD_CENTER = new Vec3(0.0D, 44.0D / 16.0D, -6.0D / 16.0D);
     private static final Vec3 ROOT_COLLISION_PIVOT = new Vec3(0.0D, 6.0D / 16.0D, 0.0D);
@@ -118,8 +118,8 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
             SiegeAmmunitionMode.AUTO, SiegeAmmunitionMode.STANDARD, SiegeAmmunitionMode.INCENDIARY);
     private static final SiegeSoundProfile SOUND_PROFILE = SiegeSoundProfile.defaults()
             .withMovementSound(SiegeworksSounds.SIEGE_ENGINE_MOVE.get())
-            .withReloadSound(SiegeworksSounds.MANGONEL_RELOAD.get())
-            .withFiringSound(SiegeworksSounds.MANGONEL_SHOOT.get())
+            .withReloadSound(SiegeworksSounds.ONAGER_RELOAD.get())
+            .withFiringSound(SiegeworksSounds.ONAGER_SHOOT.get())
             .withMovementInterval(150)
             .withMovementRange(30.0)
             .withReloadRange(15.0)
@@ -133,12 +133,12 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
             LoadingRequirement.consume(SiegeworksItems.GRAPESHOT.get()).timedBy("stone")
     };
     private static final EntityDataAccessor<Optional<UUID>> LAUNCH_PAYLOAD =
-            SynchedEntityData.defineId(MangonelEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+            SynchedEntityData.defineId(OnagerEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Integer> SHOOT_ANIMATION_TICK =
-            SynchedEntityData.defineId(MangonelEntity.class, EntityDataSerializers.INT);
+            SynchedEntityData.defineId(OnagerEntity.class, EntityDataSerializers.INT);
     /** Fuse ticks left on a pot waiting in the cup, or {@link IncendiaryFuse#UNLIT}. */
     private static final EntityDataAccessor<Integer> POT_FUSE =
-            SynchedEntityData.defineId(MangonelEntity.class, EntityDataSerializers.INT);
+            SynchedEntityData.defineId(OnagerEntity.class, EntityDataSerializers.INT);
     private static final ScalarAnimationCurve RELOAD_ARM = ScalarAnimationCurve.of(
             key(0.0F, UNLOADED_ARM_ANGLE, ScalarAnimationCurve.Interpolation.LINEAR),
             key(RELOAD_ANIMATION_TICKS, LOADED_ARM_ANGLE, ScalarAnimationCurve.Interpolation.LINEAR));
@@ -169,7 +169,7 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
     private double previousCollisionRootAngle;
     private double previousCollisionArmAngle = UNLOADED_ARM_ANGLE;
 
-    public MangonelEntity(EntityType<? extends LivingEntity> type, Level level) {
+    public OnagerEntity(EntityType<? extends LivingEntity> type, Level level) {
         super(type, level);
     }
 
@@ -492,15 +492,15 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
 
     @Override
     public void onSiegeTick(ServerLevel serverLevel) {
-        pot.burn(serverLevel, () -> potPoint(0.0D), SiegeworksEntities.MANGONEL_PROJECTILE.get(),
-                ProjectileVariants.MANGONEL_FIRE_PROJECTILE);
+        pot.burn(serverLevel, () -> potPoint(0.0D), SiegeworksEntities.ONAGER_PROJECTILE.get(),
+                ProjectileVariants.ONAGER_FIRE_PROJECTILE);
         int animationTick = getShootAnimationTick();
         if (animationTick < 0) {
             return;
         }
         animationTick++;
         if (hasLaunchLoad() && animationTick == PROJECTILE_RELEASE_TICK) {
-            fireMangonel(serverLevel);
+            fireOnager(serverLevel);
         }
         setShootAnimationTick(animationTick >= SHOOT_ANIMATION_TICKS ? -1 : animationTick);
     }
@@ -510,7 +510,7 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
         return hasLaunchLoad() ? "siege.loading.state.firing" : super.getCooldownStatusKey();
     }
 
-    private void fireMangonel(ServerLevel serverLevel) {
+    private void fireOnager(ServerLevel serverLevel) {
         Vec3 launchVelocity = createLaunchVelocity();
         Entity launchPayload = getLaunchPayload();
         if (launchPayload instanceof LivingEntity livingPayload) {
@@ -530,7 +530,7 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
             return;
         }
 
-        TrebuchetProjectile projectile = new TrebuchetProjectile(SiegeworksEntities.MANGONEL_PROJECTILE.get(), this, serverLevel);
+        TrebuchetProjectile projectile = new TrebuchetProjectile(SiegeworksEntities.ONAGER_PROJECTILE.get(), this, serverLevel);
         projectile.setPos(releasePosition.x, releasePosition.y, releasePosition.z);
         projectile.setDeltaMovement(launchVelocity);
 
@@ -541,7 +541,7 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
         if (SiegeAmmo.isStoneAmmoKey(ammo)) {
             projectile.setTextureName(ammo);
         } else if (SiegeAmmo.isFireAmmoKey(ammo)) {
-            projectile.setPhysicsProfile(ProjectileVariants.MANGONEL_FIRE_PROJECTILE);
+            projectile.setPhysicsProfile(ProjectileVariants.ONAGER_FIRE_PROJECTILE);
             pot.throwWith(projectile);
         }
 
@@ -550,8 +550,8 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
     }
 
     private void launchPassenger(ServerLevel serverLevel, LivingEntity passenger, Vec3 launchVelocity) {
-        MangonelPassengerProjectile carrier = new MangonelPassengerProjectile(
-                SiegeworksEntities.MANGONEL_PASSENGER_PROJECTILE.get(), this, serverLevel);
+        OnagerPassengerProjectile carrier = new OnagerPassengerProjectile(
+                SiegeworksEntities.ONAGER_PASSENGER_PROJECTILE.get(), this, serverLevel);
         Vec3 releasePosition = releasedLoadPosition(launchVelocity);
         carrier.setPos(releasePosition.x, releasePosition.y, releasePosition.z);
         carrier.setDeltaMovement(launchVelocity);
@@ -612,7 +612,7 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
 
     private double getRequiredShotPower(Vec3 target) {
         return SiegeBallistics.calculateFixedArcPower(getAutomatedAimOrigin(), target,
-                getLaunchSpeed(), LAUNCH_SLOPE, ballisticFlight(SiegeworksEntities.MANGONEL_PROJECTILE.get()),
+                getLaunchSpeed(), LAUNCH_SLOPE, ballisticFlight(SiegeworksEntities.ONAGER_PROJECTILE.get()),
                 getMinShotPower(), getMaxShotPower());
     }
 
@@ -705,11 +705,11 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
 
     private static List<CollisionGroup> collisionGroups(double rootAngle, double armAngle) {
         CollisionPose rootPose = authoredRotation(ROOT_COLLISION_PIVOT, rootAngle);
-        CollisionPose armPose = authoredRotation(GeneratedCollisionShapes.MANGONEL_ARM.pivot(), armAngle)
+        CollisionPose armPose = authoredRotation(GeneratedCollisionShapes.ONAGER_ARM.pivot(), armAngle)
                 .then(rootPose);
         return List.of(
-                new CollisionGroup("body", GeneratedCollisionShapes.MANGONEL_BODY, rootPose),
-                new CollisionGroup("arm", GeneratedCollisionShapes.MANGONEL_ARM, armPose));
+                new CollisionGroup("body", GeneratedCollisionShapes.ONAGER_BODY, rootPose),
+                new CollisionGroup("arm", GeneratedCollisionShapes.ONAGER_ARM, armPose));
     }
 
     private double getCurrentRootAngle() {
@@ -749,7 +749,7 @@ public class MangonelEntity extends AbstractSiegeEntity implements GeoEntity, Si
     protected Vec3 getOperatorOffset(Entity entity) {
         if (isLaunchPayload(entity)) {
             return applyRootAngle(getLoadOffsetForAuthoredAngle(getCurrentArmAngle()), getCurrentRootAngle())
-                    .add(0.0D, MangonelPassengerProjectile.PASSENGER_Y_OFFSET, 0.0D);
+                    .add(0.0D, OnagerPassengerProjectile.PASSENGER_Y_OFFSET, 0.0D);
         }
         return new Vec3(0.0D, 0.0D, 2.5D);
     }

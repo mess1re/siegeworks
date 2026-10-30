@@ -72,8 +72,8 @@ public final class SiegeOwnerActivity extends SavedData {
 
     private static SiegeOwnerActivity data(ServerLevel level) {
         //? if forge {
-        /*
-        return level.getServer().overworld().getDataStorage().computeIfAbsent(
+
+        /*return level.getServer().overworld().getDataStorage().computeIfAbsent(
                 SiegeOwnerActivity::load, SiegeOwnerActivity::new, DATA_NAME);
         *///?} else {
         return level.getServer().overworld().getDataStorage().computeIfAbsent(

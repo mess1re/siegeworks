@@ -38,7 +38,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Mangonel or trebuchet load: a stone, or a pot once {@link #setFilling} is called. */
+/** Onager or trebuchet load: a stone, or a pot once {@link #setFilling} is called. */
 public class TrebuchetProjectile extends SiegeProjectile {
     private static final String TAG_TEXTURE_NAME = "TextureName";
     private static final String TAG_FUSE = "Fuse";

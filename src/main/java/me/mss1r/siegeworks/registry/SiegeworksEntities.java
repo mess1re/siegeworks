@@ -8,7 +8,7 @@ import me.mss1r.siegeworks.entity.projectile.TowerCrossbowBoltProjectile;
 import me.mss1r.siegeworks.entity.projectile.CannonProjectile;
 import me.mss1r.siegeworks.entity.projectile.FireArrowEntity;
 import me.mss1r.siegeworks.entity.projectile.GiantCannonProjectile;
-import me.mss1r.siegeworks.entity.projectile.MangonelPassengerProjectile;
+import me.mss1r.siegeworks.entity.projectile.OnagerPassengerProjectile;
 import me.mss1r.siegeworks.entity.projectile.SingijeonProjectile;
 import me.mss1r.siegeworks.entity.projectile.ScattershotProjectile;
 import me.mss1r.siegeworks.entity.projectile.TrebuchetProjectile;
@@ -17,7 +17,7 @@ import me.mss1r.siegeworks.entity.siege.TowerCrossbowEntity;
 import me.mss1r.siegeworks.entity.siege.BatteringRamEntity;
 import me.mss1r.siegeworks.entity.siege.CulverinEntity;
 import me.mss1r.siegeworks.entity.siege.SerpentineEntity;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.entity.siege.MantletEntity;
 import me.mss1r.siegeworks.entity.siege.MonsMegEntity;
 import me.mss1r.siegeworks.entity.siege.HwachaEntity;
@@ -59,13 +59,13 @@ public interface SiegeworksEntities {
                             .updateInterval(DEFAULT_UPDATE_INTERVAL)
                             .build("battering_ram"));
 
-    RegistrySupplier<EntityType<MangonelEntity>> MANGONEL_ENTITY =
-            ENTITY_TYPES.register("mangonel", () ->
-                    EntityType.Builder.of(MangonelEntity::new, MobCategory.MISC)
+    RegistrySupplier<EntityType<OnagerEntity>> ONAGER_ENTITY =
+            ENTITY_TYPES.register("onager", () ->
+                    EntityType.Builder.of(OnagerEntity::new, MobCategory.MISC)
                             .sized(2.8f, 2.5f)
                             .clientTrackingRange(DEFAULT_TRACKING_RANGE)
                             .updateInterval(DEFAULT_UPDATE_INTERVAL)
-                            .build("mangonel"));
+                            .build("onager"));
 
     RegistrySupplier<EntityType<TrebuchetEntity>> TREBUCHET_ENTITY =
             ENTITY_TYPES.register("trebuchet", () ->
@@ -155,21 +155,21 @@ public interface SiegeworksEntities {
                             .updateInterval(DEFAULT_UPDATE_INTERVAL)
                             .build("trebuchet_projectile"));
 
-    RegistrySupplier<EntityType<TrebuchetProjectile>> MANGONEL_PROJECTILE =
-            ENTITY_TYPES.register("mangonel_projectile", () ->
+    RegistrySupplier<EntityType<TrebuchetProjectile>> ONAGER_PROJECTILE =
+            ENTITY_TYPES.register("onager_projectile", () ->
                     EntityType.Builder.<TrebuchetProjectile>of(TrebuchetProjectile::new, MobCategory.MISC)
                             .sized(0.5f, 0.5f)
                             .clientTrackingRange(DEFAULT_TRACKING_RANGE)
                             .updateInterval(DEFAULT_UPDATE_INTERVAL)
-                            .build("mangonel_projectile"));
+                            .build("onager_projectile"));
 
-    RegistrySupplier<EntityType<MangonelPassengerProjectile>> MANGONEL_PASSENGER_PROJECTILE =
-            ENTITY_TYPES.register("mangonel_passenger_projectile", () ->
-                    EntityType.Builder.<MangonelPassengerProjectile>of(MangonelPassengerProjectile::new, MobCategory.MISC)
+    RegistrySupplier<EntityType<OnagerPassengerProjectile>> ONAGER_PASSENGER_PROJECTILE =
+            ENTITY_TYPES.register("onager_passenger_projectile", () ->
+                    EntityType.Builder.<OnagerPassengerProjectile>of(OnagerPassengerProjectile::new, MobCategory.MISC)
                             .sized(0.5f, 0.5f)
                             .clientTrackingRange(DEFAULT_TRACKING_RANGE)
                             .updateInterval(DEFAULT_UPDATE_INTERVAL)
-                            .build("mangonel_passenger_projectile"));
+                            .build("onager_passenger_projectile"));
 
     RegistrySupplier<EntityType<TowerCrossbowBoltProjectile>> TOWER_CROSSBOW_BOLT_PROJECTILE =
             ENTITY_TYPES.register("tower_crossbow_bolt_projectile", () ->

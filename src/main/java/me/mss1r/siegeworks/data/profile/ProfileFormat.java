@@ -18,7 +18,7 @@ public final class ProfileFormat {
             "shrapnelRadius", "shrapnelDamage");
     private static final Set<String> ENGINE_FIELDS = Set.of(
             "formatVersion", "maxHealth", "baseDamage", "muzzleVelocity", "accuracyMultiplier",
-            "damageConfig", "scattershot", "ramImpact", "burnRate");
+            "damageConfig", "scattershot", "ramImpact", "burnRate", "waxHoneycomb", "bronzeCopper");
     private static final Set<String> PROJECTILE_FIELDS = Set.of(
             "formatVersion", "mass", "dragCoefficient", "diameter", "hardness", "motor", "entity",
             "shock", "blast", "fire");

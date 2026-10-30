@@ -5,11 +5,11 @@ import me.mss1r.siegeworks.Siegeworks;
 import me.mss1r.siegeworks.client.aim.SiegeAimController;
 import me.mss1r.siegeworks.client.aim.SiegeAimView;
 import me.mss1r.siegeworks.entity.siege.AbstractBoltThrowerEntity;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.entity.siege.MantletEntity;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.network.BoltThrowerFireC2SPayload;
-import me.mss1r.siegeworks.network.MangonelFireC2SPayload;
+import me.mss1r.siegeworks.network.OnagerFireC2SPayload;
 import me.mss1r.siegeworks.network.MantletActionC2SPayload;
 import me.mss1r.siegeworks.network.SiegeMovementC2SPayload;
 import me.mss1r.siegeworks.network.SiegeYawC2SPayload;
@@ -137,8 +137,8 @@ public final class SiegeworksClientGameEvents {
         if (jumpDown && !jumpHeldLastTick) {
             if (vehicle instanceof AbstractBoltThrowerEntity) {
                 SiegeworksNetworking.sendToServer(BoltThrowerFireC2SPayload.INSTANCE);
-            } else if (vehicle instanceof MangonelEntity) {
-                SiegeworksNetworking.sendToServer(MangonelFireC2SPayload.INSTANCE);
+            } else if (vehicle instanceof OnagerEntity) {
+                SiegeworksNetworking.sendToServer(OnagerFireC2SPayload.INSTANCE);
             }
         }
 

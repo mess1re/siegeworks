@@ -59,8 +59,8 @@ public final class GeneratedSiegePoses {
             rotation(0.0F, 0.0F, 0.0F)
     );
 
-    public static final SiegePoseDefinition MANGONEL = pose(
-            "poses/mangonel_pose.bbmodel#pose_reference",
+    public static final SiegePoseDefinition ONAGER = pose(
+            "poses/onager_pose.bbmodel#pose_reference",
             rotation(60.0F, 0.0F, 0.0F),
             rotation(-60.0F, 0.0F, 0.0F),
             rotation(0.0F, 0.0F, 0.0F),

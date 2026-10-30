@@ -1493,7 +1493,7 @@ public final class RecruitsCompat {
         addMount(mountWhitelist, SiegeworksEntities.SERPENTINE_ENTITY.getId());
         addMount(mountWhitelist, SiegeworksEntities.CULVERIN_ENTITY.getId());
         addMount(mountWhitelist, SiegeworksEntities.MONS_MEG_ENTITY.getId());
-        addMount(mountWhitelist, SiegeworksEntities.MANGONEL_ENTITY.getId());
+        addMount(mountWhitelist, SiegeworksEntities.ONAGER_ENTITY.getId());
         addMount(mountWhitelist, SiegeworksEntities.TREBUCHET_ENTITY.getId());
         addMount(mountWhitelist, SiegeworksEntities.MANTLET_ENTITY.getId());
         addMount(mountWhitelist, SiegeworksEntities.BATTERING_RAM_ENTITY.getId());

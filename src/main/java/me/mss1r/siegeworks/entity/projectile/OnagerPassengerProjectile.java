@@ -12,16 +12,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
-public final class MangonelPassengerProjectile extends SiegeProjectile {
+public final class OnagerPassengerProjectile extends SiegeProjectile {
     public static final double PASSENGER_Y_OFFSET = -12.0D / 16.0D;
 
     private double peakFlightY = Double.NEGATIVE_INFINITY;
 
-    public MangonelPassengerProjectile(EntityType<? extends MangonelPassengerProjectile> type, Level level) {
+    public OnagerPassengerProjectile(EntityType<? extends OnagerPassengerProjectile> type, Level level) {
         super(type, level);
     }
 
-    public MangonelPassengerProjectile(EntityType<MangonelPassengerProjectile> type,
+    public OnagerPassengerProjectile(EntityType<OnagerPassengerProjectile> type,
                                         LivingEntity shooter, Level level) {
         super(type, shooter, level);
     }
@@ -97,6 +97,6 @@ public final class MangonelPassengerProjectile extends SiegeProjectile {
 
     @Override
     public ProjectilePhysicsProfile getPhysicsProfile() {
-        return SiegeProfileCatalogs.PROJECTILES.forEntity(SiegeworksEntities.MANGONEL_PROJECTILE.get());
+        return SiegeProfileCatalogs.PROJECTILES.forEntity(SiegeworksEntities.ONAGER_PROJECTILE.get());
     }
 }

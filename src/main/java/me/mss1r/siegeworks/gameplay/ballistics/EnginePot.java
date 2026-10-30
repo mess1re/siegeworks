@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Supplier;
 
 /**
- * Pot loaded in a mangonel or trebuchet: its filling and fuse. A lit pot that isn't thrown in time bursts in place; a
+ * Pot loaded in an onager or trebuchet: its filling and fuse. A lit pot that isn't thrown in time bursts in place; a
  * thrown pot takes its filling and fuse with it.
  */
 public final class EnginePot {

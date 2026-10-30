@@ -8,8 +8,8 @@ import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinition;
 import me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinitions;
 import me.mss1r.siegeworks.block.StackedProjectileBlock;
 import me.mss1r.siegeworks.data.profile.SiegeEngineProfile;
-import me.mss1r.siegeworks.entity.projectile.MangonelPassengerProjectile;
-import me.mss1r.siegeworks.entity.siege.MangonelEntity;
+import me.mss1r.siegeworks.entity.projectile.OnagerPassengerProjectile;
+import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.entity.siege.BatteringRamEntity;
 import me.mss1r.axiomata.ballistics.damage.StructuralDamageSystem;
 import me.mss1r.siegeworks.api.SiegeActionResult;
@@ -47,30 +47,30 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class CrewAndMaterialsGameTests {
     @GameTest(template = "empty")
-    public static void mangonelPayloadDoesNotOccupyTheDriverSeat(GameTestHelper helper) {
+    public static void onagerPayloadDoesNotOccupyTheDriverSeat(GameTestHelper helper) {
         var level = helper.getLevel();
-        MangonelEntity mangonel = SiegeworksEntities.MANGONEL_ENTITY.get().create(level);
+        OnagerEntity onager = SiegeworksEntities.ONAGER_ENTITY.get().create(level);
         Player payload = SiegeGameTestPlayers.createRideable(level);
         Player driver = SiegeGameTestPlayers.createRideable(level);
         Vec3 origin = Vec3.atCenterOf(helper.absolutePos(new BlockPos(8, 8, 8)));
-        mangonel.setPos(origin);
-        level.addFreshEntity(mangonel);
+        onager.setPos(origin);
+        level.addFreshEntity(onager);
         CompoundTag saved = new CompoundTag();
-        mangonel.addAdditionalSaveData(saved);
+        onager.addAdditionalSaveData(saved);
         saved.putUUID("LaunchPayload", payload.getUUID());
-        mangonel.readAdditionalSaveData(saved);
-        helper.assertTrue(payload.startRiding(mangonel), "Payload could not board");
-        helper.assertTrue(mangonel.getControllingPassenger() == null, "Payload took the driver seat");
-        helper.assertTrue(driver.startRiding(mangonel), "Payload prevented a driver from boarding");
-        helper.assertTrue(mangonel.getControllingPassenger() == driver && !mangonel.isOperator(payload),
+        onager.readAdditionalSaveData(saved);
+        helper.assertTrue(payload.startRiding(onager), "Payload could not board");
+        helper.assertTrue(onager.getControllingPassenger() == null, "Payload took the driver seat");
+        helper.assertTrue(driver.startRiding(onager), "Payload prevented a driver from boarding");
+        helper.assertTrue(onager.getControllingPassenger() == driver && !onager.isOperator(payload),
                 "Payload became a second driver");
-        mangonel.setWindingTime(0);
-        mangonel.handleSiegeInteraction(driver, InteractionHand.MAIN_HAND, level);
-        mangonel.onSiegeTick(level);
-        mangonel.onSiegeTick(level);
-        helper.assertTrue(payload.getVehicle() instanceof MangonelPassengerProjectile,
+        onager.setWindingTime(0);
+        onager.handleSiegeInteraction(driver, InteractionHand.MAIN_HAND, level);
+        onager.onSiegeTick(level);
+        onager.onSiegeTick(level);
+        helper.assertTrue(payload.getVehicle() instanceof OnagerPassengerProjectile,
                 "Shot did not transfer the payload onto its flight carrier");
-        helper.assertTrue(driver.getVehicle() == mangonel && mangonel.getControllingPassenger() == driver,
+        helper.assertTrue(driver.getVehicle() == onager && onager.getControllingPassenger() == driver,
                 "Firing transferred the driver or lost its seat");
         payload.stopRiding();
         driver.stopRiding();
@@ -81,16 +81,16 @@ public final class CrewAndMaterialsGameTests {
     public static void flightCarrierCannotHitItsOwnPassenger(GameTestHelper helper) {
         var level = helper.getLevel();
         Vec3 origin = Vec3.atCenterOf(helper.absolutePos(new BlockPos(8, 10, 8)));
-        MangonelEntity owner = SiegeworksEntities.MANGONEL_ENTITY.get().create(level);
+        OnagerEntity owner = SiegeworksEntities.ONAGER_ENTITY.get().create(level);
         owner.setPos(origin.add(0, -5, 0));
         owner.setOperator(SiegeGameTestPlayers.create(level));
-        MangonelPassengerProjectile carrier = new MangonelPassengerProjectile(
-                SiegeworksEntities.MANGONEL_PASSENGER_PROJECTILE.get(), owner, level);
+        OnagerPassengerProjectile carrier = new OnagerPassengerProjectile(
+                SiegeworksEntities.ONAGER_PASSENGER_PROJECTILE.get(), owner, level);
         carrier.setPos(origin);
         carrier.setDeltaMovement(new Vec3(0, 0.5D, 0.75D));
         level.addFreshEntity(carrier);
         var passenger = EntityType.ARMOR_STAND.create(level);
-        passenger.setPos(origin.add(0, MangonelPassengerProjectile.PASSENGER_Y_OFFSET, 0));
+        passenger.setPos(origin.add(0, OnagerPassengerProjectile.PASSENGER_Y_OFFSET, 0));
         level.addFreshEntity(passenger);
         helper.assertTrue(passenger.startRiding(carrier, true), "Passenger could not board its carrier");
         carrier.tick();
