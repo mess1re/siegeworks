@@ -24,6 +24,9 @@ import me.mss1r.axiomata.loading.AutomatedLoadingSession;
 import me.mss1r.axiomata.loading.LoadingRequirement;
 import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
+import me.mss1r.siegeworks.gameplay.upgrade.SiegeBannerRack;
+import me.mss1r.siegeworks.gameplay.upgrade.SiegeBannerInteraction;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -82,6 +85,9 @@ import java.util.List;
 import java.util.Set;
 
 public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, SiegeAmmunitionControl {
+    public static final int BANNER_SLOT_COUNT = 2;
+    private static final EntityDataAccessor<CompoundTag> BANNER_DATA =
+            SynchedEntityData.defineId(TrebuchetEntity.class, EntityDataSerializers.COMPOUND_TAG);
     private static final int PROJECTILE_RELEASE_TICK = 16;
     private static final int SHOOT_ANIMATION_TICKS = 65;
     private static final String TAG_SHOOT_ANIMATION_TICK = "ShootAnimationTick";
@@ -148,6 +154,18 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
     private final AnimatableInstanceCache animatableInstanceCache = GeckoLibUtil.createInstanceCache(this);
     private final AutomatedLoadingSession automatedLoading = new AutomatedLoadingSession();
     private final EnginePot pot = new EnginePot(this, POT_FUSE);
+    private final SiegeBannerRack bannerRack = new SiegeBannerRack(new SiegeBannerRack.Host() {
+        @Override
+        public boolean clientSide() { return level().isClientSide; }
+        @Override
+        public RegistryAccess registryAccess() { return level().registryAccess(); }
+        @Override
+        public CompoundTag synchronizedData() { return entityData.get(BANNER_DATA); }
+        @Override
+        public void setSynchronizedData(CompoundTag data) { entityData.set(BANNER_DATA, data); }
+        @Override
+        public void drop(ItemStack stack) { spawnAtLocation(stack); }
+    }, BANNER_SLOT_COUNT, "CounterweightBanners");
     private final RawAnimation shootAnim = RawAnimation.begin().then("shoot", Animation.LoopType.PLAY_ONCE);
     private final RawAnimation reloadAnim = RawAnimation.begin().thenPlayAndHold("reload");
     private final RawAnimation loadedAnim = RawAnimation.begin().thenPlayAndHold("loaded");
@@ -172,6 +190,7 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
     //?}
         data.define(SHOOT_ANIMATION_TICK, -1);
         data.define(POT_FUSE, IncendiaryFuse.UNLIT);
+        data.define(BANNER_DATA, new CompoundTag());
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -201,6 +220,9 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
 
     @Override
     public InteractionResult handleSiegeInteraction(Player player, InteractionHand hand, ServerLevel serverLevel) {
+        InteractionResult bannerResult = SiegeBannerInteraction.interact(
+                this, bannerRack, player, hand, serverLevel, "message.siegeworks.trebuchet");
+        if (bannerResult != null) return bannerResult;
         if (continueLoadingAction(player)) return showLoadingProgress(player);
         if (getCooldown() > 0) return showCooldownProgress(player);
         if (pot.light(player, hand, potPoint(alongPot(WICK_TIP_PIXELS)))) {
@@ -549,6 +571,7 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
         super.addAdditionalSaveData(tag);
         tag.putInt(TAG_SHOOT_ANIMATION_TICK, getShootAnimationTick());
         pot.save(tag);
+        bannerRack.save(tag);
     }
 
     @Override
@@ -558,6 +581,17 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
                 ? Mth.clamp(tag.getInt(TAG_SHOOT_ANIMATION_TICK), -1, SHOOT_ANIMATION_TICKS - 1)
                 : -1);
         pot.load(tag);
+        bannerRack.load(tag);
+    }
+
+    public ItemStack getCounterweightBanner(int slot) {
+        return bannerRack.get(slot);
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!level().isClientSide && reason.shouldDestroy()) bannerRack.dropAll();
+        super.remove(reason);
     }
 
     @Override

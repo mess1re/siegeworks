@@ -156,6 +156,11 @@ legacyForge {
                 systemProperty("siegeworks.test.aimScene", "true")
                 systemProperty("siegeworks.test.aimSceneFloor", providers.gradleProperty("test.aimSceneFloor").getOrElse("full"))
             }
+            providers.gradleProperty("test.bannerSceneWorld").orNull?.let { world ->
+                gameDirectory = rootProject.file("build/banner-client-forge")
+                programArguments.addAll("--quickPlaySingleplayer", world)
+                systemProperty("siegeworks.test.bannerScene", "true")
+            }
             systemProperty("siegeworks.debug.recruits", providers.gradleProperty("debug.recruits").getOrElse("false"))
             client()
             systemProperty("siegeworks.debug.instantFire", "true")
@@ -174,7 +179,7 @@ legacyForge {
             systemProperty(
                 "forge.enabledGameTestNamespaces",
                 providers.gradleProperty("gameTestNamespaces")
-                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb,${modId}_aim_regression")
+                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb,${modId}_aim_regression,${modId}_banners")
             )
         }
         register("data") {

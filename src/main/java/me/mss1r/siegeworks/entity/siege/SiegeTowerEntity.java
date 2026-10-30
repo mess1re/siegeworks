@@ -17,6 +17,7 @@ import me.mss1r.siegeworks.gameplay.audio.SiegeSoundProfile;
 import me.mss1r.siegeworks.gameplay.movement.tower.TowerBridgeController;
 import me.mss1r.siegeworks.gameplay.towing.TowingProfile;
 import me.mss1r.siegeworks.gameplay.upgrade.TowerBannerRack;
+import me.mss1r.siegeworks.gameplay.upgrade.SiegeBannerInteraction;
 import me.mss1r.siegeworks.gameplay.upgrade.TowerCoveringController;
 import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import net.minecraft.core.BlockPos;
@@ -483,42 +484,13 @@ public class SiegeTowerEntity extends AbstractSiegeEntity
             return covering.add(player, itemStack, serverLevel);
         }
 
-        if (itemStack.getItem() instanceof BannerItem) {
-            int installedSlot = bannerRack.install(itemStack);
-            if (installedSlot < 0) {
-                player.displayClientMessage(Component.translatable("message.siegeworks.tower.banners_full"), true);
-                return InteractionResult.SUCCESS;
-            }
-
-            if (!player.getAbilities().instabuild) {
-                itemStack.shrink(1);
-            }
-            serverLevel.playSound(null, blockPosition(), SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-            player.displayClientMessage(
-                    Component.translatable("message.siegeworks.tower.banner_installed", installedSlot + 1, BANNER_SLOT_COUNT),
-                    true);
-            return InteractionResult.SUCCESS;
+        if (itemStack.is(Items.SHEARS) && (player.isShiftKeyDown() || player.isSecondaryUseActive())
+                && (getLeatherTopProgress() > 0 || getLeatherBottomProgress() > 0)) {
+            return covering.remove(player, itemStack, hand, serverLevel);
         }
-
-        if (itemStack.is(Items.SHEARS)) {
-            if ((player.isShiftKeyDown() || player.isSecondaryUseActive())
-                    && (getLeatherTopProgress() > 0 || getLeatherBottomProgress() > 0)) {
-                return covering.remove(player, itemStack, hand, serverLevel);
-            }
-
-            ItemStack removedBanner = bannerRack.removeLast();
-            if (removedBanner.isEmpty()) {
-                player.displayClientMessage(Component.translatable("message.siegeworks.tower.no_banners"), true);
-                return InteractionResult.SUCCESS;
-            }
-
-            if (!player.getInventory().add(removedBanner)) {
-                player.drop(removedBanner, false);
-            }
-            me.mss1r.siegeworks.platform.MinecraftVersionCompat.damageHeldItem(itemStack, 1, player, hand);
-            serverLevel.playSound(null, blockPosition(), SoundEvents.SHEEP_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
-            return InteractionResult.SUCCESS;
-        }
+        InteractionResult bannerResult = SiegeBannerInteraction.interact(
+                this, bannerRack, player, hand, serverLevel, "message.siegeworks.tower");
+        if (bannerResult != null) return bannerResult;
 
         if (itemStack.isEmpty() && isPlayerOnThirdFloor(player)
                 && player instanceof ServerPlayer serverPlayer) {

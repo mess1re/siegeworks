@@ -8,25 +8,19 @@ import me.mss1r.axiomata.blueprint.api.construction.ConstructionGeometry;
 import me.mss1r.siegeworks.client.rope.RopeRenderer;
 import me.mss1r.siegeworks.client.rope.SiegeRopeAnchors;
 import me.mss1r.siegeworks.client.entity.TowedSiegeRenderer;
+import me.mss1r.siegeworks.client.entity.SiegeBannerRenderer;
 import me.mss1r.siegeworks.entity.siege.SiegeTowerEntity;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.phys.Vec3;
-//? if neoforge {
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.level.block.entity.BannerPatternLayers;
-//?}
 
 public class SiegeTowerRenderer extends TowedSiegeRenderer<SiegeTowerEntity> {
     private static final float BANNER_WIDTH_PIXELS = 32.0F;
@@ -142,7 +136,7 @@ public class SiegeTowerRenderer extends TowedSiegeRenderer<SiegeTowerEntity> {
     private void renderBanner(SiegeTowerEntity tower, int slot, float partialTick, PoseStack poseStack,
                               MultiBufferSource bufferSource, int packedLight) {
         ItemStack stack = tower.getTowerBanner(slot);
-        if (!(stack.getItem() instanceof BannerItem bannerItem)) {
+        if (!(stack.getItem() instanceof BannerItem)) {
             return;
         }
 
@@ -155,42 +149,13 @@ public class SiegeTowerRenderer extends TowedSiegeRenderer<SiegeTowerEntity> {
         poseStack.mulPose(Axis.YP.rotationDegrees(slot % 2 == 0 ? -90.0F : 90.0F));
         poseStack.scale(BANNER_SCALE, -BANNER_SCALE, -BANNER_SCALE);
 
-        long waveOffset = tower.blockPosition().getX() * 7L
-                + tower.blockPosition().getY() * 9L
-                + tower.blockPosition().getZ() * 13L
-                + slot * 17L;
-        float wavePhase = (Math.floorMod(waveOffset + tower.level().getGameTime(), 100L) + partialTick) / 100.0F;
-        bannerFlag.x = 0.0F;
-        bannerFlag.y = 0.0F;
-        bannerFlag.z = 0.0F;
-        bannerFlag.xRot = (-0.0125F + 0.01F * Mth.cos(Mth.TWO_PI * wavePhase)) * Mth.PI;
-        bannerFlag.yRot = 0.0F;
-        bannerFlag.zRot = 0.0F;
-
         //? if forge {
-        /*BannerRenderer.renderPatterns(
-                poseStack,
-                bufferSource,
-                packedLight,
-                getPackedOverlay(tower, 0.0F),
-                bannerFlag,
-                ModelBakery.BANNER_BASE,
-                true,
-                BannerBlockEntity.createPatterns(
-                        bannerItem.getColor(),
-                        BannerBlockEntity.getItemPatterns(stack)));
+        /*int overlay = getPackedOverlay(tower, 0.0F);
         *///?} else {
-        BannerRenderer.renderPatterns(
-                poseStack,
-                bufferSource,
-                packedLight,
-                getPackedOverlay(tower, 0.0F, 0.0F),
-                bannerFlag,
-                ModelBakery.BANNER_BASE,
-                true,
-                bannerItem.getColor(),
-                stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+        int overlay = getPackedOverlay(tower, 0.0F, 0.0F);
         //?}
+        SiegeBannerRenderer.render(tower, stack, slot, bannerFlag, poseStack, bufferSource,
+                partialTick, packedLight, overlay);
         poseStack.popPose();
     }
 

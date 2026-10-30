@@ -12,6 +12,10 @@ import me.mss1r.siegeworks.entity.siege.TrebuchetEntity;
 import me.mss1r.siegeworks.client.projectile.TrebuchetProjectileRenderer;
 import me.mss1r.siegeworks.item.SiegeAmmo;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
+import me.mss1r.siegeworks.client.entity.SiegeBannerRenderer;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -21,9 +25,13 @@ import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
+import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 import me.mss1r.siegeworks.client.entity.SiegeConstructionRenderer;
 
 public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity> {
+    private final ModelPart bannerFlag;
+    private final ModelPart bannerBar;
+    private static final float COUNTERWEIGHT_BANNER_SCALE = 24.0F / 20.0F;
     private static final float LOADED_STONE_SCALE = 1.44F;
     private static final float LOADED_GRAPESHOT_SCALE = LOADED_STONE_SCALE * 16.0F / 10.0F;
     private static final double LOADED_GRAPESHOT_Y_OFFSET = 3.0D / 32.0D * LOADED_GRAPESHOT_SCALE;
@@ -41,6 +49,35 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
 
     public TrebuchetRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new TrebuchetModel());
+        ModelPart bannerModel = renderManager.bakeLayer(ModelLayers.BANNER);
+        bannerFlag = bannerModel.getChild("flag");
+        bannerBar = bannerModel.getChild("bar");
+        addRenderLayer(new GeoRenderLayer<TrebuchetEntity>(this) {
+            @Override
+            public void renderForBone(PoseStack poseStack, TrebuchetEntity trebuchet, GeoBone bone,
+                                      RenderType renderType, MultiBufferSource buffers, VertexConsumer buffer,
+                                      float partialTick, int packedLight, int packedOverlay) {
+                if (!"counterweight".equals(bone.getName()) || !trebuchet.isFullyBuilt()) return;
+                for (int slot = 0; slot < TrebuchetEntity.BANNER_SLOT_COUNT; slot++) {
+                    if (trebuchet.getCounterweightBanner(slot).isEmpty()) continue;
+                    poseStack.pushPose();
+                    // The layer already carries the complete animated bone hierarchy.
+                    // Authored box bounds: x -12..12, y 70..100, z -46..-6 pixels.
+                    float faceZ = slot == 0 ? -46.0F : -6.0F;
+                    float outward = slot == 0 ? -1.0F : 1.0F;
+                    // The vanilla bar spans z -1..1. Put its inner edge against the
+                    // box, leaving the cloth on its outer edge as on a wall banner.
+                    float attachmentZ = faceZ + outward * (COUNTERWEIGHT_BANNER_SCALE + 0.01F);
+                    poseStack.translate(0, 100.0F / 16.0F, attachmentZ / 16.0F);
+                    if (slot == 0) poseStack.mulPose(Axis.YP.rotationDegrees(180));
+                    poseStack.scale(COUNTERWEIGHT_BANNER_SCALE, -COUNTERWEIGHT_BANNER_SCALE,
+                            -COUNTERWEIGHT_BANNER_SCALE);
+                    SiegeBannerRenderer.renderWallBanner(trebuchet, trebuchet.getCounterweightBanner(slot), slot,
+                            bannerFlag, bannerBar, poseStack, buffers, partialTick, packedLight, packedOverlay);
+                    poseStack.popPose();
+                }
+            }
+        });
         addRenderLayer(new BlockAndItemGeoLayer<TrebuchetEntity>(this) {
             @Override
             protected BlockState getBlockForBone(GeoBone bone, TrebuchetEntity trebuchet) {

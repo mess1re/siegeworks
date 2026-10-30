@@ -114,6 +114,11 @@ neoForge {
                 systemProperty("siegeworks.test.aimScene", "true")
                 systemProperty("siegeworks.test.aimSceneFloor", providers.gradleProperty("test.aimSceneFloor").getOrElse("full"))
             }
+            providers.gradleProperty("test.bannerSceneWorld").orNull?.let { world ->
+                gameDirectory = rootProject.file("build/banner-client")
+                programArguments.addAll("--quickPlaySingleplayer", world)
+                systemProperty("siegeworks.test.bannerScene", "true")
+            }
             systemProperty("siegeworks.debug.recruits", providers.gradleProperty("debug.recruits").getOrElse("false"))
             systemProperty("siegeworks.debug.instantFire", "true")
             systemProperty("siegeworks.debug.autoDrive", "true")
@@ -132,7 +137,7 @@ neoForge {
             systemProperty(
                 "neoforge.enabledGameTestNamespaces",
                 providers.gradleProperty("gameTestNamespaces")
-                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb,${modId}_aim_regression")
+                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb,${modId}_aim_regression,${modId}_banners")
             )
         }
     }
