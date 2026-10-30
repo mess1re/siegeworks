@@ -26,7 +26,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-//? if forge {
+//? if <1.21 {
 /*import java.util.UUID;
 *///?} else {
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
@@ -61,7 +61,7 @@ public final class LadderCarry {
     private static final double LADDER_HALF_WIDTH = 0.45D;
     /** Speed penalty per ladder part (the base and each section). */
     private static final double SLOWDOWN_PER_PART = 0.06D;
-    //? if forge {
+    //? if <1.21 {
     /*private static final UUID SLOWDOWN_ID = UUID.fromString("5d0f4c8e-6c47-4b0b-9a3f-2f7f0a9f1c21");
     *///?} else {
     private static final ResourceLocation SLOWDOWN_ID = MinecraftVersionCompat.id("siegeworks", "carrying_ladder");
@@ -220,13 +220,13 @@ public final class LadderCarry {
         release(player, ladder);
         CompoundTag tag = new CompoundTag();
         ladder.saveWithoutId(tag);
-        player.getPersistentData().put(TAG_CARRIED, tag);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(player).put(TAG_CARRIED, tag);
         ladder.discard();
     }
 
     /** On login or dimension change, respawns the stored ladder in the player's hands. */
     public static void restore(Player player) {
-        CompoundTag data = player.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(player);
         if (!data.contains(TAG_CARRIED)) {
             return;
         }
@@ -256,7 +256,7 @@ public final class LadderCarry {
         }
         speed.removeModifier(SLOWDOWN_ID);
         double amount = -SLOWDOWN_PER_PART * (1 + sections);
-        //? if forge {
+        //? if <1.21 {
         /*speed.addTransientModifier(new AttributeModifier(SLOWDOWN_ID, "Carrying a siege ladder", amount,
                 AttributeModifier.Operation.MULTIPLY_TOTAL));
         *///?} else {

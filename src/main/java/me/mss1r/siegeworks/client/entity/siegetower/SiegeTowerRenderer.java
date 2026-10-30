@@ -149,7 +149,7 @@ public class SiegeTowerRenderer extends TowedSiegeRenderer<SiegeTowerEntity> {
         poseStack.mulPose(Axis.YP.rotationDegrees(slot % 2 == 0 ? -90.0F : 90.0F));
         poseStack.scale(BANNER_SCALE, -BANNER_SCALE, -BANNER_SCALE);
 
-        //? if forge {
+        //? if <1.21 {
         /*int overlay = getPackedOverlay(tower, 0.0F);
         *///?} else {
         int overlay = getPackedOverlay(tower, 0.0F, 0.0F);

@@ -26,7 +26,7 @@ public class CannonBallRenderer extends EntityRenderer<CannonProjectile> {
     public void render(CannonProjectile entity, float yaw, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, int light) {
         poseStack.pushPose();
         VertexConsumer vertexConsumer = multiBufferSource.getBuffer(RenderType.armorCutoutNoCull(this.getTextureLocation(entity)));
-        //? if forge {
+        //? if <1.21 {
         /*model.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         *///?} else {
         model.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);

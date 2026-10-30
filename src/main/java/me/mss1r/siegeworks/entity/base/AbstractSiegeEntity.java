@@ -313,7 +313,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*protected void defineSynchedData() {
         super.defineSynchedData();
         SynchedEntityData data = this.entityData;
@@ -1104,7 +1104,6 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         return crew.movementController();
     }
 
-    @Override
     public boolean shouldRiderSit() {
         return false;
     }
@@ -1162,9 +1161,15 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         if (TRACKED_YAW.equals(key) && usesIndependentAimYaw()
                 && Math.abs(Mth.wrapDegrees(entityData.get(TRACKED_YAW) - predictedAimYaw)) < AIM_CORRECTION_DEGREES) {
             entityData.set(TRACKED_YAW, predictedAimYaw);
-        } else if (TRACKED_PITCH.equals(key)
-                && Math.abs(entityData.get(TRACKED_PITCH) - predictedAimPitch) < AIM_CORRECTION_DEGREES) {
-            entityData.set(TRACKED_PITCH, predictedAimPitch);
+        } else if (TRACKED_PITCH.equals(key)) {
+            if (!usesIndependentAimPitch()) {
+                // A fast mouse turn may exceed the correction threshold before its echo
+                // arrives. Manual elevation has no mechanical/terrain solver to correct:
+                // retain the local operator's bounded view, as updateFromController does.
+                aiming.restoreManualPlayerPitch();
+            } else if (Math.abs(entityData.get(TRACKED_PITCH) - predictedAimPitch) < AIM_CORRECTION_DEGREES) {
+                entityData.set(TRACKED_PITCH, predictedAimPitch);
+            }
         }
     }
 
@@ -1272,7 +1277,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public void lerpTo(double x, double y, double z, float yaw, float pitch, int interpolationSteps, boolean teleport) {
     *///?} else {
     public void lerpTo(double x, double y, double z, float yaw, float pitch, int interpolationSteps) {
@@ -1637,7 +1642,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         return false;
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*// A machine does not drown; on 1.21 the vanilla can_breathe_under_water tag says so.
     @Override
     public boolean canBreatheUnderwater() {

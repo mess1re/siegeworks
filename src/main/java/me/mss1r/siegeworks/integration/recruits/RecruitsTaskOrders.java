@@ -15,7 +15,7 @@ final class RecruitsTaskOrders {
     }
 
     static void beginTask(AbstractRecruitEntity recruit) {
-        CompoundTag data = recruit.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(recruit);
         if (!data.contains(PREVIOUS_FOLLOW_STATE_TAG) && recruit.getFollowState() != TASK_FOLLOW_STATE) {
             data.putInt(PREVIOUS_FOLLOW_STATE_TAG, recruit.getFollowState());
         }
@@ -23,7 +23,7 @@ final class RecruitsTaskOrders {
     }
 
     static void endTask(AbstractRecruitEntity recruit) {
-        CompoundTag data = recruit.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(recruit);
         int previous = data.contains(PREVIOUS_FOLLOW_STATE_TAG)
                 ? data.getInt(PREVIOUS_FOLLOW_STATE_TAG)
                 : HOLD_POSITION;

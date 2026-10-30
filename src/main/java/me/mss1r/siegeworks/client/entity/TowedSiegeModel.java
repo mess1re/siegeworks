@@ -1,12 +1,12 @@
 package me.mss1r.siegeworks.client.entity;
 
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animatable.GeoAnimatable;
 *///?} else {
 import software.bernie.geckolib.animatable.GeoAnimatable;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimationState;
 *///?} else {
 import software.bernie.geckolib.animation.AnimationState;

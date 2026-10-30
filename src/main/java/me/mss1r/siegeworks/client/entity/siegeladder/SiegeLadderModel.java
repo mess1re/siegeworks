@@ -4,7 +4,7 @@ import me.mss1r.siegeworks.Siegeworks;
 import me.mss1r.siegeworks.entity.siege.SiegeLadderEntity;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.resources.ResourceLocation;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimationState;
 *///?} else {
 import software.bernie.geckolib.animation.AnimationState;

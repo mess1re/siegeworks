@@ -5,14 +5,14 @@ import me.mss1r.siegeworks.entity.siege.OnagerEntity;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-//? if neoforge {
+//? if >=1.21 {
 import me.mss1r.siegeworks.Siegeworks;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?}
 
-//? if forge {
+//? if <1.21 {
 /*public record OnagerFireC2SPayload() {
 *///?} else {
 public record OnagerFireC2SPayload() implements CustomPacketPayload {

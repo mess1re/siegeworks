@@ -4,7 +4,7 @@ import me.mss1r.siegeworks.gameplay.ballistics.IncendiaryFuse;
 import me.mss1r.siegeworks.item.PotFilling;
 import me.mss1r.siegeworks.registry.SiegeworksBlockEntities;
 import net.minecraft.core.BlockPos;
-//? if neoforge {
+//? if >=1.21 {
 import net.minecraft.core.HolderLookup;
 //?}
 import net.minecraft.nbt.CompoundTag;
@@ -115,7 +115,7 @@ public class IncendiaryPotBlockEntity extends BlockEntity {
         }
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*@Override
     public void load(CompoundTag tag) {
         super.load(tag);

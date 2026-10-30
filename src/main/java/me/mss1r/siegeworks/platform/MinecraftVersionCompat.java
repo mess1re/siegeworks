@@ -11,14 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 
-//? if forge {
-/*import net.minecraftforge.common.util.FakePlayer;
-*///?} else {
+
+//? if >=1.21 {
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
-import net.neoforged.neoforge.common.util.FakePlayer;
 //?}
-
 import java.util.function.Consumer;
 
 public final class MinecraftVersionCompat {
@@ -31,7 +28,7 @@ public final class MinecraftVersionCompat {
      */
     @SuppressWarnings("removal")
     public static ResourceLocation id(String namespace, String path) {
-        //? if forge {
+        //? if <1.21 {
         /*return new ResourceLocation(namespace, path);
         *///?} else {
         return ResourceLocation.fromNamespaceAndPath(namespace, path);
@@ -39,33 +36,19 @@ public final class MinecraftVersionCompat {
     }
 
     public static double entityInteractionRange(Player player) {
-        //? if forge {
-        /*return player.getEntityReach();
-        *///?} else {
-        return player.entityInteractionRange();
-        //?}
+        return me.mss1r.siegeworks.platform.SiegePlatform.entityReach(player);
     }
 
     public static double blockInteractionRange(Player player) {
-        //? if forge {
-        /*return player.getBlockReach();
-        *///?} else {
-        return player.blockInteractionRange();
-        //?}
+        return me.mss1r.siegeworks.platform.SiegePlatform.blockReach(player);
     }
 
-    /** How much farther than a bare hand the player reaches entities with what they wear and hold, as a polearm gives. */
     public static double entityReachBonus(Player player) {
-        //? if forge {
-        /*var reach = player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_REACH.get());
-        *///?} else {
-        var reach = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ENTITY_INTERACTION_RANGE);
-        //?}
-        return reach == null ? 0.0D : reach.getValue() - reach.getBaseValue();
+        return SiegePlatform.entityReachBonus(player);
     }
 
     public static void damageHeldItem(ItemStack stack, int amount, LivingEntity owner, InteractionHand hand) {
-        //? if forge {
+        //? if <1.21 {
         /*stack.hurtAndBreak(amount, owner, entity -> entity.broadcastBreakEvent(hand));
         *///?} else {
         stack.hurtAndBreak(amount, owner, LivingEntity.getSlotForHand(hand));
@@ -73,7 +56,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static boolean isSameItemAndData(ItemStack first, ItemStack second) {
-        //? if forge {
+        //? if <1.21 {
         /*return ItemStack.isSameItemSameTags(first, second);
         *///?} else {
         return ItemStack.isSameItemSameComponents(first, second);
@@ -81,11 +64,11 @@ public final class MinecraftVersionCompat {
     }
 
     public static boolean isFakePlayer(Player player) {
-        return player instanceof FakePlayer;
+        return SiegePlatform.isFakePlayer(player);
     }
 
     public static CompoundTag customData(ItemStack stack) {
-        //? if forge {
+        //? if <1.21 {
         /*CompoundTag tag = stack.getTag();
         return tag == null ? new CompoundTag() : tag;
         *///?} else {
@@ -95,7 +78,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static void editCustomData(ItemStack stack, Consumer<CompoundTag> editor) {
-        //? if forge {
+        //? if <1.21 {
         /*editor.accept(stack.getOrCreateTag());
         *///?} else {
         CustomData.update(DataComponents.CUSTOM_DATA, stack, editor);
@@ -103,7 +86,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static boolean hasCustomName(ItemStack stack) {
-        //? if forge {
+        //? if <1.21 {
         /*return stack.hasCustomHoverName();
         *///?} else {
         return stack.has(DataComponents.CUSTOM_NAME);
@@ -111,7 +94,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static void setCustomName(ItemStack stack, Component name) {
-        //? if forge {
+        //? if <1.21 {
         /*stack.setHoverName(name);
         *///?} else {
         stack.set(DataComponents.CUSTOM_NAME, name);
@@ -119,7 +102,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static ItemStack readItem(CompoundTag tag, HolderLookup.Provider registries) {
-        //? if forge {
+        //? if <1.21 {
         /*return ItemStack.of(tag);
         *///?} else {
         return ItemStack.parseOptional(registries, tag);
@@ -127,7 +110,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static CompoundTag writeItem(ItemStack stack, HolderLookup.Provider registries) {
-        //? if forge {
+        //? if <1.21 {
         /*return stack.save(new CompoundTag());
         *///?} else {
         return (CompoundTag) stack.save(registries, new CompoundTag());
@@ -135,7 +118,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static SoundEvent genericExplodeSound() {
-        //? if forge {
+        //? if <1.21 {
         /*return SoundEvents.GENERIC_EXPLODE;
         *///?} else {
         return SoundEvents.GENERIC_EXPLODE.value();
@@ -143,7 +126,7 @@ public final class MinecraftVersionCompat {
     }
 
     public static SoundEvent leatherEquipSound() {
-        //? if forge {
+        //? if <1.21 {
         /*return SoundEvents.ARMOR_EQUIP_LEATHER;
         *///?} else {
         return SoundEvents.ARMOR_EQUIP_LEATHER.value();

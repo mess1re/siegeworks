@@ -1,16 +1,41 @@
+import dev.architectury.plugin.TransformingTask
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.BuildServiceParameters
+
 plugins {
     id("dev.kikugie.stonecutter")
+    id("dev.architectury.loom") version "1.17-SNAPSHOT" apply false
+    id("architectury-plugin") version "3.5-SNAPSHOT" apply false
+    id("com.gradleup.shadow") version "9.4.3" apply false
 }
-stonecutter active "1.21.1-neoforge"
+
+stonecutter active "1.21.1"
+
+// TransformingTask shares JVM properties and a static logger across projects.
+// https://github.com/architectury/architectury-transformer/issues/31
+abstract class ArchitecturyTransformerGate : BuildService<BuildServiceParameters.None>
+
+val transformerGate = gradle.sharedServices.registerIfAbsent(
+    "siegeworksArchitecturyTransformerGate", ArchitecturyTransformerGate::class.java
+) {
+    maxParallelUsages.set(1)
+}
+
+subprojects {
+    val platform = path.split(':').getOrNull(1)
+    if (platform in listOf("forge", "neoforge", "fabric")) extra["loom.platform"] = platform
+    tasks.withType<TransformingTask>().configureEach {
+        usesService(transformerGate)
+        transformerLocation.set(layout.buildDirectory.dir("architectury-transformer/$name"))
+    }
+}
 
 stonecutter parameters {
-    val (version, loader) = current.project.split('-', limit = 2)
+    val version = current.version
+    val module = branch.id.ifEmpty { "common" }
 
     properties {
-        tags(version, loader)
-    }
-    constants {
-        match(loader, "forge", "neoforge")
+        tags(version, module)
     }
 
     swaps["mod_id"] = "\"${properties.get<String>("mod.id")}\";"

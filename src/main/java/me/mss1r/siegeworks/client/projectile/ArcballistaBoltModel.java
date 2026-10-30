@@ -52,7 +52,7 @@ public class ArcballistaBoltModel extends EntityModel<Entity> {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
                                int packedOverlay, float red, float green, float blue, float alpha) {
         arcballistaBolt.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);

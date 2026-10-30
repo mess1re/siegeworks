@@ -4,6 +4,7 @@ pluginManagement {
         gradlePluginPortal()
         maven("https://maven.minecraftforge.net/") { name = "Forge" }
         maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
+        maven("https://maven.fabricmc.net/")
         maven("https://maven.architectury.dev/") { name = "Architectury" }
         maven("https://maven.kikugie.dev/releases") { name = "KikuGie Releases" }
         maven("https://maven.kikugie.dev/snapshots") { name = "KikuGie Snapshots" }
@@ -17,13 +18,11 @@ plugins {
 
 stonecutter {
     create(rootProject) {
-        fun target(project: String, loader: String, minecraft: String = project) {
-            version("$project-$loader", minecraft).buildscript("build.$loader.gradle.kts")
-        }
-
-        target("1.20.1", "forge")
-        target("1.21.1", "neoforge")
-        vcsVersion = "1.21.1-neoforge"
+        versions("1.20.1", "1.21.1")
+        branch("forge") { versions("1.20.1") }
+        branch("neoforge") { versions("1.21.1") }
+        branch("fabric") { versions("1.20.1", "1.21.1") }
+        vcsVersion = "1.21.1"
     }
 }
 

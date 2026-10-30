@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -33,7 +33,7 @@ public final class SiegeTerrainRuleGameTests {
     private static final Set<BlockPos> CLAIMED = ConcurrentHashMap.newKeySet();
 
     static {
-        //? if forge {
+        //? if <1.21 {
         /*MinecraftForge.EVENT_BUS.addListener((BlockEvent.BreakEvent event) -> {
         *///?} else {
         NeoForge.EVENT_BUS.addListener((BlockEvent.BreakEvent event) -> {

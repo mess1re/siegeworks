@@ -12,7 +12,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 *///?} else {

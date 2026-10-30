@@ -34,7 +34,7 @@ final class RecruitsLadderRelocationController {
     }
 
     static boolean hasTask(AbstractRecruitEntity recruit) {
-        return recruit.getPersistentData().contains(ACTION_TAG);
+        return me.mss1r.siegeworks.platform.SiegePlatform.persistentData(recruit).contains(ACTION_TAG);
     }
 
     static boolean canCarry(AbstractRecruitEntity recruit, SiegeLadderEntity ladder) {
@@ -69,7 +69,7 @@ final class RecruitsLadderRelocationController {
             ladder.setDeploymentIdentity(deployment.ownerUuid(), deployment.groupKey());
         }
         prepareForTask(recruit);
-        CompoundTag data = recruit.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(recruit);
         data.putInt(ACTION_TAG, Action.PICKUP.ordinal());
         data.putUUID(TARGET_ENTITY_TAG, ladder.getUUID());
         data.putLong(TARGET_POS_TAG, ladder.blockPosition().asLong());
@@ -95,7 +95,7 @@ final class RecruitsLadderRelocationController {
             }
         }
         prepareForTask(recruit);
-        CompoundTag data = recruit.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(recruit);
         data.putInt(ACTION_TAG, Action.PLACE.ordinal());
         data.putLong(TARGET_POS_TAG, targetPos.asLong());
         data.putFloat(YAW_TAG, yaw);
@@ -104,7 +104,7 @@ final class RecruitsLadderRelocationController {
     }
 
     static boolean tick(AbstractRecruitEntity recruit) {
-        CompoundTag data = recruit.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(recruit);
         if (!data.contains(ACTION_TAG)) {
             return false;
         }
@@ -283,7 +283,7 @@ final class RecruitsLadderRelocationController {
     }
 
     private static void clear(AbstractRecruitEntity recruit) {
-        CompoundTag data = recruit.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(recruit);
         data.remove(ACTION_TAG);
         data.remove(TARGET_ENTITY_TAG);
         data.remove(TARGET_POS_TAG);

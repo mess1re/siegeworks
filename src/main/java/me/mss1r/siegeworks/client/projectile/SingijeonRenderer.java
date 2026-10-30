@@ -34,7 +34,7 @@ public class SingijeonRenderer extends EntityRenderer<SingijeonProjectile> {
         poseStack.mulPose(Axis.ZP.rotationDegrees(renderPitch));
         poseStack.mulPose(Axis.YP.rotationDegrees(-90.0F));
         VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
-        //? if forge {
+        //? if <1.21 {
         /*model.renderToBuffer(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY,
                 1.0F, 1.0F, 1.0F, 1.0F);
         *///?} else {

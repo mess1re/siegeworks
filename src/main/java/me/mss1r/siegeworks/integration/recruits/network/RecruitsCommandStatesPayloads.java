@@ -7,7 +7,7 @@ import me.mss1r.siegeworks.integration.recruits.RecruitsCommandStates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-//? if neoforge {
+//? if >=1.21 {
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 //?}
@@ -129,7 +129,7 @@ public final class RecruitsCommandStatesPayloads {
                 buffer.writeUtf(key);
                 buffer.writeBoolean(refusal != null);
                 if (refusal != null) {
-                    //? if forge {
+                    //? if <1.21 {
                     /*buffer.writeComponent(refusal);
                     *///?} else {
                     ComponentSerialization.STREAM_CODEC.encode((RegistryFriendlyByteBuf) buffer, refusal);
@@ -155,7 +155,7 @@ public final class RecruitsCommandStatesPayloads {
             Map<String, Component> refusals = new LinkedHashMap<>();
             for (int i = 0; i < count; i++) {
                 String key = buffer.readUtf();
-                //? if forge {
+                //? if <1.21 {
                 /*refusals.put(key, buffer.readBoolean() ? buffer.readComponent() : null);
                 *///?} else {
                 refusals.put(key, buffer.readBoolean()

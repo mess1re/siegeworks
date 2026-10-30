@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 *///?} else {
@@ -45,7 +45,7 @@ public final class UpgradeSaveGameTests {
             old.putString("id", oldId);
             CompoundTag data = new CompoundTag();
             data.putString("migration_test", "kept");
-            //? if forge {
+            //? if <1.21 {
             /*old.putByte("Count", (byte) 17);
             old.put("tag", data);
             ItemStack stack = ItemStack.of(old);
@@ -77,7 +77,7 @@ public final class UpgradeSaveGameTests {
                 "explosive_singijeon", SiegeworksItems.JUNG_SINGIJEON.get(),
                 "mangonel_spawner", SiegeworksItems.ONAGER_SPAWNER.get());
         renamed.forEach((oldPath, item) -> {
-            //? if forge {
+            //? if <1.21 {
             /*ResourceLocation oldId = new ResourceLocation(Siegeworks.MOD_ID, oldPath);
             *///?} else {
             ResourceLocation oldId = MinecraftVersionCompat.id(Siegeworks.MOD_ID, oldPath);

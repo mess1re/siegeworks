@@ -23,7 +23,7 @@ import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.properties.SlabType;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 *///?} else {

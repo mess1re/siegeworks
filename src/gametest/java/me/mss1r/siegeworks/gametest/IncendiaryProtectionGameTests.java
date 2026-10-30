@@ -17,7 +17,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -40,14 +40,14 @@ public final class IncendiaryProtectionGameTests {
     private static final Set<BlockPos> NO_PLACE = ConcurrentHashMap.newKeySet();
 
     static {
-        //? if forge {
+        //? if <1.21 {
         /*MinecraftForge.EVENT_BUS.addListener((BlockEvent.BreakEvent event) -> {
         *///?} else {
         NeoForge.EVENT_BUS.addListener((BlockEvent.BreakEvent event) -> {
         //?}
             if (NO_BREAK.contains(event.getPos())) event.setCanceled(true);
         });
-        //? if forge {
+        //? if <1.21 {
         /*MinecraftForge.EVENT_BUS.addListener((BlockEvent.EntityPlaceEvent event) -> {
         *///?} else {
         NeoForge.EVENT_BUS.addListener((BlockEvent.EntityPlaceEvent event) -> {

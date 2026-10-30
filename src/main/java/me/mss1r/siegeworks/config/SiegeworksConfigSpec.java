@@ -1,6 +1,6 @@
 package me.mss1r.siegeworks.config;
 
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.common.ForgeConfigSpec;
 *///?} else {
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 public final class SiegeworksConfigSpec {
     public static final int FORMAT_VERSION = 1;
 
-    //? if forge {
+    //? if <1.21 {
     /*private final ForgeConfigSpec delegate;
 
     private SiegeworksConfigSpec(ForgeConfigSpec delegate) {
@@ -39,7 +39,7 @@ public final class SiegeworksConfigSpec {
     }
 
     public static final class Builder {
-        //? if forge {
+        //? if <1.21 {
         /*private final ForgeConfigSpec.Builder delegate = new ForgeConfigSpec.Builder();
         *///?} else {
         private final ModConfigSpec.Builder delegate = new ModConfigSpec.Builder();

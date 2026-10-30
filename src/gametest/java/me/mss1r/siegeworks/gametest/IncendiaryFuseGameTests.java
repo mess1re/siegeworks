@@ -45,7 +45,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 *///?} else {
@@ -464,7 +464,7 @@ public final class IncendiaryFuseGameTests {
         player.setItemInHand(InteractionHand.MAIN_HAND, held);
         BlockState state = level.getBlockState(pos);
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
-        //? if forge {
+        //? if <1.21 {
         /*return state.use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction();
         *///?} else {
         return state.useItemOn(held, level, player, InteractionHand.MAIN_HAND, hit).consumesAction();

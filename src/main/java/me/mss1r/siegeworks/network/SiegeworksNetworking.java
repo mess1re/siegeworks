@@ -10,7 +10,7 @@ import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-//? if neoforge {
+//? if >=1.21 {
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?}
 
@@ -33,7 +33,7 @@ public final class SiegeworksNetworking {
     }
 
     public static void register() {
-        //? if forge {
+        //? if <1.21 {
 
         /*register(NetworkManager.c2s(), SIEGE_YAW, SiegeYawC2SPayload::decode, SiegeYawC2SPayload::handle);
         register(NetworkManager.c2s(), SIEGE_MOVEMENT,
@@ -76,7 +76,7 @@ public final class SiegeworksNetworking {
     }
 
     private static void registerClientReceivers() {
-        //? if forge {
+        //? if <1.21 {
 
         /*register(NetworkManager.s2c(), OPEN_MAINTENANCE,
                 OpenMaintenanceS2CPayload::decode, OpenMaintenanceS2CPayload::handle);
@@ -93,7 +93,7 @@ public final class SiegeworksNetworking {
         //?}
     }
 
-    //? if forge {
+    //? if <1.21 {
 
     /*private static <T> void register(NetworkManager.Side side, ResourceLocation id,
                                      Function<FriendlyByteBuf, T> decoder,
@@ -104,7 +104,7 @@ public final class SiegeworksNetworking {
     *///?}
 
     public static void sendToServer(Object packet) {
-        //? if forge {
+        //? if <1.21 {
 
         /*FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         ResourceLocation id;
@@ -139,7 +139,7 @@ public final class SiegeworksNetworking {
     }
 
     public static void sendToPlayer(ServerPlayer player, Object packet) {
-        //? if forge {
+        //? if <1.21 {
 
         /*FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         ResourceLocation id;

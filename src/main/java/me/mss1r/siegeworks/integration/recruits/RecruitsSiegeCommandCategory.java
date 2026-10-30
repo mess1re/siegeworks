@@ -1,17 +1,10 @@
 package me.mss1r.siegeworks.integration.recruits;
 
-//? if forge {
-/*import com.talhanation.recruits.Main;
-*///?}
 import com.talhanation.recruits.client.ClientManager;
 import com.talhanation.recruits.client.events.CommandCategoryManager;
 import com.talhanation.recruits.client.gui.CommandScreen;
 import com.talhanation.recruits.client.gui.commandscreen.ICommandCategory;
 import com.talhanation.recruits.client.gui.group.RecruitsCommandButton;
-import com.talhanation.recruits.network.MessageBackToMountEntity;
-//? if neoforge {
-import com.talhanation.recruits.network.RecruitsNetwork;
-//?}
 import com.talhanation.recruits.world.RecruitsGroup;
 import me.mss1r.axiomata.blueprint.api.BlueprintStacks;
 import me.mss1r.siegeworks.api.SiegeAmmunitionMode;
@@ -30,23 +23,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-//? if forge {
-/*import net.minecraftforge.api.distmarker.Dist;
-*///?} else {
-import net.neoforged.api.distmarker.Dist;
-//?}
-//? if forge {
-/*import net.minecraftforge.api.distmarker.OnlyIn;
-*///?} else {
-import net.neoforged.api.distmarker.OnlyIn;
-//?}
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@OnlyIn(Dist.CLIENT)
 final class RecruitsSiegeCommandCategory implements ICommandCategory {
     private static final String HOLD_FIRE_STATE = "hold_fire";
     private static final String STRATEGIC_FIRE_STATE = "strategic_fire";
@@ -106,12 +88,7 @@ final class RecruitsSiegeCommandCategory implements ICommandCategory {
                             RecruitsSiegeCommandC2SPayload.ACTION_CREW_MACHINE, target.getId()));
             layout.add("return", hasActiveGroup,
                     () -> forEachActiveGroup(groups, group ->
-                            //? if forge {
-                            /*Main.SIMPLE_CHANNEL.sendToServer(
-                            *///?} else {
-                            RecruitsNetwork.sendToServer(
-                            //?}
-                                    new MessageBackToMountEntity(player.getUUID(), group.getUUID()))));
+                            me.mss1r.siegeworks.platform.SiegeClientPlatform.returnToMount(player.getUUID(), group.getUUID())));
         }
 
         if (selectedType != null) {

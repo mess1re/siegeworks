@@ -12,7 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-//? if neoforge {
+//? if >=1.21 {
 import net.minecraft.world.item.Item;
 //?}
 import net.minecraft.world.item.TooltipFlag;
@@ -22,12 +22,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
-//? if forge {
-/*import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-*///?} else {
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-//?}
 
 public class SiegeLadderDeploymentItem extends SiegeDeploymentItem {
     public static final String TAG_SECTIONS = "Sections";
@@ -39,9 +33,6 @@ public class SiegeLadderDeploymentItem extends SiegeDeploymentItem {
         super(SiegeworksEntities.SIEGE_LADDER_ENTITY, properties);
     }
 
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-    }
 
     public static int getSections(ItemStack stack) {
         CompoundTag tag = me.mss1r.siegeworks.platform.MinecraftVersionCompat.customData(stack);
@@ -123,7 +114,7 @@ public class SiegeLadderDeploymentItem extends SiegeDeploymentItem {
 
     @Override
     public void appendHoverText(ItemStack stack,
-                                //? if forge {
+                                //? if <1.21 {
                                 /*@Nullable Level level,
                                 *///?} else {
                                 Item.TooltipContext context,

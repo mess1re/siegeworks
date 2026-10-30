@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-//? if forge {
+//? if <1.21 {
 /*import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 *///?} else {
@@ -20,7 +20,7 @@ import net.minecraft.world.level.pathfinder.PathfindingContext;
 @Mixin(targets = "com.talhanation.recruits.entities.ai.navigation.RecruitsPathNodeEvaluator",
         remap = false)
 public abstract class RecruitsPathNodeEvaluatorMixin {
-    //? if forge {
+    //? if <1.21 {
     /*@Inject(method = {
             "getBlockPathType(Lnet/minecraft/world/level/BlockGetter;IIILnet/minecraft/world/entity/Mob;)Lnet/minecraft/world/level/pathfinder/BlockPathTypes;",
             "m_7209_(Lnet/minecraft/world/level/BlockGetter;IIILnet/minecraft/world/entity/Mob;)Lnet/minecraft/world/level/pathfinder/BlockPathTypes;"

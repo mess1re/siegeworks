@@ -22,7 +22,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -291,11 +291,11 @@ public final class SiegeLadderGameTests {
         grid.set(4, new ItemStack(Items.STICK));
         grid.set(7, ladder.copy());
         var recipe = new SiegeLadderExtensionRecipe(
-                //? if forge {
+                //? if <1.21 {
                 /*MinecraftVersionCompat.id(Siegeworks.MOD_ID, "siege_ladder_extension"),
                 *///?}
                 CraftingBookCategory.MISC);
-        //? if forge {
+        //? if <1.21 {
         /*var input = new TransientCraftingContainer(null, 3, 3, grid);
         return recipe.matches(input, helper.getLevel())
                 ? recipe.assemble(input, helper.getLevel().registryAccess()) : ItemStack.EMPTY;

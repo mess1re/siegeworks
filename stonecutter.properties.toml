@@ -6,6 +6,27 @@ mod.authors = "mss1r"
 mod.license = "LGPL-3.0-only (code); custom terms (assets)"
 mod.description = "Build and operate medieval siege engines in Minecraft."
 
+deps.axiomata = "0.1.0-beta.9"
+deps.axiomata_mod = "0.1.0-beta.9"
+deps.fabric_loader = "0.16.14"
+deps.recruits_port = "1c7e587b214258d428f36a14476afa5610b313cb"
+
+[common."1.20.1"]
+mod.java = 17
+mod.pack_format = "15"
+deps.architectury = "9.2.14"
+deps.geckolib = "4.8.4"
+deps.axiomata = "0.1.0-beta.9"
+deps.forge_config_api_port = "fuzs.forgeconfigapiport:forgeconfigapiport-common:8.0.3"
+
+[common."1.21.1"]
+mod.java = 21
+mod.pack_format = "34"
+deps.architectury = "13.0.11"
+deps.geckolib = "4.9.2"
+deps.axiomata = "0.1.0-beta.9"
+deps.forge_config_api_port = "fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:21.1.6"
+
 [forge."1.20.1"]
 mod.minecraft_range = "[1.20.1,1.21)"
 mod.forge_range = "[47.4.10,)"
@@ -32,3 +53,20 @@ deps.axiomata_mod = "0.1.0-beta.9"
 deps.geckolib = "4.9.2"
 deps.recruits = "1c7e587b214258d428f36a14476afa5610b313cb"
 deps.recruits_range = "[1.15.2,)"
+
+[fabric."1.20.1"]
+mod.minecraft_range = "~1.20.1"
+mod.java = 17
+deps.fabric_api = "0.92.6+1.20.1"
+deps.architectury = "9.2.14"
+deps.geckolib = "4.8.4"
+deps.forge_config_api_port = "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:8.0.3"
+
+[fabric."1.21.1"]
+deps.fabric_loader = "0.17.2"
+mod.minecraft_range = "~1.21.1"
+mod.java = 21
+deps.fabric_api = "0.116.7+1.21.1"
+deps.architectury = "13.0.11"
+deps.geckolib = "4.9.2"
+deps.forge_config_api_port = "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.6"

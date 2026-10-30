@@ -5,7 +5,7 @@ import me.mss1r.siegeworks.entity.siege.TrebuchetEntity;
 import me.mss1r.siegeworks.item.SiegeAmmo;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.resources.ResourceLocation;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimationState;
 *///?} else {
 import software.bernie.geckolib.animation.AnimationState;

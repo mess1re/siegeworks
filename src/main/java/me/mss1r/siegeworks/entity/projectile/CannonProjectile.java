@@ -153,7 +153,7 @@ public class CannonProjectile extends SiegeProjectile {
 
     @Override
     protected SoundEvent getImpactSound() {
-        //? if forge {
+        //? if <1.21 {
         /*return SoundEvents.GENERIC_EXPLODE;
         *///?} else {
         return SoundEvents.GENERIC_EXPLODE.value();

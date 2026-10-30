@@ -17,46 +17,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-//? if forge {
-/*import net.minecraftforge.api.distmarker.Dist;
-*///?} else {
-import net.neoforged.api.distmarker.Dist;
-//?}
-//? if forge {
-/*import net.minecraftforge.eventbus.api.SubscribeEvent;
-*///?} else {
-import net.neoforged.bus.api.SubscribeEvent;
-//?}
-//? if forge {
-/*import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-*///?} else {
-import net.neoforged.fml.common.EventBusSubscriber;
-//?}
-//? if forge {
-/*import net.minecraftforge.client.event.MovementInputUpdateEvent;
-*///?} else {
-import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
-//?}
-//? if forge {
-/*import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-*///?} else {
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-//?}
-//? if forge {
-/*import net.minecraftforge.client.event.RenderHandEvent;
-*///?} else {
-import net.neoforged.neoforge.client.event.RenderHandEvent;
-//?}
 import me.mss1r.siegeworks.network.SiegeworksNetworking;
 
 @SuppressWarnings("removal")
-//? if forge {
-/*@EventBusSubscriber(modid = Siegeworks.MOD_ID, bus = EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-*///?} else {
-@EventBusSubscriber(modid = Siegeworks.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
-//?}
 public final class SiegeworksClientGameEvents {
     private static final int MANTLET_DOUBLE_SHIFT_TICKS = 8;
     private static boolean jumpHeldLastTick;
@@ -68,21 +31,17 @@ public final class SiegeworksClientGameEvents {
     private SiegeworksClientGameEvents() {
     }
 
-    @SubscribeEvent
-    public static void onMovementInputUpdate(MovementInputUpdateEvent event) {
-        if (!(event.getEntity() instanceof LocalPlayer player)) {
-            return;
-        }
+    public static void updateMovement(LocalPlayer player, net.minecraft.client.player.Input input) {
 
         Entity vehicle = player.getVehicle();
         if (vehicle instanceof MantletEntity) {
-            event.getInput().shiftKeyDown = false;
+            input.shiftKeyDown = false;
         }
 
         AbstractSiegeEntity controlledSiege = getControlledSiege(vehicle, player);
         if (controlledSiege != null) {
-            float forward = Math.max(-1.0F, Math.min(1.0F, event.getInput().forwardImpulse));
-            float steering = Math.max(-1.0F, Math.min(1.0F, event.getInput().leftImpulse));
+            float forward = Math.max(-1.0F, Math.min(1.0F, input.forwardImpulse));
+            float steering = Math.max(-1.0F, Math.min(1.0F, input.leftImpulse));
             controlledSiege.setMovementInput(forward, steering);
             SiegeworksNetworking.sendToServer(new SiegeMovementC2SPayload(forward, steering, controlledSiege.getYRot()));
         }
@@ -147,36 +106,17 @@ public final class SiegeworksClientGameEvents {
         sprintHeldLastTick = sprintDown;
     }
 
-    @SubscribeEvent
-    public static void onRenderHand(RenderHandEvent event) {
+    public static boolean hideHands() {
         LocalPlayer player = Minecraft.getInstance().player;
-        // Hands are raised out of view while carrying a ladder.
-        if (player != null && (player.getVehicle() instanceof AbstractBoltThrowerEntity
-                || LadderCarry.isCarrying(player))) {
-            event.setCanceled(true);
-        }
+        return player != null && (player.getVehicle() instanceof AbstractBoltThrowerEntity
+                || LadderCarry.isCarrying(player));
     }
 
-    @SubscribeEvent
-    //? if forge {
-    /*public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Pre event) {
-    *///?} else {
-    public static void onRenderGuiOverlay(RenderGuiLayerEvent.Pre event) {
-    //?}
+    public static boolean hideCrosshair() {
         Minecraft minecraft = Minecraft.getInstance();
-        AbstractSiegeEntity siege = minecraft.player == null
-                ? null
-                : SiegeAimView.findControlledSiege(minecraft.player);
-        //? if forge {
-        /*boolean crosshair = event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id());
-        *///?} else {
-        boolean crosshair = event.getName().equals(VanillaGuiLayers.CROSSHAIR);
-        //?}
-        if (crosshair
-                && minecraft.player != null && siege != null
-                && !SiegeAimController.isFreeLookActive(minecraft.player, siege)) {
-            event.setCanceled(true);
-        }
+        AbstractSiegeEntity siege = minecraft.player == null ? null : SiegeAimView.findControlledSiege(minecraft.player);
+        return minecraft.player != null && siege != null
+                && !SiegeAimController.isFreeLookActive(minecraft.player, siege);
     }
 
     private static void sendAimUpdate(LocalPlayer player) {

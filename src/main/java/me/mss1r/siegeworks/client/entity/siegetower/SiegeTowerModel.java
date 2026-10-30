@@ -5,7 +5,7 @@ import me.mss1r.siegeworks.entity.siege.SiegeTowerEntity;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimationState;
 *///?} else {
 import software.bernie.geckolib.animation.AnimationState;

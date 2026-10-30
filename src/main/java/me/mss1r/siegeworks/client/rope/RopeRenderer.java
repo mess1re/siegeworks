@@ -105,7 +105,7 @@ public final class RopeRenderer {
 
     private static void vertex(VertexConsumer buffer, Matrix4f pose, Matrix3f normalMatrix, Vec3 position,
                                float u, float v, Vec3 normal, int packedLight) {
-        //? if forge {
+        //? if <1.21 {
         /*buffer.vertex(pose, (float) position.x, (float) position.y, (float) position.z)
                 .color(255, 255, 255, 255)
                 .uv(u, v)

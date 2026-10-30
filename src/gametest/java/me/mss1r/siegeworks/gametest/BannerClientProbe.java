@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -30,7 +30,7 @@ public final class BannerClientProbe {
     private static TrebuchetEntity siege;
 
     @SubscribeEvent
-    //? if forge {
+    //? if <1.21 {
     /*public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
     *///?} else {

@@ -12,7 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animatable.GeoAnimatable;
 *///?} else {
 import software.bernie.geckolib.animatable.GeoAnimatable;
@@ -31,7 +31,7 @@ public abstract class TowedSiegeRenderer<T extends AbstractSiegeEntity & GeoAnim
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public void postRender(PoseStack poseStack, T animatable, BakedGeoModel model,
                            MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
                            float partialTick, int packedLight, int packedOverlay,
@@ -41,7 +41,7 @@ public abstract class TowedSiegeRenderer<T extends AbstractSiegeEntity & GeoAnim
                            MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
                            float partialTick, int packedLight, int packedOverlay, int packedColor) {
     //?}
-        //? if forge {
+        //? if <1.21 {
         /*super.postRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick,
                 packedLight, packedOverlay, red, green, blue, alpha);
         *///?} else {

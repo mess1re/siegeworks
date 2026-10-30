@@ -26,7 +26,7 @@ public class GiantCannonBallRenderer extends EntityRenderer<GiantCannonProjectil
                        MultiBufferSource buffer, int packedLight) {
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
         poseStack.pushPose();
-        //? if forge {
+        //? if <1.21 {
         /*model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         *///?} else {
         model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);

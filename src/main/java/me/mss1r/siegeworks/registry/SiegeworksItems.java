@@ -19,19 +19,19 @@ public interface SiegeworksItems {
     RegistrySupplier<Item> BLACK_POWDER = ITEMS.register("black_powder", () -> new Item(new Item.Properties()));
     RegistrySupplier<Item> WHEEL = ITEMS.register("wheel", () -> new Item(new Item.Properties()));
     RegistrySupplier<Item> BARREL = ITEMS.register("barrel", () -> new Item(new Item.Properties()));
-    RegistrySupplier<Item> SERPENTINE_SPAWNER = ITEMS.register("serpentine_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.SERPENTINE_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> CULVERIN_SPAWNER = ITEMS.register("culverin_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.CULVERIN_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> BATTERING_RAM_SPAWNER = ITEMS.register("battering_ram_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.BATTERING_RAM_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> ONAGER_SPAWNER = ITEMS.register("onager_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.ONAGER_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> TREBUCHET_SPAWNER = ITEMS.register("trebuchet_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.TREBUCHET_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> TOWER_CROSSBOW_SPAWNER = ITEMS.register("tower_crossbow_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.TOWER_CROSSBOW_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> ARCBALLISTA_SPAWNER = ITEMS.register("arcballista_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.ARCBALLISTA_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> MANTLET_SPAWNER = ITEMS.register("mantlet_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.MANTLET_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> MONS_MEG_SPAWNER = ITEMS.register("mons_meg_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.MONS_MEG_ENTITY, new Item.Properties()));
-    RegistrySupplier<Item> SIEGE_TOWER_SPAWNER = ITEMS.register("siege_tower_spawner", () -> new SiegeDeploymentItem(SiegeworksEntities.SIEGE_TOWER_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> SERPENTINE_SPAWNER = ITEMS.register("serpentine_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.SERPENTINE_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> CULVERIN_SPAWNER = ITEMS.register("culverin_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.CULVERIN_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> BATTERING_RAM_SPAWNER = ITEMS.register("battering_ram_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.BATTERING_RAM_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> ONAGER_SPAWNER = ITEMS.register("onager_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.ONAGER_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> TREBUCHET_SPAWNER = ITEMS.register("trebuchet_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.TREBUCHET_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> TOWER_CROSSBOW_SPAWNER = ITEMS.register("tower_crossbow_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.TOWER_CROSSBOW_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> ARCBALLISTA_SPAWNER = ITEMS.register("arcballista_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.ARCBALLISTA_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> MANTLET_SPAWNER = ITEMS.register("mantlet_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.MANTLET_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> MONS_MEG_SPAWNER = ITEMS.register("mons_meg_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.MONS_MEG_ENTITY, new Item.Properties()));
+    RegistrySupplier<Item> SIEGE_TOWER_SPAWNER = ITEMS.register("siege_tower_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.SIEGE_TOWER_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> SIEGE_LADDER_SPAWNER = ITEMS.register("siege_ladder_spawner", () -> new SiegeLadderDeploymentItem(new Item.Properties()));
     RegistrySupplier<Item> HWACHA_SPAWNER = ITEMS.register("hwacha_spawner", () ->
-            new SiegeDeploymentItem(SiegeworksEntities.HWACHA_ENTITY, new Item.Properties()));
+            me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.HWACHA_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> TOWER_CROSSBOW_BOLT = ITEMS.register("tower_crossbow_bolt", () ->
             new Item(new Item.Properties().stacksTo(16)));
     RegistrySupplier<Item> ARCBALLISTA_BOLT = ITEMS.register("arcballista_bolt", () ->

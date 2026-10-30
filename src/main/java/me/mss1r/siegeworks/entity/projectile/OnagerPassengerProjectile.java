@@ -31,7 +31,6 @@ public final class OnagerPassengerProjectile extends SiegeProjectile {
         return getPassengers().isEmpty() && passenger instanceof LivingEntity;
     }
 
-    @Override
     public boolean shouldRiderSit() {
         return true;
     }

@@ -14,7 +14,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
-//? if forge {
+//? if <1.21 {
 /*import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -44,7 +44,7 @@ public class ForkedPoleItem extends Item {
     }
 
     public static Properties properties() {
-        //? if forge {
+        //? if <1.21 {
         /*return new Properties().durability(DURABILITY);
         *///?} else {
         return new Properties().durability(DURABILITY).attributes(ItemAttributeModifiers.builder()
@@ -59,7 +59,7 @@ public class ForkedPoleItem extends Item {
         //?}
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*private static final UUID REACH_ID = UUID.fromString("5d0f6c55-2f6e-4a5b-9a51-3c1f4e8b7a20");
 
     @Override
@@ -72,7 +72,7 @@ public class ForkedPoleItem extends Item {
                         ATTACK_DAMAGE, AttributeModifier.Operation.ADDITION))
                 .put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier",
                         ATTACK_SPEED, AttributeModifier.Operation.ADDITION))
-                .put(net.minecraftforge.common.ForgeMod.ENTITY_REACH.get(), new AttributeModifier(REACH_ID,
+                .put(me.mss1r.siegeworks.platform.SiegePlatform.entityReachAttribute(), new AttributeModifier(REACH_ID,
                         "Weapon modifier", REACH, AttributeModifier.Operation.ADDITION))
                 .build();
     }
@@ -97,7 +97,7 @@ public class ForkedPoleItem extends Item {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public int getUseDuration(ItemStack stack) {
     *///?} else {
     public int getUseDuration(ItemStack stack, LivingEntity user) {

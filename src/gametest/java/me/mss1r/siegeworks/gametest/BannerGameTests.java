@@ -16,7 +16,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 *///?} else {
@@ -40,7 +40,7 @@ public final class BannerGameTests {
 
     private static ItemStack patterned(GameTestHelper helper) {
         ItemStack stack = new ItemStack(Items.RED_BANNER);
-        //? if forge {
+        //? if <1.21 {
         /*stack.setHoverName(Component.literal("Counterweight standard"));
         var pattern = new CompoundTag();
         pattern.putString("Pattern", "cr");

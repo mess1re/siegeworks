@@ -1,6 +1,6 @@
 package me.mss1r.siegeworks.block;
 
-//? if neoforge {
+//? if >=1.21 {
 import com.mojang.serialization.MapCodec;
 //?}
 import net.minecraft.core.BlockPos;
@@ -22,7 +22,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class DirectionalProjectileBlock extends DirectionalBlock implements SimpleWaterloggedBlock {
-    //? if neoforge {
+    //? if >=1.21 {
     public static final MapCodec<DirectionalProjectileBlock> CODEC = simpleCodec(DirectionalProjectileBlock::new);
 
     @Override

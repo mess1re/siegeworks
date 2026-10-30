@@ -25,12 +25,12 @@ final class RecruitsMaintenanceController {
     }
 
     static boolean worksOn(SiegeEngineerEntity engineer, net.minecraft.world.entity.Entity siege) {
-        CompoundTag data = engineer.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer);
         return data.hasUUID(TARGET_TAG) && data.getUUID(TARGET_TAG).equals(siege.getUUID());
     }
 
     static boolean hasTask(SiegeEngineerEntity engineer) {
-        return engineer.getPersistentData().hasUUID(TARGET_TAG);
+        return me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).hasUUID(TARGET_TAG);
     }
 
     static boolean assign(SiegeEngineerEntity engineer, AbstractSiegeEntity siege, Action action) {
@@ -39,7 +39,7 @@ final class RecruitsMaintenanceController {
             return false;
         }
 
-        CompoundTag data = engineer.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer);
         data.putUUID(TARGET_TAG, siege.getUUID());
         data.putLong(TARGET_POS_TAG, siege.blockPosition().asLong());
         data.putInt(ACTION_TAG, action.ordinal());
@@ -61,7 +61,7 @@ final class RecruitsMaintenanceController {
     }
 
     static boolean tick(SiegeEngineerEntity engineer) {
-        CompoundTag data = engineer.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer);
         if (!data.hasUUID(TARGET_TAG)) {
             return false;
         }
@@ -172,7 +172,7 @@ final class RecruitsMaintenanceController {
     }
 
     private static void clear(SiegeEngineerEntity engineer, boolean cancelDismantling) {
-        CompoundTag data = engineer.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer);
         UUID targetId = data.hasUUID(TARGET_TAG) ? data.getUUID(TARGET_TAG) : null;
         if (cancelDismantling && targetId != null && engineer.level() instanceof ServerLevel serverLevel
                 && serverLevel.getEntity(targetId) instanceof AbstractSiegeEntity siege) {

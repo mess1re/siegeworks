@@ -10,7 +10,7 @@ import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-//? if neoforge {
+//? if >=1.21 {
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -40,7 +40,7 @@ public final class RecruitsNetworking {
         TOWER_CREW.register(NetworkManager.c2s());
         FIRE_ZONE.register(NetworkManager.c2s());
         STATES_QUERY.register(NetworkManager.c2s());
-        //? if neoforge {
+        //? if >=1.21 {
         if (Platform.getEnvironment() == Env.SERVER) {
             NetworkManager.registerS2CPayloadType(STATES_ANSWER.type(), STATES_ANSWER.codec());
         }
@@ -58,7 +58,7 @@ public final class RecruitsNetworking {
     }
 
     public static void sendToPlayer(ServerPlayer player, RecruitsCommandStatesPayloads.Answer packet) {
-        //? if forge {
+        //? if <1.21 {
         /*FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         STATES_ANSWER.encoder().accept(packet, buffer);
         NetworkManager.sendToPlayer(player, STATES_ANSWER.id(), buffer);
@@ -83,7 +83,7 @@ public final class RecruitsNetworking {
                               BiConsumer<T, FriendlyByteBuf> encoder,
                               BiConsumer<T, NetworkManager.PacketContext> handler) {
         private void register(NetworkManager.Side side) {
-            //? if forge {
+            //? if <1.21 {
             /*NetworkManager.registerReceiver(side, id,
                     (buffer, context) -> handler.accept(decoder.apply(buffer), context));
             *///?} else {
@@ -93,7 +93,7 @@ public final class RecruitsNetworking {
         }
 
         private void sendToServer(T packet) {
-            //? if forge {
+            //? if <1.21 {
             /*FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
             encoder.accept(packet, buffer);
             NetworkManager.sendToServer(id, buffer);
@@ -102,7 +102,7 @@ public final class RecruitsNetworking {
             //?}
         }
 
-        //? if neoforge {
+        //? if >=1.21 {
         private CustomPacketPayload.Type<Payload<T>> type() { return new CustomPacketPayload.Type<>(id); }
 
         private StreamCodec<RegistryFriendlyByteBuf, Payload<T>> codec() {
@@ -112,7 +112,7 @@ public final class RecruitsNetworking {
         //?}
     }
 
-    //? if neoforge {
+    //? if >=1.21 {
     private record Payload<T>(CustomPacketPayload.Type<Payload<T>> type, T value) implements CustomPacketPayload {}
     //?}
 

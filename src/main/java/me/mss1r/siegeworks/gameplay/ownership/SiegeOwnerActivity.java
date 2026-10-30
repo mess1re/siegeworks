@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.scores.PlayerTeam;
-//? if neoforge {
+//? if >=1.21 {
 import net.minecraft.core.HolderLookup;
 import net.minecraft.util.datafix.DataFixTypes;
 //?}
@@ -71,7 +71,7 @@ public final class SiegeOwnerActivity extends SavedData {
     }
 
     private static SiegeOwnerActivity data(ServerLevel level) {
-        //? if forge {
+        //? if <1.21 {
 
         /*return level.getServer().overworld().getDataStorage().computeIfAbsent(
                 SiegeOwnerActivity::load, SiegeOwnerActivity::new, DATA_NAME);
@@ -82,7 +82,7 @@ public final class SiegeOwnerActivity extends SavedData {
         //?}
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*private static SiegeOwnerActivity load(CompoundTag tag) {
     *///?} else {
     private static SiegeOwnerActivity load(CompoundTag tag, HolderLookup.Provider registries) {
@@ -99,7 +99,7 @@ public final class SiegeOwnerActivity extends SavedData {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public CompoundTag save(CompoundTag tag) {
     *///?} else {
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {

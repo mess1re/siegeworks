@@ -35,7 +35,7 @@ public final class ScattershotProjectileModel extends EntityModel<ScattershotPro
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public void renderToBuffer(PoseStack poseStack, VertexConsumer consumer, int packedLight,
                                int packedOverlay, float red, float green, float blue, float alpha) {
         main.render(poseStack, consumer, packedLight, packedOverlay, red, green, blue, alpha);

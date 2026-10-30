@@ -16,13 +16,6 @@ import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import java.math.BigDecimal;
 import java.math.MathContext;
-//? if forge {
-/*import net.minecraftforge.fml.loading.FMLConfig;
-import net.minecraftforge.fml.loading.FMLPaths;
-*///?} else {
-import net.neoforged.fml.loading.FMLConfig;
-import net.neoforged.fml.loading.FMLPaths;
-//?}
 
 /** Runs before loader correction, which would otherwise discard the former engines table. */
 final class EngineConfigMigration {
@@ -72,12 +65,8 @@ final class EngineConfigMigration {
     }
 
     private static Path defaultEngineFile() {
-        //? if forge {
-        /*return FMLPaths.GAMEDIR.get().resolve(FMLConfig.getConfigValue(FMLConfig.ConfigValue.DEFAULT_CONFIG_PATH))
+        return me.mss1r.siegeworks.platform.SiegePlatform.defaultConfigDirectory()
                 .resolve(SiegeworksEngineConfig.FILE_NAME);
-        *///?} else {
-        return FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath()).resolve(SiegeworksEngineConfig.FILE_NAME);
-        //?}
     }
 
     private static void writeAtomically(CommentedConfig config, Path destination) throws IOException {

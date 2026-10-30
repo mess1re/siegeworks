@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraft.world.level.block.entity.BannerBlockEntity;
 *///?} else {
 import net.minecraft.core.component.DataComponents;
@@ -31,7 +31,7 @@ public final class SiegeBannerRenderer {
         flag.x = flag.y = flag.z = 0.0F;
         flag.xRot = (-0.0125F + 0.01F * Mth.cos(Mth.TWO_PI * phase)) * Mth.PI;
         flag.yRot = flag.zRot = 0.0F;
-        //? if forge {
+        //? if <1.21 {
         /*BannerRenderer.renderPatterns(poseStack, buffers, packedLight, packedOverlay, flag,
                 ModelBakery.BANNER_BASE, true,
                 BannerBlockEntity.createPatterns(banner.getColor(), BannerBlockEntity.getItemPatterns(stack)));

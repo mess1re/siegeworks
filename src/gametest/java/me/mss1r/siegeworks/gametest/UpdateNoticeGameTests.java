@@ -5,7 +5,7 @@ import me.mss1r.siegeworks.update.SiegeUpdateNotice;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.ClickEvent;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.fml.VersionChecker;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;

@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.mss1r.siegeworks.fabric.mixin",
+  "compatibilityLevel": "${java_compatibility}",
+  "mixins": [
+    "ExplosionMixin",
+    "LivingEntityMixin",
+    "RegistryAliasesMixin",
+    "PotContentsMixin",
+    "FireBlockMixin"
+  ],
+  "client": [
+    "KeyboardInputMixin",
+    "GuiMixin",
+    "ItemInHandRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

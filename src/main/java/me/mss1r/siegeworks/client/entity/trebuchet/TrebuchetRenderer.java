@@ -120,7 +120,7 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public void postRender(PoseStack poseStack, TrebuchetEntity animatable, BakedGeoModel model,
                            MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
                            float partialTick, int packedLight, int packedOverlay,
@@ -130,7 +130,7 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
                            MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
                            float partialTick, int packedLight, int packedOverlay, int packedColor) {
     //?}
-        //? if forge {
+        //? if <1.21 {
         /*super.postRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick,
                 packedLight, packedOverlay, red, green, blue, alpha);
         *///?} else {

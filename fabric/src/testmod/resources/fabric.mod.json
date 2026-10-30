@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "siegeworks_fabric_tests",
+  "version": "${mod_version}",
+  "name": "Siegeworks Fabric integration tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "me.mss1r.siegeworks.gametest.FabricGameTestBridge",
+      "me.mss1r.siegeworks.gametest.FabricPortGameTests"
+    ],
+    "client": [
+      "me.mss1r.siegeworks.gametest.FabricClientProbe"
+    ]
+  },
+  "depends": {
+    "siegeworks": "*",
+    "fabric-gametest-api-v1": "*"
+  },
+  "mixins": [
+    "siegeworks-tests.mixins.json"
+  ]
+}

@@ -150,8 +150,8 @@ public class SiegeMaintenanceScreen extends Screen {
                 Component.translatable("gui.siegeworks.maintenance.dismantle_refund"),
                 refundLines());
 
-        for (Renderable renderable : renderables) {
-            renderable.render(guiGraphics, mouseX, mouseY, partialTick);
+        for (var child : children()) {
+            if (child instanceof Renderable renderable) renderable.render(guiGraphics, mouseX, mouseY, partialTick);
         }
     }
 

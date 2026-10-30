@@ -30,15 +30,15 @@ public final class RecruitsFireZone {
         zone.putInt(TAG_RADIUS, Math.max(0, radiusX));
         zone.putInt(TAG_RADIUS_Z, Math.max(0, radiusZ));
         zone.putBoolean(TAG_RECTANGULAR, rectangular);
-        engineer.getPersistentData().put(TAG_ZONE, zone);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).put(TAG_ZONE, zone);
     }
 
     public static void clear(SiegeEngineerEntity engineer) {
-        engineer.getPersistentData().remove(TAG_ZONE);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).remove(TAG_ZONE);
     }
 
     static boolean hasZone(SiegeEngineerEntity engineer) {
-        return engineer.getPersistentData().contains(TAG_ZONE, Tag.TAG_COMPOUND);
+        return me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).contains(TAG_ZONE, Tag.TAG_COMPOUND);
     }
 
     static Vec3 resolveTarget(SiegeEngineerEntity engineer, int shotSequence, double shotSpreadRadius,
@@ -47,7 +47,7 @@ public final class RecruitsFireZone {
             return null;
         }
 
-        CompoundTag root = engineer.getPersistentData();
+        CompoundTag root = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer);
         if (!root.contains(TAG_ZONE, Tag.TAG_COMPOUND)) {
             return null;
         }

@@ -30,7 +30,7 @@ public final class ScattershotProjectile extends CannonProjectile {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*protected void defineSynchedData() {
         super.defineSynchedData();
         SynchedEntityData data = this.entityData;

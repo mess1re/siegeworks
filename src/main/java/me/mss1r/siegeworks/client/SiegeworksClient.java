@@ -49,7 +49,6 @@ public final class SiegeworksClient {
         KeyMappingRegistry.register(SiegeworksKeyMappings.BARREL_SIGHT);
         ClientTickEvent.CLIENT_POST.register(ProjectileFlightSoundController::tick);
         ClientTickEvent.CLIENT_POST.register(SiegeworksClientGameEvents::onClientTick);
-        ClientTickEvent.CLIENT_POST.register(SiegeUpdateNotifier::tick);
         ClientTickEvent.CLIENT_PRE.register(LadderCarryClient::beforeTick);
         ClientTickEvent.CLIENT_POST.register(LadderCarryClient::afterTick);
         ClientPlayerEvent.CLIENT_PLAYER_QUIT.register(player -> LadderCarryClient.leaveWorld());

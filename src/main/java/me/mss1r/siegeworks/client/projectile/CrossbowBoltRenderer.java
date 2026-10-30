@@ -72,7 +72,7 @@ public class CrossbowBoltRenderer<T extends AbstractBoltProjectile> extends Enti
 
         EntityModel<Entity> model = entity instanceof ArcballistaBoltProjectile ? arcballistaModel : towerCrossbowModel;
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
-        //? if forge {
+        //? if <1.21 {
         /*model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         *///?} else {
         model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);

@@ -53,21 +53,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-//? if forge {
-/*import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-*///?} else {
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-//?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -89,28 +74,15 @@ public final class RecruitsCompat {
     private RecruitsCompat() {
     }
 
-    public static void register(IEventBus modBus) {
+    public static void register() {
         RecruitsNetworking.register();
         SiegeOperatorRegistry.register(OPERATOR_TYPE, entity -> entity instanceof SiegeEngineerEntity);
         SiegePlayerAttributionRegistry.register(OPERATOR_TYPE, entity ->
                 entity instanceof AbstractRecruitEntity recruit ? recruit.getOwnerUUID() : null);
         SiegeAllianceRegistry.register(OPERATOR_TYPE, RecruitsCompat::alliedFactions);
-        modBus.addListener(RecruitsCompat::onLoadComplete);
-        modBus.addListener(RecruitsCompat::onClientSetup);
-        //? if forge {
-        /*MinecraftForge.EVENT_BUS.addListener(RecruitsCompat::onLivingTick);
-        MinecraftForge.EVENT_BUS.addListener(RecruitsCompat::onServerStarting);
-        *///?} else {
-        NeoForge.EVENT_BUS.addListener(RecruitsCompat::onLivingTick);
-        NeoForge.EVENT_BUS.addListener(RecruitsCompat::onServerStarting);
-        //?}
     }
 
-    private static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            RecruitsSiegeCommandCategory.register();
-        });
-    }
+    public static void clientSetup() { RecruitsSiegeCommandCategory.register(); }
 
     public static void handleSiegeCommand(ServerPlayer player, int action, List<UUID> groupIds, BlockPos targetPos,
                                           int targetEntityId, ResourceLocation siegeTypeId) {
@@ -1477,12 +1449,12 @@ public final class RecruitsCompat {
         };
     }
 
-    private static void onLoadComplete(FMLLoadCompleteEvent event) {
+    public static void loadComplete() {
         Main.isSiegeWeaponsLoaded = true;
         Main.isSiegeWeaponsCompatible = true;
     }
 
-    private static void onServerStarting(ServerStartingEvent event) {
+    public static void serverStarting() {
         RecruitsDriveOrders.clear();
         RecruitsSiegeTraversal.clear();
         RecruitsWalkOrders.clear();
@@ -1509,12 +1481,8 @@ public final class RecruitsCompat {
         }
     }
 
-    //? if forge {
-    /*private static void onLivingTick(LivingEvent.LivingTickEvent event) {
-    *///?} else {
-    private static void onLivingTick(EntityTickEvent.Pre event) {
-    //?}
-        if (!(event.getEntity() instanceof AbstractRecruitEntity recruit) || recruit.level().isClientSide()) {
+    public static void livingTick(Entity entity) {
+        if (!(entity instanceof AbstractRecruitEntity recruit) || recruit.level().isClientSide()) {
             return;
         }
 

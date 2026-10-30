@@ -44,13 +44,7 @@ public final class EngineFinishController {
     private static final int CHECK_INTERVAL_TICKS = 20;
     private static final double TICKS_PER_DAY = 24000.0D;
     private static final TagKey<Item> COPPER_INGOTS = TagKey.create(
-            Registries.ITEM,
-            //? if forge {
-            /*MinecraftVersionCompat.id("forge", "ingots/copper")
-            *///?} else {
-            MinecraftVersionCompat.id("c", "ingots/copper")
-            //?}
-    );
+            Registries.ITEM, MinecraftVersionCompat.id("siegeworks", "copper_ingots"));
 
     private final Host host;
     // Ticks of weather taken under the open sky; rain counts several times over

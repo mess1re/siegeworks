@@ -1,6 +1,6 @@
 package me.mss1r.siegeworks.block;
 
-//? if neoforge {
+//? if >=1.21 {
 import com.mojang.serialization.MapCodec;
 //?}
 import net.minecraft.core.BlockPos;
@@ -55,7 +55,7 @@ public final class StackedProjectileBlock extends HorizontalDirectionalBlock imp
                 .setValue(WATERLOGGED, false));
     }
 
-    //? if neoforge {
+    //? if >=1.21 {
     @Override
     protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
         return MapCodec.unit(this);
@@ -86,7 +86,7 @@ public final class StackedProjectileBlock extends HorizontalDirectionalBlock imp
         return super.canBeReplaced(state, context);
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*@Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {

@@ -3,11 +3,9 @@ package me.mss1r.siegeworks.item;
 import me.mss1r.axiomata.blueprint.api.construction.ConstructionTarget;
 import me.mss1r.axiomata.collision.CollidableStructure;
 import me.mss1r.axiomata.collision.StructurePlacement;
-import me.mss1r.siegeworks.client.item.SiegeDeploymentItemRenderer;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.gameplay.deployment.SiegeDeploymentLimits;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,11 +21,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-//? if forge {
-/*import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-*///?} else {
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-//?}
 
 public class SiegeDeploymentItem extends Item {
     private final Supplier<? extends EntityType<?>> typeSupplier;
@@ -63,12 +56,7 @@ public class SiegeDeploymentItem extends Item {
 
     private static ConstructionTarget aimedTarget(Player player) {
         return ConstructionTarget.pick(player,
-                //? if forge {
-                /*player.getAttributeValue(net.minecraftforge.common.ForgeMod.BLOCK_REACH.get()),
-                *///?} else {
-                player.blockInteractionRange(),
-                //?}
-                1.0F, false);
+                me.mss1r.siegeworks.platform.MinecraftVersionCompat.blockInteractionRange(player), 1.0F, false);
     }
 
     private InteractionResult deploy(UseOnContext context, ConstructionTarget target) {
@@ -145,10 +133,6 @@ public class SiegeDeploymentItem extends Item {
     protected void configureSpawnedEntity(Entity entity, UseOnContext context) {
     }
 
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(SiegeDeploymentItemRenderer.clientExtensions());
-    }
 
     private static void applySpawnRotation(Entity entity, float yaw) {
         entity.setYRot(yaw);

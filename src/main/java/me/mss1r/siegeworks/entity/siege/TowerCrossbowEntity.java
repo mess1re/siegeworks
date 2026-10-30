@@ -63,7 +63,7 @@ public class TowerCrossbowEntity extends AbstractBoltThrowerEntity {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*protected void defineSynchedData() {
         super.defineSynchedData();
         SynchedEntityData data = this.entityData;

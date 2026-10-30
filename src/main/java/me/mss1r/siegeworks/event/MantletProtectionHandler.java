@@ -10,13 +10,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-//? if forge {
-/*import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-*///?} else {
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-//?}
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -27,33 +20,23 @@ public final class MantletProtectionHandler {
     private MantletProtectionHandler() {
     }
 
-    public static void register(IEventBus gameBus) {
-        gameBus.addListener(MantletProtectionHandler::onLivingIncomingDamage);
-    }
-
-    //? if forge {
-    /*private static void onLivingIncomingDamage(LivingHurtEvent event) {
-    *///?} else {
-    private static void onLivingIncomingDamage(LivingIncomingDamageEvent event) {
-    //?}
-        if (!(event.getEntity().level() instanceof ServerLevel serverLevel) || event.getEntity() instanceof MantletEntity) {
-            return;
+    public static float reduce(LivingEntity target, DamageSource source, float incoming) {
+        if (!(target.level() instanceof ServerLevel serverLevel) || target instanceof MantletEntity) {
+            return incoming;
         }
 
-        DamageSource source = event.getSource();
         boolean explosion = source.is(DamageTypes.EXPLOSION) || source.is(DamageTypes.PLAYER_EXPLOSION);
         Entity directEntity = source.getDirectEntity();
         boolean projectile = directEntity instanceof Projectile;
         if (!projectile && !explosion) {
-            return;
+            return incoming;
         }
 
         Vec3 sourcePos = source.getSourcePosition();
         if (sourcePos == null) {
-            return;
+            return incoming;
         }
 
-        LivingEntity target = event.getEntity();
         AABB searchBox = target.getBoundingBox().inflate(SEARCH_RANGE);
         Optional<MantletEntity> blocker = serverLevel.getEntitiesOfClass(
                         MantletEntity.class,
@@ -64,14 +47,13 @@ public final class MantletProtectionHandler {
                 .min(Comparator.comparingDouble(mantlet -> mantlet.distanceToSqr(target)));
 
         if (blocker.isEmpty()) {
-            return;
+            return incoming;
         }
 
         MantletEntity mantlet = blocker.get();
         boolean siegeImpact = directEntity instanceof SiegeProjectile;
-        float incoming = event.getAmount();
-        event.setAmount(Math.max(0.0F, incoming * mantlet.getProtectionReduction(siegeImpact, explosion)));
         mantlet.hurt(serverLevel.damageSources().generic(), mantlet.getProtectionWear(incoming, siegeImpact, explosion));
         mantlet.playProtectionFeedback(serverLevel);
+        return Math.max(0.0F, incoming * mantlet.getProtectionReduction(siegeImpact, explosion));
     }
 }

@@ -1,6 +1,6 @@
 package me.mss1r.siegeworks.block;
 
-//? if neoforge {
+//? if >=1.21 {
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.ItemInteractionResult;
@@ -70,7 +70,7 @@ import java.util.UUID;
  * detonates like TNT when lit, set on fire, hit by a burning projectile or caught in an explosion.
  */
 public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, EntityBlock {
-    //? if neoforge {
+    //? if >=1.21 {
     public static final MapCodec<IncendiaryPotBlock> CODEC = simpleCodec(IncendiaryPotBlock::new);
 
     @Override
@@ -86,8 +86,8 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
     /** Bricks dropped when a pot shatters. */
     private static final int BRICKS = 5;
     /** Same values as TNT. */
-    private static final int FLAMMABILITY = 15;
-    private static final int FIRE_SPREAD_SPEED = 100;
+    public static final int FLAMMABILITY = 15;
+    public static final int FIRE_SPREAD_SPEED = 100;
     /** Max random delay for pots set off by a neighbour, so a stack of them goes off in quick succession. */
     private static final int CHAIN_DELAY = 3;
     private static final VoxelShape SHAPE = Shapes.or(
@@ -132,7 +132,7 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
         return pot == null ? PotFilling.EMPTY : pot.filling();
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*@Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
@@ -229,7 +229,7 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
     }
 
     private static SoundEvent insertSound() {
-        //? if forge {
+        //? if <1.21 {
         /*return SoundEvents.DECORATED_POT_HIT;
         *///?} else {
         return SoundEvents.DECORATED_POT_INSERT;
@@ -245,7 +245,7 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
         }
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*@Override
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
         return fillingAt(level, pos).toItem();
@@ -277,7 +277,7 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
     }
 
     private static boolean hasSilkTouch(ServerLevel level, ItemStack tool) {
-        //? if forge {
+        //? if <1.21 {
         /*return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
         *///?} else {
         return EnchantmentHelper.getItemEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
@@ -306,28 +306,24 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
         shatter(serverLevel, pos);
     }
 
-    @Override
-    public void onBlockExploded(BlockState state, Level level, BlockPos pos, Explosion explosion) {
+    public boolean handleExplosion(BlockState state, Level level, BlockPos pos, Explosion explosion) {
         if (level instanceof ServerLevel serverLevel && fillingAt(level, pos).hasBase()) {
             detonate(serverLevel, pos, 1 + level.random.nextInt(CHAIN_DELAY),
                     responsibleFor(explosion.getIndirectSourceEntity()));
-            return;
+            return true;
         }
-        super.onBlockExploded(state, level, pos, explosion);
+        return false;
     }
 
-    @Override
-    public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+    public int potFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         return fillingAt(level, pos).hasBase() ? FLAMMABILITY : 0;
     }
 
-    @Override
-    public int getFireSpreadSpeed(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+    public int potFireSpreadSpeed(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         return fillingAt(level, pos).hasBase() ? FIRE_SPREAD_SPEED : 0;
     }
 
-    @Override
-    public void onCaughtFire(BlockState state, Level level, BlockPos pos, @Nullable Direction direction,
+    public void catchFire(BlockState state, Level level, BlockPos pos, @Nullable Direction direction,
                              @Nullable LivingEntity igniter) {
         if (level instanceof ServerLevel serverLevel) {
             detonate(serverLevel, pos, 1 + level.random.nextInt(CHAIN_DELAY), responsibleFor(igniter));
@@ -407,7 +403,7 @@ public class IncendiaryPotBlock extends HorizontalDirectionalBlock implements Si
 
     private static boolean reaches(ServerLevel level, Vec3 center, BlockPos pos) {
         Vec3 target = Vec3.atCenterOf(pos);
-        //? if forge {
+        //? if <1.21 {
         /*ClipContext clip = new ClipContext(center, target, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null);
         *///?} else {
         ClipContext clip = new ClipContext(center, target, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,

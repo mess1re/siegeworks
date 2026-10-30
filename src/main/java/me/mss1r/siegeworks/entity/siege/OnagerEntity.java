@@ -54,32 +54,32 @@ import net.minecraft.world.level.Level;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 *///?} else {
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimatableManager;
 *///?} else {
 import software.bernie.geckolib.animation.AnimatableManager;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.Animation;
 *///?} else {
 import software.bernie.geckolib.animation.Animation;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimationController;
 *///?} else {
 import software.bernie.geckolib.animation.AnimationController;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.object.PlayState;
 *///?} else {
 import software.bernie.geckolib.animation.PlayState;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.RawAnimation;
 *///?} else {
 import software.bernie.geckolib.animation.RawAnimation;
@@ -181,7 +181,7 @@ public class OnagerEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*protected void defineSynchedData() {
         super.defineSynchedData();
         SynchedEntityData data = this.entityData;

@@ -16,14 +16,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
-//? if neoforge {
+//? if >=1.21 {
 import net.minecraft.core.HolderLookup;
 import net.minecraft.util.datafix.DataFixTypes;
-//?}
-//? if forge {
-/*import net.minecraftforge.common.util.FakePlayer;
-*///?} else {
-import net.neoforged.neoforge.common.util.FakePlayer;
 //?}
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +57,7 @@ public final class SiegeDeploymentLimits extends SavedData {
             }
         }
 
-        if (ownerUuid == null && placer != null && !(placer instanceof FakePlayer)) {
+        if (ownerUuid == null && placer != null && !me.mss1r.siegeworks.platform.MinecraftVersionCompat.isFakePlayer(placer)) {
             ownerUuid = placer.getUUID();
         }
         if (ownerUuid == null) {
@@ -89,7 +84,7 @@ public final class SiegeDeploymentLimits extends SavedData {
                                                 @Nullable Player feedbackPlayer) {
         LimitCheck check = check(level, type, deployment);
         if (!check.allowed() && feedbackPlayer instanceof ServerPlayer serverPlayer
-                && !(feedbackPlayer instanceof FakePlayer)) {
+                && !me.mss1r.siegeworks.platform.MinecraftVersionCompat.isFakePlayer(feedbackPlayer)) {
             serverPlayer.displayClientMessage(Component.translatable(
                     "message.siegeworks.deployment_limit_reached",
                     type.getDescription(), check.current(), check.limit()), true);
@@ -156,7 +151,7 @@ public final class SiegeDeploymentLimits extends SavedData {
     }
 
     private static SiegeDeploymentLimits data(ServerLevel level) {
-        //? if forge {
+        //? if <1.21 {
 
         /*return level.getServer().overworld().getDataStorage().computeIfAbsent(
                 SiegeDeploymentLimits::load, SiegeDeploymentLimits::new, DATA_NAME);
@@ -167,7 +162,7 @@ public final class SiegeDeploymentLimits extends SavedData {
         //?}
     }
 
-    //? if forge {
+    //? if <1.21 {
     /*private static SiegeDeploymentLimits load(CompoundTag tag) {
     *///?} else {
     private static SiegeDeploymentLimits load(CompoundTag tag, HolderLookup.Provider registries) {
@@ -189,7 +184,7 @@ public final class SiegeDeploymentLimits extends SavedData {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public CompoundTag save(CompoundTag tag) {
     *///?} else {
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {

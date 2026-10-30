@@ -6,14 +6,14 @@ import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-//? if neoforge {
+//? if >=1.21 {
 import me.mss1r.siegeworks.Siegeworks;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?}
 
-//? if forge {
+//? if <1.21 {
 /*public record MantletActionC2SPayload(int entityId, int action) {
 *///?} else {
 public record MantletActionC2SPayload(int entityId, int action) implements CustomPacketPayload {

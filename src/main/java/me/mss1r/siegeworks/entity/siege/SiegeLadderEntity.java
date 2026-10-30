@@ -41,22 +41,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 *///?} else {
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimatableManager;
 *///?} else {
 import software.bernie.geckolib.animation.AnimatableManager;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimationController;
 *///?} else {
 import software.bernie.geckolib.animation.AnimationController;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.object.PlayState;
 *///?} else {
 import software.bernie.geckolib.animation.PlayState;
@@ -199,7 +199,7 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*protected void defineSynchedData() {
         super.defineSynchedData();
         SynchedEntityData data = this.entityData;
@@ -492,7 +492,7 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
      * would be a pose it never had, its top swung into the blocks it rests on.
      */
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public void lerpTo(double x, double y, double z, float yaw, float pitch, int interpolationSteps, boolean teleport) {
         super.lerpTo(x, y, z, yaw, pitch, 1, teleport);
     }

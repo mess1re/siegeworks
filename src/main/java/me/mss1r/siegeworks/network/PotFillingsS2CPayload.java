@@ -7,7 +7,7 @@ import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-//? if neoforge {
+//? if >=1.21 {
 import me.mss1r.siegeworks.Siegeworks;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -17,7 +17,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import java.util.Map;
 
 /** Server pot fillings, so client tooltips and pot interactions use the same ingredients. */
-//? if forge {
+//? if <1.21 {
 
 /*public record PotFillingsS2CPayload(Map<ResourceLocation, PotFillingProfile> profiles) {
 *///?} else {

@@ -65,7 +65,7 @@ public class SingijeonProjectile extends SiegeProjectile {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*protected void defineSynchedData() {
         super.defineSynchedData();
         SynchedEntityData data = this.entityData;
@@ -340,7 +340,7 @@ public class SingijeonProjectile extends SiegeProjectile {
     }
 
     private static void applyBlastEffects(LivingEntity target, Vec3 center) {
-        //? if forge {
+        //? if <1.21 {
         /*target.setSecondsOnFire(5);
         *///?} else {
         target.igniteForSeconds(5.0F);

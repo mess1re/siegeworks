@@ -11,7 +11,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -25,7 +25,7 @@ import net.minecraft.world.item.crafting.CraftingInput;
  * stick: logs down both sides, sticks above it.
  */
 public class SiegeLadderExtensionRecipe extends CustomRecipe {
-    //? if forge {
+    //? if <1.21 {
     /*public SiegeLadderExtensionRecipe(ResourceLocation id, CraftingBookCategory category) {
         super(id, category);
     }

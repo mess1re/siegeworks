@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 *///?} else {

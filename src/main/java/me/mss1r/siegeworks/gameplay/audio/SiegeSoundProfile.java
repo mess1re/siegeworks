@@ -13,7 +13,7 @@ public record SiegeSoundProfile(MovementCue movement, SoundCue reload,
     private static final double DEFAULT_ATTACK_RANGE = 40.0D;
 
     public static SiegeSoundProfile defaults() {
-        //? if forge {
+        //? if <1.21 {
         /*SoundEvent explosion = SoundEvents.GENERIC_EXPLODE;
         *///?} else {
         SoundEvent explosion = SoundEvents.GENERIC_EXPLODE.value();

@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -116,7 +116,7 @@ public final class LibraryIntegrationGameTests {
     }
 
     private static void post(ProjectileImpactEvent event) {
-        //? if forge {
+        //? if <1.21 {
         /*MinecraftForge.EVENT_BUS.post(event);
         *///?} else {
         NeoForge.EVENT_BUS.post(event);
@@ -124,7 +124,7 @@ public final class LibraryIntegrationGameTests {
     }
 
     private static boolean skipsEntity(ProjectileImpactEvent event) {
-        //? if forge {
+        //? if <1.21 {
         /*return event.getImpactResult() == ProjectileImpactEvent.ImpactResult.SKIP_ENTITY;
         *///?} else {
         return event.isCanceled();

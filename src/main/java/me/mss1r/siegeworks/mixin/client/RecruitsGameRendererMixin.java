@@ -34,7 +34,7 @@ public abstract class RecruitsGameRendererMixin {
         }
 
         Vec3 eye = minecraft.player.getEyePosition(partialTick);
-        //? if forge {
+        //? if <1.21 {
         /*double reach = minecraft.gameMode.getPickRange();
         *///?} else {
         double reach = minecraft.player.entityInteractionRange();

@@ -27,7 +27,7 @@ public interface SiegeworksBlocks {
             new StackedProjectileBlock(projectileProperties().strength(3.0F, 4.0F), largeProjectileShapes()));
 
     RegistrySupplier<Block> FIRE_PROJECTILE = BLOCKS.register("fire_projectile", () ->
-            new IncendiaryPotBlock(BlockBehaviour.Properties.of()
+            me.mss1r.siegeworks.platform.SiegePlatform.incendiaryPot(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .strength(0.0F, 0.0F)
                     .sound(SoundType.DECORATED_POT)

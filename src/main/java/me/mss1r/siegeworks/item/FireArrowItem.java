@@ -13,7 +13,7 @@ public class FireArrowItem extends ArrowItem {
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*public AbstractArrow createArrow(Level level, ItemStack ammoStack, LivingEntity shooter) {
     *///?} else {
     public AbstractArrow createArrow(Level level, ItemStack ammoStack, LivingEntity shooter, ItemStack weapon) {

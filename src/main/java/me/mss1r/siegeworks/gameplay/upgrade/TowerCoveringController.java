@@ -38,7 +38,7 @@ public final class TowerCoveringController {
     private static final String TAG_COUNT = "Count";
     private static final int MATERIALS_PER_LAYER = 64;
     private static final double HEALTH_PER_LAYER = 50.0D;
-    //? if forge {
+    //? if <1.21 {
     /*private static final UUID HEALTH_MODIFIER_ID =
             UUID.fromString("e61566ce-bb65-4ff7-bd17-22e4e0d1bba9");
     *///?} else {
@@ -46,13 +46,7 @@ public final class TowerCoveringController {
             MinecraftVersionCompat.id("siegeworks", "siege_tower_leather_covering");
     //?}
     private static final TagKey<Item> MATERIALS = TagKey.create(
-            Registries.ITEM,
-            //? if forge {
-            /*MinecraftVersionCompat.id("forge", "leather")
-            *///?} else {
-            MinecraftVersionCompat.id("c", "leathers")
-            //?}
-    );
+            Registries.ITEM, MinecraftVersionCompat.id("siegeworks", "tower_coverings"));
 
     private final Host host;
     private final Map<ResourceLocation, Integer> bottomMaterials = new LinkedHashMap<>();
@@ -199,7 +193,7 @@ public final class TowerCoveringController {
             maxHealth.removeModifier(HEALTH_MODIFIER_ID);
         }
         if (expectedBonus > 0.0D) {
-            //? if forge {
+            //? if <1.21 {
             /*maxHealth.addPermanentModifier(new AttributeModifier(
                     HEALTH_MODIFIER_ID,
                     "Siege tower leather covering",
@@ -271,7 +265,7 @@ public final class TowerCoveringController {
     }
 
     private static double modifierAmount(AttributeModifier modifier) {
-        //? if forge {
+        //? if <1.21 {
         /*return modifier.getAmount();
         *///?} else {
         return modifier.amount();

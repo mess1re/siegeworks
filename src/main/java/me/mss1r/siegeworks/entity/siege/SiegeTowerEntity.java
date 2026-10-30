@@ -51,12 +51,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import software.bernie.geckolib.animatable.GeoEntity;
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 *///?} else {
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 //?}
-//? if forge {
+//? if <1.21 {
 /*import software.bernie.geckolib.core.animation.AnimatableManager;
 *///?} else {
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -263,7 +263,7 @@ public class SiegeTowerEntity extends AbstractSiegeEntity
     }
 
     @Override
-    //? if forge {
+    //? if <1.21 {
     /*protected void defineSynchedData() {
         super.defineSynchedData();
         SynchedEntityData data = this.entityData;

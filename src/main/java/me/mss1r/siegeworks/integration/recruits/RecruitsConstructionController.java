@@ -29,7 +29,7 @@ final class RecruitsConstructionController {
     }
 
     static boolean hasTask(SiegeEngineerEntity engineer) {
-        return engineer.getPersistentData().hasUUID(SITE_TAG);
+        return me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).hasUUID(SITE_TAG);
     }
 
     static boolean hasConstructionHammer(SiegeEngineerEntity engineer) {
@@ -43,9 +43,9 @@ final class RecruitsConstructionController {
     }
 
     static void assign(SiegeEngineerEntity engineer, Entity site) {
-        engineer.getPersistentData().putUUID(SITE_TAG, site.getUUID());
-        engineer.getPersistentData().putLong(SITE_POS_TAG, site.blockPosition().asLong());
-        engineer.getPersistentData().remove(BLOCK_REASON_TAG);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).putUUID(SITE_TAG, site.getUUID());
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).putLong(SITE_POS_TAG, site.blockPosition().asLong());
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).remove(BLOCK_REASON_TAG);
         if (engineer.siegeController != null) {
             engineer.siegeController.reset();
             engineer.siegeController = null;
@@ -57,7 +57,7 @@ final class RecruitsConstructionController {
     }
 
     static boolean tick(SiegeEngineerEntity engineer) {
-        CompoundTag data = engineer.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer);
         if (!data.hasUUID(SITE_TAG)) {
             return false;
         }
@@ -112,7 +112,7 @@ final class RecruitsConstructionController {
         if (!result.worked()) {
             return true;
         }
-        engineer.getPersistentData().remove(BLOCK_REASON_TAG);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).remove(BLOCK_REASON_TAG);
 
         engineer.swing(InteractionHand.MAIN_HAND);
         ItemStack hammer = engineer.getMainHandItem();
@@ -153,7 +153,7 @@ final class RecruitsConstructionController {
     }
 
     private static void reportBlocked(SiegeEngineerEntity engineer, String reason, Component message) {
-        CompoundTag data = engineer.getPersistentData();
+        CompoundTag data = me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer);
         if (reason.equals(data.getString(BLOCK_REASON_TAG))) {
             return;
         }
@@ -172,9 +172,9 @@ final class RecruitsConstructionController {
     }
 
     private static void clear(SiegeEngineerEntity engineer) {
-        engineer.getPersistentData().remove(SITE_TAG);
-        engineer.getPersistentData().remove(SITE_POS_TAG);
-        engineer.getPersistentData().remove(BLOCK_REASON_TAG);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).remove(SITE_TAG);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).remove(SITE_POS_TAG);
+        me.mss1r.siegeworks.platform.SiegePlatform.persistentData(engineer).remove(BLOCK_REASON_TAG);
         RecruitsWalkOrders.stop(engineer);
         RecruitsTaskOrders.endTask(engineer);
     }

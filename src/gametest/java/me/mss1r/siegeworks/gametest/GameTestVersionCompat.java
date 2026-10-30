@@ -11,7 +11,7 @@ final class GameTestVersionCompat {
     }
 
     static Arrow arrow(ServerLevel level, LivingEntity owner) {
-        //? if forge {
+        //? if <1.21 {
         /*return new Arrow(level, owner);
         *///?} else {
         Arrow arrow = new Arrow(EntityType.ARROW, level);
@@ -21,7 +21,7 @@ final class GameTestVersionCompat {
     }
 
     static float maxUpStep(Entity entity) {
-        //? if forge {
+        //? if <1.21 {
         /*return entity.getStepHeight();
         *///?} else {
         return entity.maxUpStep();

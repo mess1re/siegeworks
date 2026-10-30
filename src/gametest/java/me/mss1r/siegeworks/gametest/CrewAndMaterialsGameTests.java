@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-//? if forge {
+//? if <1.21 {
 /*import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 *///?} else {
@@ -217,7 +217,7 @@ public final class CrewAndMaterialsGameTests {
 
     private static InteractionResult take(BlockState state, GameTestHelper helper, BlockPos pos, Player player) {
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
-        //? if forge {
+        //? if <1.21 {
         /*return state.use(helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
         *///?} else {
         return state.useWithoutItem(helper.getLevel(), player, hit);

@@ -28,8 +28,10 @@ public final class ExplosionPhysicsHandler {
 
         List<BlockPos> affectedBlocks = explosion.getToBlow();
         Vec3 center =
-                //? if forge {
-                /*explosion.getPosition()
+                //? if <1.21 {
+                /*new Vec3(((me.mss1r.siegeworks.mixin.ExplosionPositionAccessor) explosion).siegeworks$x(),
+                        ((me.mss1r.siegeworks.mixin.ExplosionPositionAccessor) explosion).siegeworks$y(),
+                        ((me.mss1r.siegeworks.mixin.ExplosionPositionAccessor) explosion).siegeworks$z())
                 *///?} else {
                 explosion.center()
                 //?}

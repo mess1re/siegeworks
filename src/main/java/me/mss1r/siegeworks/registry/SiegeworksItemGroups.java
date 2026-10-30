@@ -25,7 +25,7 @@ public interface SiegeworksItemGroups {
     }
 
     RegistrySupplier<CreativeModeTab> SIEGEWORKS_ITEMS_TAB = CREATIVE_MODE_TABS.register("siegeworks_items",
-            () -> CreativeModeTab.builder()
+            () -> dev.architectury.registry.CreativeTabRegistry.create(builder -> builder
                     .icon(() -> new ItemStack(SiegeworksItems.RAMROD.get()))
                     .title(Component.translatable("component.itemgroup.siegeworks.tab.items"))
                     .displayItems((parameters, output) -> output.acceptAll(List.of(
@@ -45,10 +45,10 @@ public interface SiegeworksItemGroups {
                             itemStack(SiegeworksItems.CLAY_POT.get()),
                             itemStack(SiegeworksItems.FIRE_PROJECTILE.get())
                     )))
-                    .build());
+                    ));
 
     RegistrySupplier<CreativeModeTab> SIEGEWORKS_ENGINES_TAB = CREATIVE_MODE_TABS.register("siegeworks_engines",
-            () -> CreativeModeTab.builder()
+            () -> dev.architectury.registry.CreativeTabRegistry.create(builder -> builder
                     .icon(() -> new ItemStack(SiegeworksItems.SERPENTINE_SPAWNER.get()))
                     .title(Component.translatable("component.itemgroup.siegeworks.tab.engines"))
                     .displayItems((parameters, output) -> output.acceptAll(List.of(
@@ -69,7 +69,7 @@ public interface SiegeworksItemGroups {
                             ladderStack(3),
                             ladderStack(4)
                     )))
-                    .build());
+                    ));
 
     static void register() {
         CREATIVE_MODE_TABS.register();

@@ -14,26 +14,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-//? if forge {
-/*import net.minecraftforge.api.distmarker.Dist;
-*///?} else {
-import net.neoforged.api.distmarker.Dist;
-//?}
-//? if forge {
-/*import net.minecraftforge.api.distmarker.OnlyIn;
-*///?} else {
-import net.neoforged.api.distmarker.OnlyIn;
-//?}
-//? if forge {
-/*import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-*///?} else {
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-//?}
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-@OnlyIn(Dist.CLIENT)
 public final class SiegeDeploymentItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float GUI_PITCH = 30.0F;
     private static final float GUI_YAW = -45.0F;
@@ -45,18 +29,8 @@ public final class SiegeDeploymentItemRenderer extends BlockEntityWithoutLevelRe
                 Minecraft.getInstance().getEntityModels());
     }
 
-    public static IClientItemExtensions clientExtensions() {
-        return new IClientItemExtensions() {
-            private SiegeDeploymentItemRenderer renderer;
-
-            @Override
-            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                if (renderer == null) {
-                    renderer = new SiegeDeploymentItemRenderer();
-                }
-                return renderer;
-            }
-        };
+    public static SiegeDeploymentItemRenderer create() {
+        return new SiegeDeploymentItemRenderer();
     }
 
     @Override

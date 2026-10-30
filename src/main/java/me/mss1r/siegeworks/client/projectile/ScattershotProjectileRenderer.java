@@ -35,7 +35,7 @@ public final class ScattershotProjectileRenderer extends EntityRenderer<Scatters
         poseStack.pushPose();
         poseStack.scale(VISUAL_SCALE, VISUAL_SCALE, VISUAL_SCALE);
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
-        //? if forge {
+        //? if <1.21 {
         /*model.renderToBuffer(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY,
                 1.0F, 1.0F, 1.0F, 1.0F);
         *///?} else {

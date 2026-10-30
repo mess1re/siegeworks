@@ -21,7 +21,7 @@ public class TrebuchetProjectileModel extends EntityModel<Entity> {
 	}
 
 	@Override
-	//? if forge {
+	//? if <1.21 {
 	/*public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
 		projectile.render(poseStack, vertexConsumer, light, overlay, red, green, blue, alpha);
 	}

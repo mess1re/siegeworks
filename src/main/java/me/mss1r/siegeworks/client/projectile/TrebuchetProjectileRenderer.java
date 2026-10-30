@@ -20,11 +20,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
-//? if forge {
-/*import net.minecraftforge.client.model.data.ModelData;
-*///?} else {
-import net.neoforged.neoforge.client.model.data.ModelData;
-//?}
 
 public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProjectile> {
     private final EntityModel<Entity> model;
@@ -51,8 +46,7 @@ public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProject
                 fillBlockWithFirePot(poseStack);
             }
             Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
-                    stoneState, poseStack, multiBufferSource, light, OverlayTexture.NO_OVERLAY,
-                    ModelData.EMPTY, null);
+                    stoneState, poseStack, multiBufferSource, light, OverlayTexture.NO_OVERLAY);
             poseStack.popPose();
             return;
         }
@@ -63,7 +57,7 @@ public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProject
         }
 
         VertexConsumer vertexConsumer = multiBufferSource.getBuffer(RenderType.armorCutoutNoCull(this.getTextureLocation(entity)));
-        //? if forge {
+        //? if <1.21 {
         /*model.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         *///?} else {
         model.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
@@ -88,7 +82,7 @@ public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProject
         poseStack.scale(0.5F, 0.5F, 0.5F);
         fillBlockWithFirePot(poseStack);
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, bufferSource, packedLight,
-                packedOverlay, ModelData.EMPTY, null);
+                packedOverlay);
         poseStack.popPose();
     }
 
