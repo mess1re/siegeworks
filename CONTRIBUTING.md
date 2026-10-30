@@ -2,7 +2,15 @@
 
 ## Source layout
 
-`src` is the source of truth for every supported target. Use Stonecutter branches only where Minecraft or loader APIs differ; do not edit generated sources under `versions/*/build`.
+Stonecutter selects Minecraft 1.20.1 or 1.21.1; Architectury connects the shared code to each loader.
+
+- `src/main` contains shared gameplay, rendering and resources, with Stonecutter conditions for Minecraft API differences.
+- `forge/src/main` contains Forge 1.20.1 entry points and adapters.
+- `neoforge/src/main` contains NeoForge 1.21.1 entry points and adapters.
+- `fabric/src/main` contains Fabric entry points and adapters for both versions.
+- `src/gametest` contains shared runtime scenarios; `fabric/src/testmod` supplies the Fabric test entry points.
+
+Generated sources under `versions/` and each loader's `versions/` directory are build output.
 
 Forge-only integrations stay out of targets where their dependencies do not exist.
 
@@ -10,7 +18,7 @@ Forge-only integrations stay out of targets where their dependencies do not exis
 
 Code that references an optional mod belongs in its integration package and must only be initialized after checking that the mod is loaded.
 
-The NeoForge Recruits dependency is the [multiloader port](https://github.com/mess1re/recruits/tree/stonecutter-multiloader)
+The NeoForge and Fabric Recruits dependency is the [multiloader port](https://github.com/mess1re/recruits/tree/stonecutter-multiloader)
 at the revision in `stonecutter.properties.toml`, fetched from JitPack as
 `com.github.mess1re.recruits:neoforge-1.21.1:<revision>`. JitPack builds `forge-1.20.1`, `fabric-1.20.1`
 and `fabric-1.21.1` from the same revision too.
@@ -34,7 +42,7 @@ Collision, terrain movement, deployment, ladders, siege-tower ramps and projecti
 To exercise ladder traffic with real Recruits, including three separate groups of twenty walking up and down:
 
 ```sh
-./gradlew :1.20.1-forge:runGameTestServer :1.21.1-neoforge:runGameTestServer -PgameTestNamespaces=siegeworks_ladder,siegeworks_ladder_regression,siegeworks_collision -Penable_recruits_compat_runtime=true
+./gradlew :forge:1.20.1:runGameTestServer :neoforge:1.21.1:runGameTestServer -PgameTestNamespaces=siegeworks_ladder,siegeworks_ladder_regression,siegeworks_collision -Penable_recruits_compat_runtime=true
 ```
 
 These tests check health throughout the passage, spacing, actual supported landings, blocked entrances and exits, and cancellation of transient movement control. Keep the ordinary AI enabled in the movement scenarios; making the actors invulnerable or replacing their walk with teleports defeats the checks.
@@ -48,15 +56,27 @@ limited to one report per troop per second, with route phase, progress, blockage
 ### Working with unpublished Axiomata changes
 
 When SW needs Axiomata changes that are not published yet, build the matching Axiomata checkout
-first and point local SW builds at its collected jars. This override is available on both loaders; it neither bundles Axiomata
+first and point local SW builds at its collected jars. This override is available on every loader; it neither bundles Axiomata
 nor changes the published dependency pin:
 
 ```sh
-./gradlew :1.21.1-neoforge:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
-./gradlew :1.20.1-forge:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
+./gradlew :neoforge:1.21.1:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
+./gradlew :forge:1.20.1:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
+./gradlew :fabric:1.20.1:buildAndCollect :fabric:1.21.1:buildAndCollect -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
 ```
 
-Use the same property for `runClient` and `runGameTestServer`.
+Use the same property for `runClient`, native `runGameTestServer` and Fabric `runGameTest`.
+
+Fabric's standalone GameTest server does not run the ordinary server-start lifecycle used by Recruits.
+Run the shared core scenarios there with Recruits disabled; use a normal client or dedicated server
+for Recruits integration checks:
+
+```sh
+./gradlew :fabric:1.20.1:runGameTest :fabric:1.21.1:runGameTest -Penable_recruits_compat_runtime=false -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
+```
+
+The Fabric targets require Axiomata's Fabric builds. Until those artifacts are published, supply all four
+matching Axiomata jars through the local override above.
 
 ## Assets
 

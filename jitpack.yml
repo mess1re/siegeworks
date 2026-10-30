@@ -3,9 +3,4 @@ jdk:
 before_install:
   - sdk install java 17-open
 install:
-  - |
-    case "$VERSION" in
-      1.20.1-*) ./gradlew :1.20.1-forge:build :1.20.1-forge:publishToMavenLocal ;;
-      1.21.1-*) ./gradlew :1.21.1-neoforge:build :1.21.1-neoforge:publishToMavenLocal ;;
-      *) echo "Unsupported release tag: $VERSION"; exit 1 ;;
-    esac
+  - ./gradlew clean build :forge:1.20.1:publishToMavenLocal :neoforge:1.21.1:publishToMavenLocal :fabric:1.20.1:publishToMavenLocal :fabric:1.21.1:publishToMavenLocal

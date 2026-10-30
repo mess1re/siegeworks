@@ -104,8 +104,10 @@ jobs:
           RELEASE_CHANGELOG: ${{ steps.changelog.outputs.body }}
         run: |
           tag="$RELEASE_TAG"
-          forge_jar="versions/1.20.1-forge/build/libs/siegeworks-forge-${tag}+1.20.1.jar"
-          neoforge_jar="versions/1.21.1-neoforge/build/libs/siegeworks-neoforge-${tag}+1.21.1.jar"
+          forge_jar="forge/versions/1.20.1/build/libs/siegeworks-forge-${tag}+1.20.1.jar"
+          neoforge_jar="neoforge/versions/1.21.1/build/libs/siegeworks-neoforge-${tag}+1.21.1.jar"
+          fabric_120_jar="fabric/versions/1.20.1/build/libs/siegeworks-fabric-${tag}+1.20.1.jar"
+          fabric_121_jar="fabric/versions/1.21.1/build/libs/siegeworks-fabric-${tag}+1.21.1.jar"
           release_flags=()
 
           if [[ "$tag" == *-* ]]; then
@@ -116,12 +118,16 @@ jobs:
             gh release upload "$tag" \
               "$forge_jar" \
               "$neoforge_jar" \
+              "$fabric_120_jar" \
+              "$fabric_121_jar" \
               --clobber
             gh release edit "$tag" --notes "$RELEASE_CHANGELOG"
           else
             gh release create "$tag" \
               "$forge_jar" \
               "$neoforge_jar" \
+              "$fabric_120_jar" \
+              "$fabric_121_jar" \
               --verify-tag \
               --title "$tag" \
               --notes "$RELEASE_CHANGELOG" \
@@ -141,8 +147,10 @@ jobs:
           fi
 
           tag="$RELEASE_TAG"
-          forge_jar="versions/1.20.1-forge/build/libs/siegeworks-forge-${tag}+1.20.1.jar"
-          neoforge_jar="versions/1.21.1-neoforge/build/libs/siegeworks-neoforge-${tag}+1.21.1.jar"
+          forge_jar="forge/versions/1.20.1/build/libs/siegeworks-forge-${tag}+1.20.1.jar"
+          neoforge_jar="neoforge/versions/1.21.1/build/libs/siegeworks-neoforge-${tag}+1.21.1.jar"
+          fabric_120_jar="fabric/versions/1.20.1/build/libs/siegeworks-fabric-${tag}+1.20.1.jar"
+          fabric_121_jar="fabric/versions/1.21.1/build/libs/siegeworks-fabric-${tag}+1.21.1.jar"
           changelog=$(gh release view "$tag" --json body --jq '.body // ""')
           release_type="release"
 
@@ -174,6 +182,10 @@ jobs:
                       {slug: "geckolib", type: "requiredDependency"},
                       {slug: "architectury-api", type: "requiredDependency"}
                     ]
+                    + (if $loader == "Fabric" then [
+                        {slug: "fabric-api", type: "requiredDependency"},
+                        {slug: "forge-config-api-port", type: "requiredDependency"}
+                      ] else [] end)
                     + (if $loader == "Forge" then [
                         {slug: "recruits", type: "optionalDependency"},
                         {slug: "recruits-rts-command", projectID: 1713913, type: "optionalDependency"}
@@ -200,6 +212,9 @@ jobs:
             "1.21.1" \
             "NeoForge"
 
+          upload_file "$fabric_120_jar" "1.20.1" "Fabric"
+          upload_file "$fabric_121_jar" "1.21.1" "Fabric"
+
       - name: Publish to Modrinth
         shell: bash
         env:
@@ -212,8 +227,10 @@ jobs:
           fi
 
           tag="$RELEASE_TAG"
-          forge_jar="versions/1.20.1-forge/build/libs/siegeworks-forge-${tag}+1.20.1.jar"
-          neoforge_jar="versions/1.21.1-neoforge/build/libs/siegeworks-neoforge-${tag}+1.21.1.jar"
+          forge_jar="forge/versions/1.20.1/build/libs/siegeworks-forge-${tag}+1.20.1.jar"
+          neoforge_jar="neoforge/versions/1.21.1/build/libs/siegeworks-neoforge-${tag}+1.21.1.jar"
+          fabric_120_jar="fabric/versions/1.20.1/build/libs/siegeworks-fabric-${tag}+1.20.1.jar"
+          fabric_121_jar="fabric/versions/1.21.1/build/libs/siegeworks-fabric-${tag}+1.21.1.jar"
           version_type="release"
 
           if [[ "$tag" == *-alpha* ]]; then
@@ -264,6 +281,10 @@ jobs:
                     {project_id: "8BmcQJ2H", dependency_type: "required"},
                     {project_id: "lhGA9TYQ", dependency_type: "required"}
                   ]
+                  + (if $loader == "fabric" then [
+                      {project_id: "P7dR8mSH", dependency_type: "required"},
+                      {project_id: "ohNO6lps", dependency_type: "required"}
+                    ] else [] end)
                   + (if $loader == "forge" then [
                       {project_id: "WOg9lm4u", dependency_type: "optional"},
                       {project_id: "918CHVyN", dependency_type: "optional"}
@@ -301,6 +322,9 @@ jobs:
             "NeoForge" \
             "neoforge"
 
+          upload_file "$fabric_120_jar" "1.20.1" "Fabric" "fabric"
+          upload_file "$fabric_121_jar" "1.21.1" "Fabric" "fabric"
+
   update-notices:
     if: github.repository == 'mess1re/siegeworks'
     needs: release
@@ -324,7 +348,7 @@ jobs:
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          git add updates/forge.json updates/neoforge.json
+          git add updates/forge.json updates/neoforge.json updates/fabric.json
           if git diff --cached --quiet; then
             exit 0
           fi

@@ -34,7 +34,7 @@ def update_files(root: Path, version: str) -> None:
     project = properties["mod"]["id"]
     directory = root / "updates"
     directory.mkdir(exist_ok=True)
-    for loader in ("forge", "neoforge"):
+    for loader in ("forge", "neoforge", "fabric"):
         path = directory / f"{loader}.json"
         data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
         promos = data.get("promos", {})

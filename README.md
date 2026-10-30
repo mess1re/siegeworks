@@ -13,12 +13,13 @@ The mod includes ballistas, cannons, catapults, a hwacha, battering rams, mantle
 - [Axiomata](https://github.com/mess1re/axiomata)
 - [GeckoLib](https://modrinth.com/mod/geckolib)
 - [Architectury API](https://modrinth.com/mod/architectury-api)
+- On Fabric: [Fabric API](https://modrinth.com/mod/fabric-api) and [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port)
 
 ## Compatibility
 
 [Villager Recruits](https://modrinth.com/mod/villager-recruits) can crew, supply, build, repair and dismantle siege engines. [Recruits RTS Command](https://github.com/mess1re/recruitsrtscommand) adds map controls and group orders for those crews.
 
-Recruits integration is also enabled on NeoForge 1.21.1, built against the
+Recruits integration on NeoForge 1.21.1 and Fabric 1.20.1/1.21.1 is built against the
 [multiloader port](https://github.com/mess1re/recruits/tree/stonecutter-multiloader). Compatibility with other
 unofficial ports is not guaranteed. RTS Command is only available on Forge 1.20.1.
 

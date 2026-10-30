@@ -33,7 +33,7 @@ class UpdateNoticesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="siegeworks-update-test-") as temporary:
             root = Path(temporary)
             (root / "stonecutter.properties.toml").write_text(
-                'mod.id = "example"\n[forge."1.20.1"]\n[neoforge."1.21.1"]\n', encoding="utf-8")
+                'mod.id = "example"\n[forge."1.20.1"]\n[neoforge."1.21.1"]\n[fabric."1.20.1"]\n[fabric."1.21.1"]\n', encoding="utf-8")
             update_files(root, "0.1.0-beta.6")
             for loader, minecraft in (("forge", "1.20.1"), ("neoforge", "1.21.1")):
                 path = root / "updates" / f"{loader}.json"
@@ -42,6 +42,8 @@ class UpdateNoticesTest(unittest.TestCase):
                     "homepage": f"https://modrinth.com/mod/example/versions?g={minecraft}&l={loader}",
                     "promos": {f"{minecraft}-latest": "0.1.0-beta.6"},
                 })
+            fabric = json.loads((root / "updates/fabric.json").read_text(encoding="utf-8"))
+            self.assertEqual(fabric["promos"], {"1.20.1-latest": "0.1.0-beta.6", "1.21.1-latest": "0.1.0-beta.6"})
             update_files(root, "0.1.0-beta.5")
             self.assertEqual(json.loads((root / "updates/forge.json").read_text(encoding="utf-8"))["promos"],
                              {"1.20.1-latest": "0.1.0-beta.6"})
