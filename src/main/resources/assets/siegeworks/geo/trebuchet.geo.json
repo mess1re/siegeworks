@@ -1,135 +1,148 @@
 {
-  "format_version": "1.12.0",
-  "minecraft:geometry": [
-    {
-      "description": {
-        "identifier": "geometry.trebuchet",
-        "texture_width": 1024,
-        "texture_height": 1024,
-        "visible_bounds_width": 48,
-        "visible_bounds_height": 9,
-        "visible_bounds_offset": [0,3.5,0]
-      },
-      "bones": [
-        {
-          "name": "trebuchet",
-          "pivot": [0,9,0]
-        },
-        {
-          "name": "base",
-          "pivot": [0,9,0],
-          "parent": "trebuchet",
-          "cubes": [
-            {"origin":[15,6,-64],"size":[6,5,296],"uv":[0,0]},
-            {"origin":[-21,0,-64],"size":[6,2,296],"uv":[0,301]},
-            {"origin":[15,0,-64],"size":[6,2,296],"uv":[0,301]},
-            {"origin":[-24,52,-37],"size":[4,6,66],"uv":[604,144]},
-            {"origin":[20,52,-37],"size":[4,6,66],"uv":[604,144]},
-            {"origin":[-57,0,-7],"size":[114,6,6],"uv":[604,132]},
-            {"origin":[-26,2,221],"size":[52,4,7],"uv":[604,567]},
-            {"origin":[-2,6,223],"size":[4,6,3],"uv":[628,558]},
-            {"origin":[-1,9,222.5],"size":[2,4,4],"uv":[642,558],"pivot":[0,11,224.5],"rotation":[-45,0,0]},
-            {"origin":[-26,2,156],"size":[52,4,7],"uv":[604,567]},
-            {"origin":[-26,2,96],"size":[52,4,7],"uv":[604,567]},
-            {"origin":[-26,2,45],"size":[52,4,7],"uv":[604,567]},
-            {"origin":[-26,2,-60],"size":[52,4,7],"uv":[604,567]},
-            {"origin":[-47,3,-1],"size":[8,2,57],"uv":[604,286],"pivot":[-47,5,-1],"rotation":[0,27.5,0]},
-            {"origin":[-47,3,-64],"size":[8,2,57],"uv":[604,286],"pivot":[-47,5,-7],"rotation":[0,-27.5,0]},
-            {"origin":[39,3,-1],"size":[8,2,57],"uv":[604,286],"pivot":[47,4,-1],"rotation":[0,-27.5,0]},
-            {"origin":[39,3,-64],"size":[8,2,57],"uv":[604,286],"pivot":[47,4,-7],"rotation":[0,27.5,0]},
-            {"origin":[15,11,-7],"size":[6,100,6],"uv":[604,461]},
-            {"origin":[-21,6,-64],"size":[6,5,296],"uv":[0,0]},
-            {"origin":[15,3,1],"size":[6,111,5],"uv":[604,345],"pivot":[18,103,6],"rotation":[22.5,0,0],"inflate":-0.01,"mirror":true},
-            {"origin":[-21,3,1],"size":[6,111,5],"uv":[604,345],"pivot":[-18,103,6],"rotation":[22.5,0,0],"inflate":-0.01},
-            {"origin":[-21,3,-14],"size":[6,111,5],"uv":[604,345],"pivot":[-18,103,-14],"rotation":[-22.5,0,0],"inflate":-0.01},
-            {"origin":[15,3,-14],"size":[6,111,5],"uv":[604,345],"pivot":[19,103,-14],"rotation":[-22.5,0,0],"inflate":-0.01,"mirror":true},
-            {"origin":[-21,11,-7],"size":[6,100,6],"uv":[604,461],"mirror":true},
-            {"origin":[-21,111,-17],"size":[6,6,26],"uv":[642,345]},
-            {"origin":[15,111,-17],"size":[6,6,26],"uv":[642,345]},
-            {"origin":[-56,3,-1],"size":[5,102,3],"uv":[626,345],"pivot":[-56,-1,-4],"rotation":[0,0,20]},
-            {"origin":[51,3,-1],"size":[5,102,3],"uv":[626,345],"pivot":[56,-1,-4],"rotation":[0,0,-20]},
-            {"origin":[-56,3,-10],"size":[5,102,3],"uv":[626,345],"pivot":[-56,-1,-13],"rotation":[0,0,20]},
-            {"origin":[-53.5,3,-7],"size":[0,102,6],"uv":[628,450],"pivot":[-56,-1,-10],"rotation":[0,0,20]},
-            {"origin":[53.5,3,-7],"size":[0,102,6],"uv":[640,450],"pivot":[56,-1,-10],"rotation":[0,0,-20]},
-            {"origin":[51,3,-10],"size":[5,102,3],"uv":[626,345],"pivot":[56,-1,-13],"rotation":[0,0,-20]},
-            {"origin":[-20,11,62],"size":[4,15,10],"uv":[642,419]},
-            {"origin":[16,11,62],"size":[4,15,10],"uv":[642,419],"mirror":true},
-            {"origin":[-19,-5,68],"size":[2,30,4],"uv":[652,460],"pivot":[-19,25,72],"rotation":[60,0,0]},
-            {"origin":[17,-5,68],"size":[2,30,4],"uv":[652,460],"pivot":[17,25,72],"rotation":[60,0,0]},
-            {"origin":[-15,9,44],"size":[16.1,2,188],"uv":[588,599],"pivot":[-15,11,232],"rotation":[0,0,15]},
-            {"origin":[-1.1,9,43.9],"size":[16.1,2,188],"uv":[588,599],"pivot":[15,11,231],"rotation":[0,0,-15]}
-          ]
-        },
-        {
-          "name": "rope_guide",
-          "pivot": [0,11,224.5],
-          "parent": "base"
-        },
-        {
-          "name": "catapult",
-          "pivot": [0,114,-4],
-          "parent": "trebuchet",
-          "cubes": [
-            {"origin":[-24,112.4,-5.6],"size":[48,3,3],"uv":[604,586]},
-            {"origin":[-14,110,-9],"size":[28,8,10],"uv":[642,377]},
-            {"origin":[-3,111,-34],"size":[6,6,288],"uv":[0,599]}
-          ]
-        },
-        {
-          "name": "counterweight",
-          "pivot": [0,114,-26],
-          "parent": "catapult",
-          "cubes": [
-            {"origin":[-12,70,-46],"size":[24,30,40],"uv":[604,216]},
-            {"origin":[-12,113,-27],"size":[24,2,2],"uv":[604,592]},
-            {"origin":[-11,100,-29],"size":[3,17,6],"uv":[652,494]},
-            {"origin":[8,100,-29],"size":[3,17,6],"uv":[652,494]}
-          ]
-        },
-        {
-          "name": "sling",
-          "pivot": [0,114,253],
-          "parent": "catapult",
-          "cubes": [
-            {"origin":[-6,108,254],"size":[12,12,120],"uv":[604,0]}
-          ]
-        },
-        {
-          "name": "projectile",
-          "pivot": [0,114,367],
-          "parent": "sling"
-        },
-        {
-          "name": "projectile_fire",
-          "pivot": [0,114,367],
-          "parent": "sling",
-          "cubes": [
-            {"origin":[-6,108,361],"size":[12,12,12],"uv":[642,395],"inflate":-0.1}
-          ]
-        },
-        {
-          "name": "rope_beam",
-          "pivot": [0,114,120],
-          "parent": "catapult"
-        },
-        {
-          "name": "loader",
-          "pivot": [0,21,67],
-          "parent": "trebuchet",
-          "cubes": [
-            {"origin":[-28,19,65],"size":[56,4,4],"uv":[604,578]},
-            {"origin":[-26,14,66],"size":[2,14,2],"uv":[652,517]},
-            {"origin":[24,14,66],"size":[2,14,2],"uv":[652,517]},
-            {"origin":[-26,20,60],"size":[2,2,14],"uv":[652,444]},
-            {"origin":[24,20,60],"size":[2,2,14],"uv":[652,444]}
-          ]
-        },
-        {
-          "name": "rope_drum",
-          "pivot": [0,21,67],
-          "parent": "loader"
-        }
-      ]
-    }
-  ]
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.trebuchet",
+				"texture_width": 1024,
+				"texture_height": 1024,
+				"visible_bounds_width": 48,
+				"visible_bounds_height": 9,
+				"visible_bounds_offset": [0, 3.5, 0]
+			},
+			"bones": [
+				{
+					"name": "trebuchet",
+					"pivot": [0, 9, 0]
+				},
+				{
+					"name": "base",
+					"parent": "trebuchet",
+					"pivot": [0, 9, 0],
+					"cubes": [
+						{"origin": [-1, 9, 222.5], "size": [2, 4, 4], "pivot": [0, 11, 224.5], "rotation": [-45, 0, 0], "uv": [642, 558]}
+					]
+				},
+				{
+					"name": "base_stage",
+					"parent": "base",
+					"pivot": [0, 9, 0],
+					"cubes": [
+						{"origin": [15, 6, -64], "size": [6, 5, 296], "uv": [0, 0]},
+						{"origin": [-21, 0, -64], "size": [6, 2, 296], "uv": [0, 301]},
+						{"origin": [15, 0, -64], "size": [6, 2, 296], "uv": [0, 301]},
+						{"origin": [-57, 0, -7], "size": [114, 6, 6], "uv": [604, 132]},
+						{"origin": [-26, 2, 221], "size": [52, 4, 7], "uv": [604, 567]},
+						{"origin": [-2, 6, 223], "size": [4, 6, 3], "uv": [628, 558]},
+						{"origin": [-26, 2, 156], "size": [52, 4, 7], "uv": [604, 567]},
+						{"origin": [-26, 2, 96], "size": [52, 4, 7], "uv": [604, 567]},
+						{"origin": [-26, 2, 45], "size": [52, 4, 7], "uv": [604, 567]},
+						{"origin": [-26, 2, -60], "size": [52, 4, 7], "uv": [604, 567]},
+						{"origin": [-47, 3, -1], "size": [8, 2, 57], "pivot": [-47, 5, -1], "rotation": [0, 27.5, 0], "uv": [604, 286]},
+						{"origin": [-47, 3, -64], "size": [8, 2, 57], "pivot": [-47, 5, -7], "rotation": [0, -27.5, 0], "uv": [604, 286]},
+						{"origin": [39, 3, -1], "size": [8, 2, 57], "pivot": [47, 4, -1], "rotation": [0, -27.5, 0], "uv": [604, 286]},
+						{"origin": [39, 3, -64], "size": [8, 2, 57], "pivot": [47, 4, -7], "rotation": [0, 27.5, 0], "uv": [604, 286]},
+						{"origin": [-21, 6, -64], "size": [6, 5, 296], "uv": [0, 0]},
+						{"origin": [-20, 11, 62], "size": [4, 15, 10], "uv": [642, 419]},
+						{"origin": [16, 11, 62], "size": [4, 15, 10], "uv": [642, 419], "mirror": true},
+						{"origin": [-19, -5, 68], "size": [2, 30, 4], "pivot": [-19, 25, 72], "rotation": [60, 0, 0], "uv": [652, 460]},
+						{"origin": [17, -5, 68], "size": [2, 30, 4], "pivot": [17, 25, 72], "rotation": [60, 0, 0], "uv": [652, 460]}
+					]
+				},
+				{
+					"name": "towers",
+					"parent": "base",
+					"pivot": [0, 9, 0],
+					"cubes": [
+						{"origin": [-24, 52, -37], "size": [4, 6, 66], "uv": [604, 144]},
+						{"origin": [20, 52, -37], "size": [4, 6, 66], "uv": [604, 144]},
+						{"origin": [15, 11, -7], "size": [6, 100, 6], "uv": [604, 461]},
+						{"origin": [15, 3, 1], "size": [6, 111, 5], "inflate": -0.01, "pivot": [18, 103, 6], "rotation": [22.5, 0, 0], "uv": [604, 345], "mirror": true},
+						{"origin": [-21, 3, 1], "size": [6, 111, 5], "inflate": -0.01, "pivot": [-18, 103, 6], "rotation": [22.5, 0, 0], "uv": [604, 345]},
+						{"origin": [-21, 3, -14], "size": [6, 111, 5], "inflate": -0.01, "pivot": [-18, 103, -14], "rotation": [-22.5, 0, 0], "uv": [604, 345]},
+						{"origin": [15, 3, -14], "size": [6, 111, 5], "inflate": -0.01, "pivot": [19, 103, -14], "rotation": [-22.5, 0, 0], "uv": [604, 345], "mirror": true},
+						{"origin": [-21, 11, -7], "size": [6, 100, 6], "uv": [604, 461], "mirror": true},
+						{"origin": [-21, 111, -17], "size": [6, 6, 26], "uv": [642, 345]},
+						{"origin": [15, 111, -17], "size": [6, 6, 26], "uv": [642, 345]}
+					]
+				},
+				{
+					"name": "trough",
+					"parent": "base",
+					"pivot": [0, 9, 0],
+					"cubes": [
+						{"origin": [-56, 3, -1], "size": [5, 102, 3], "pivot": [-56, -1, -4], "rotation": [0, 0, 20], "uv": [626, 345]},
+						{"origin": [51, 3, -1], "size": [5, 102, 3], "pivot": [56, -1, -4], "rotation": [0, 0, -20], "uv": [626, 345]},
+						{"origin": [-56, 3, -10], "size": [5, 102, 3], "pivot": [-56, -1, -13], "rotation": [0, 0, 20], "uv": [626, 345]},
+						{"origin": [-53.5, 3, -7], "size": [0, 102, 6], "pivot": [-56, -1, -10], "rotation": [0, 0, 20], "uv": [628, 450]},
+						{"origin": [53.5, 3, -7], "size": [0, 102, 6], "pivot": [56, -1, -10], "rotation": [0, 0, -20], "uv": [640, 450]},
+						{"origin": [51, 3, -10], "size": [5, 102, 3], "pivot": [56, -1, -13], "rotation": [0, 0, -20], "uv": [626, 345]},
+						{"origin": [-15, 9, 44], "size": [16.1, 2, 188], "pivot": [-15, 11, 232], "rotation": [0, 0, 15], "uv": [588, 599]},
+						{"origin": [-1.1, 9, 43.9], "size": [16.1, 2, 188], "pivot": [15, 11, 231], "rotation": [0, 0, -15], "uv": [588, 599]}
+					]
+				},
+				{
+					"name": "rope_guide",
+					"parent": "base",
+					"pivot": [0, 11, 224.5]
+				},
+				{
+					"name": "catapult",
+					"parent": "trebuchet",
+					"pivot": [0, 114, -4],
+					"cubes": [
+						{"origin": [-24, 112.4, -5.6], "size": [48, 3, 3], "uv": [604, 586]},
+						{"origin": [-14, 110, -9], "size": [28, 8, 10], "uv": [642, 377]},
+						{"origin": [-3, 111, -34], "size": [6, 6, 288], "uv": [0, 599]}
+					]
+				},
+				{
+					"name": "counterweight",
+					"parent": "catapult",
+					"pivot": [0, 114, -26],
+					"cubes": [
+						{"origin": [-12, 70, -46], "size": [24, 30, 40], "uv": [604, 216]},
+						{"origin": [-12, 113, -27], "size": [24, 2, 2], "uv": [604, 592]},
+						{"origin": [-11, 100, -29], "size": [3, 17, 6], "uv": [652, 494]},
+						{"origin": [8, 100, -29], "size": [3, 17, 6], "uv": [652, 494]}
+					]
+				},
+				{
+					"name": "sling",
+					"parent": "catapult",
+					"pivot": [0, 114, 253],
+					"cubes": [
+						{"origin": [-6, 108, 254], "size": [12, 12, 120], "uv": [604, 0]}
+					]
+				},
+				{
+					"name": "projectile",
+					"parent": "sling",
+					"pivot": [0, 114, 367]
+				},
+				{
+					"name": "rope_beam",
+					"parent": "catapult",
+					"pivot": [0, 114, 120]
+				},
+				{
+					"name": "loader",
+					"parent": "trebuchet",
+					"pivot": [0, 21, 67],
+					"cubes": [
+						{"origin": [-28, 19, 65], "size": [56, 4, 4], "uv": [604, 578]},
+						{"origin": [-26, 14, 66], "size": [2, 14, 2], "uv": [652, 517]},
+						{"origin": [24, 14, 66], "size": [2, 14, 2], "uv": [652, 517]},
+						{"origin": [-26, 20, 60], "size": [2, 2, 14], "uv": [652, 444]},
+						{"origin": [24, 20, 60], "size": [2, 2, 14], "uv": [652, 444]}
+					]
+				},
+				{
+					"name": "rope_drum",
+					"parent": "loader",
+					"pivot": [0, 21, 67]
+				}
+			]
+		}
+	]
 }

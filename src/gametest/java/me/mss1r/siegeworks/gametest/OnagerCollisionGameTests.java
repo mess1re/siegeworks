@@ -44,7 +44,7 @@ public final class OnagerCollisionGameTests {
         helper.assertTrue(GeneratedCollisionShapes.ONAGER_BODY.parts().size() == 12,
                 "Onager frame collision does not match the authored base bone");
         helper.assertTrue(GeneratedCollisionShapes.ONAGER_ARM.parts().size() == 4,
-                "Onager arm collision does not match the authored catapult bone");
+                "Onager arm collision does not match the authored arm bone");
         helper.succeed();
     }
 

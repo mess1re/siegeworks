@@ -5,10 +5,10 @@
       "loop": "hold_on_last_frame",
       "animation_length": 0.05,
       "bones": {
-        "1": {"rotation":{"vector":[0,0,0]}},
-        "2": {"rotation":{"vector":[0,0,0]}},
+        "bow_r_tip": {"rotation":{"vector":[0,0,0]}},
+        "bow_l_tip": {"rotation":{"vector":[0,0,0]}},
         "knob": {"rotation":{"vector":[0,0,0]}},
-        "tensoin": {
+        "tension": {
           "position": {"vector":[0,0,0]}
         },
         "bow": {"rotation":{"vector":[0,0,0]}},
@@ -18,7 +18,7 @@
           "position": {"vector":[0,0,0]},
           "scale": {"vector":[1,1,1]}
         },
-        "tensoin2": {
+        "tension_2": {
           "position": {"vector":[0,0,0]}
         },
         "bolt": {
@@ -37,13 +37,13 @@
     "reloading": {
       "animation_length": 6,
       "bones": {
-        "1": {
+        "bow_r_tip": {
           "rotation": {
             "0.0": {"vector":[0,0,0]},
             "6.0": {"vector":[0,-12.5,0]}
           }
         },
-        "2": {
+        "bow_l_tip": {
           "rotation": {
             "0.0": {"vector":[0,0,0]},
             "6.0": {"vector":[0,12.5,0]}
@@ -55,7 +55,7 @@
             "6.0": {"vector":[-720,0,0]}
           }
         },
-        "tensoin": {
+        "tension": {
           "position": {
             "0.0": {"vector":[0,0,0]},
             "6.0": {"vector":[0,0,10]}
@@ -89,7 +89,7 @@
             "6.0": {"vector":[1,1,0.35]}
           }
         },
-        "tensoin2": {
+        "tension_2": {
           "position": {"vector":[0,0,0]}
         },
         "bolt": {
@@ -124,10 +124,10 @@
       "loop": "hold_on_last_frame",
       "animation_length": 0.05,
       "bones": {
-        "1": {"rotation":{"vector":[0,-12.5,0]}},
-        "2": {"rotation":{"vector":[0,12.5,0]}},
+        "bow_r_tip": {"rotation":{"vector":[0,-12.5,0]}},
+        "bow_l_tip": {"rotation":{"vector":[0,12.5,0]}},
         "knob": {"rotation":{"vector":[-720,0,0]}},
-        "tensoin": {
+        "tension": {
           "position": {"vector":[0,0,10]}
         },
         "bow": {"rotation":{"vector":[0,0,0]}},
@@ -137,7 +137,7 @@
           "position": {"vector":[0,0,2]},
           "scale": {"vector":[1,1,0.35]}
         },
-        "tensoin2": {
+        "tension_2": {
           "position": {"vector":[0,0,0]}
         },
         "bolt": {
@@ -156,21 +156,21 @@
     "shoot": {
       "animation_length": 0.2917,
       "bones": {
-        "1": {
+        "bow_r_tip": {
           "rotation": {
             "0.0": {"vector":[0,-12.5,0]},
             "0.0417": {"vector":[0,0,0],"easing":"easeInElastic"},
             "0.2917": {"vector":[0,0,0],"easing":"easeInElastic"}
           }
         },
-        "2": {
+        "bow_l_tip": {
           "rotation": {
             "0.0": {"vector":[0,12.5,0]},
             "0.0417": {"vector":[0,0,0],"easing":"easeInElastic"},
             "0.2917": {"vector":[0,0,0],"easing":"easeInElastic"}
           }
         },
-        "tensoin": {
+        "tension": {
           "position": {
             "0.0": {"vector":[0,0,10]},
             "0.0417": {"vector":[0,0,-11],"easing":"easeInElastic"},

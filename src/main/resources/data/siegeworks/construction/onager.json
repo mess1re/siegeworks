@@ -1,22 +1,23 @@
 {
   "model": "siegeworks:geo/onager.geo.json",
   "boneCubes": {
-    "base": 12,
-    "catapult": 4,
-    "load_fire": 1,
+    "base": 2,
+    "bed": 4,
+    "uprights": 6,
+    "arm": 4,
     "loader": 5,
-    "hexadecagon_1": 8,
-    "hexadecagon_2": 8,
-    "hexadecagon_3": 8,
-    "hexadecagon_4": 8
+    "wheel_1_rim_1": 8,
+    "wheel_1_rim_2": 8,
+    "wheel_2_rim_1": 8,
+    "wheel_2_rim_2": 8
   },
   "sections": [
     {
-      "name": "wheels_1",
+      "name": "wheel_right",
       "bones": {
-        "base": [11],
-        "hexadecagon_1": [0, 1, 2, 3, 4, 5, 6, 7],
-        "hexadecagon_2": [0, 1, 2, 3, 4, 5, 6, 7]
+        "base": [1],
+        "wheel_1_rim_1": [0, 1, 2, 3, 4, 5, 6, 7],
+        "wheel_1_rim_2": [0, 1, 2, 3, 4, 5, 6, 7]
       },
       "box": [-19, 0, -21, 19, 12, -9],
       "parts": [
@@ -108,11 +109,11 @@
       ]
     },
     {
-      "name": "wheels_2",
+      "name": "wheel_left",
       "bones": {
-        "base": [10],
-        "hexadecagon_3": [0, 1, 2, 3, 4, 5, 6, 7],
-        "hexadecagon_4": [0, 1, 2, 3, 4, 5, 6, 7]
+        "base": [0],
+        "wheel_2_rim_1": [0, 1, 2, 3, 4, 5, 6, 7],
+        "wheel_2_rim_2": [0, 1, 2, 3, 4, 5, 6, 7]
       },
       "box": [-19, 0, 12, 19, 12, 24],
       "parts": [
@@ -204,9 +205,9 @@
       ]
     },
     {
-      "name": "base_stage_1",
+      "name": "bed",
       "bones": {
-        "base": [0, 1, 2, 3]
+        "bed": [0, 1, 2, 3]
       },
       "box": [-11, 6, -24, 11, 17, 24],
       "parts": [
@@ -233,9 +234,9 @@
       ]
     },
     {
-      "name": "base_stage_2",
+      "name": "uprights",
       "bones": {
-        "base": [4, 5, 6, 7, 8, 9]
+        "uprights": [0, 1, 2, 3, 4, 5]
       },
       "box": [-14, 10, -15, 14, 36, -9],
       "parts": [
@@ -272,9 +273,9 @@
       ]
     },
     {
-      "name": "catapult",
+      "name": "arm",
       "bones": {
-        "catapult": [0, 1, 2, 3],
+        "arm": [0, 1, 2, 3],
         "loader": [0, 1, 2, 3, 4]
       },
       "box": [-14, 7, -9, 14, 49, 12],
@@ -286,7 +287,7 @@
         },
         {
           "center": [0, 1.5625, 0.4375],
-          "halfExtent": [0.1187, 0.9313, 0.1187],
+          "halfExtent": [0.1187, 0.9312, 0.1188],
           "rotation": [-1, 0, 0, 0, 1, 0, 0, 0, -1]
         },
         {

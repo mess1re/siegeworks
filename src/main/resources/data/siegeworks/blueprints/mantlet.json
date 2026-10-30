@@ -5,11 +5,11 @@
   "stages": [
     { "section": "wheels", "hits": 8,
       "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
-    { "section": "base_stage_1", "hits": 20,
+    { "section": "posts", "hits": 20,
       "materials": { "#minecraft:logs": 12, "#minecraft:planks": 16, "minecraft:iron_nugget": 27 } },
-    { "section": "base_stage_2", "hits": 12,
+    { "section": "drawbar", "hits": 12,
       "materials": { "#minecraft:logs": 4, "#c:ropes": 4 } },
-    { "section": "base_stage_3", "hits": 20,
+    { "section": "shield", "hits": 20,
       "materials": { "#minecraft:logs": 8, "#minecraft:planks": 12, "minecraft:iron_nugget": 18, "#c:ropes": 8 } }
   ]
 }

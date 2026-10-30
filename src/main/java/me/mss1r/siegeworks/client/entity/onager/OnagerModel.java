@@ -20,7 +20,7 @@ public class OnagerModel extends TowedSiegeModel<OnagerEntity> {
 
     @Override
     public ResourceLocation getTextureResource(OnagerEntity animatable) {
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/onager.png");
+        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/onager" + ".png");
     }
 
     @Override
@@ -35,7 +35,5 @@ public class OnagerModel extends TowedSiegeModel<OnagerEntity> {
         String ammo = animatable.getAmmoLoaded();
         getBone("load").ifPresent(geoBone -> geoBone.setHidden(
                 !SiegeAmmo.isStoneAmmoKey(ammo) && !SiegeAmmo.isGrapeshotAmmoKey(ammo)));
-        // The pot is drawn as its own block on the load bone; this bone of the onager's has no pot texture.
-        getBone("load_fire").ifPresent(geoBone -> geoBone.setHidden(true));
     }
 }

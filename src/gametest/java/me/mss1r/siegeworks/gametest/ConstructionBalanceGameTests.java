@@ -32,7 +32,7 @@ public final class ConstructionBalanceGameTests {
         Map<String, Integer> totals = Map.ofEntries(
                 Map.entry("arcballista", 48), Map.entry("tower_crossbow", 60),
                 Map.entry("hwacha", 48), Map.entry("culverin", 54),
-                Map.entry("serpentine", 64), Map.entry("catapult", 84),
+                Map.entry("serpentine", 64), Map.entry("onager", 84),
                 Map.entry("mons_meg", 112), Map.entry("battering_ram", 160),
                 Map.entry("trebuchet", 210), Map.entry("siege_tower", 420),
                 Map.entry("mantlet", 60));

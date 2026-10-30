@@ -5,9 +5,9 @@
   "stages": [
     { "section": "wheels", "hits": 8,
       "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
-    { "section": "frame", "hits": 18,
+    { "section": "carriage", "hits": 18,
       "materials": { "#minecraft:logs": 6, "#minecraft:planks": 8, "minecraft:iron_nugget": 2 } },
-    { "section": "mechanism", "hits": 22,
+    { "section": "bow", "hits": 22,
       "materials": { "minecraft:iron_ingot": 4, "#c:ropes": 6, "#minecraft:logs": 1 } }
   ]
 }

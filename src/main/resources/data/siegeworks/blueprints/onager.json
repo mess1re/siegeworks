@@ -1,17 +1,18 @@
 {
   "formatVersion": 3,
+  "aliases": ["siegeworks:catapult"],
   "result": { "item": "siegeworks:onager_spawner", "entity": "siegeworks:onager" },
   "returns": { "#minecraft:logs": "minecraft:oak_log", "#minecraft:planks": "minecraft:oak_planks", "#c:ropes": "axiomata:rope" },
   "stages": [
-    { "section": "wheels_1", "hits": 8,
+    { "section": "wheel_right", "hits": 8,
       "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
-    { "section": "wheels_2", "hits": 8,
+    { "section": "wheel_left", "hits": 8,
       "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
-    { "section": "base_stage_1", "hits": 18,
+    { "section": "bed", "hits": 18,
       "materials": { "#minecraft:logs": 8, "#minecraft:planks": 4 } },
-    { "section": "base_stage_2", "hits": 20,
+    { "section": "uprights", "hits": 20,
       "materials": { "#minecraft:logs": 6, "#minecraft:planks": 4 } },
-    { "section": "catapult", "hits": 30,
+    { "section": "arm", "hits": 30,
       "materials": { "#minecraft:logs": 4, "minecraft:iron_ingot": 12, "minecraft:leather": 6, "#c:ropes": 10 } }
   ]
 }

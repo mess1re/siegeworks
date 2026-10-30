@@ -5,11 +5,8 @@
       "loop": "hold_on_last_frame",
       "animation_length": 0.05,
       "bones": {
-        "catapult": {"rotation":{"vector":[0,0,0]}},
+        "arm": {"rotation":{"vector":[0,0,0]}},
         "load": {
-          "scale": {"vector":[0,0,0]}
-        },
-        "load_fire": {
           "scale": {"vector":[0,0,0]}
         },
         "loader": {"rotation":{"vector":[0,0,0]}}
@@ -18,19 +15,13 @@
     "reloading": {
       "animation_length": 5,
       "bones": {
-        "catapult": {
+        "arm": {
           "rotation": {
             "0.0": {"vector":[0,0,0]},
             "5.0": {"vector":[-60,0,0],"easing":"linear"}
           }
         },
         "load": {
-          "scale": {
-            "4.9583": {"vector":[0,0,0]},
-            "5.0": {"vector":[1,1,1]}
-          }
-        },
-        "load_fire": {
           "scale": {
             "4.9583": {"vector":[0,0,0]},
             "5.0": {"vector":[1,1,1]}
@@ -48,11 +39,8 @@
       "loop": "hold_on_last_frame",
       "animation_length": 0.05,
       "bones": {
-        "catapult": {"rotation":{"vector":[-60,0,0]}},
+        "arm": {"rotation":{"vector":[-60,0,0]}},
         "load": {
-          "scale": {"vector":[1,1,1]}
-        },
-        "load_fire": {
           "scale": {"vector":[1,1,1]}
         },
         "loader": {"rotation":{"vector":[-405,0,0]}}
@@ -61,7 +49,7 @@
     "shoot": {
       "animation_length": 0.875,
       "bones": {
-        "catapult": {
+        "arm": {
           "rotation": {
             "0.0": {"vector":[-60,0,0]},
             "0.25": {"vector":[0,0,0],"easing":"easeInElastic"}

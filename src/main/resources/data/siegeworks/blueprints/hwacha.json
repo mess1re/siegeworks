@@ -5,9 +5,9 @@
   "stages": [
     { "section": "wheels", "hits": 8,
       "materials": { "siegeworks:wheel": 2, "minecraft:iron_ingot": 2, "#minecraft:logs": 1 } },
-    { "section": "base_stage_1", "hits": 18,
+    { "section": "cart", "hits": 18,
       "materials": { "#minecraft:logs": 5, "#minecraft:planks": 4, "minecraft:iron_ingot": 2, "minecraft:iron_nugget": 4 } },
-    { "section": "base_stage_2", "hits": 22,
+    { "section": "launcher", "hits": 22,
       "materials": { "#minecraft:logs": 2, "#minecraft:planks": 6, "minecraft:iron_ingot": 2, "#c:ropes": 6 } }
   ]
 }
