@@ -205,11 +205,10 @@ public final class SiegeworksClientGameEvents {
                 if (siege.usesIndependentAim()) {
                     requestedYaw = boltThrower.getClientAimTargetYaw();
                 }
-                if (siege.usesIndependentPitchAim()) {
-                    requestedPitch = boltThrower.getClientAimTargetPitch();
-                }
             }
-            if (!siege.usesIndependentPitchAim()) {
+            if (siege.usesIndependentPitchAim()) {
+                requestedPitch = siege.getClientAimTargetPitch();
+            } else {
                 siege.setTrackedPitch(player.getXRot());
             }
             SiegeworksNetworking.sendToServer(new SiegeYawC2SPayload(requestedYaw, requestedPitch));

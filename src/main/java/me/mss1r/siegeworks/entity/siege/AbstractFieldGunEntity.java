@@ -92,6 +92,16 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
         setTrackedPitch(0.0F);
     }
 
+    @Override
+    protected boolean usesIndependentAimPitch() {
+        return true;
+    }
+
+    @Override
+    protected float getPitchTurnSpeedDegrees() {
+        return 2.5F;
+    }
+
     protected static LoadingRequirement[] createLoadStages(int powderCost) {
         return new LoadingRequirement[] {
                 LoadingRequirement.consume(SiegeworksItems.BLACK_POWDER.get(), powderCost)

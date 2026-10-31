@@ -131,7 +131,6 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     /** Max difference between server and local aim before the server value is applied as a correction. */
     private static final float AIM_CORRECTION_DEGREES = 10.0F;
     private float predictedAimYaw;
-    private float predictedAimPitch;
     private boolean aimPredicted;
     /** True while the client ticks the engine, so aim changes come from the local operator rather than the server. */
     private boolean tickingOnClient;
@@ -158,6 +157,10 @@ public abstract class AbstractSiegeEntity extends LivingEntity
                 @Override public float pitchTurnSpeed() { return getPitchTurnSpeedDegrees(); }
                 @Override public boolean independentYaw() { return usesIndependentAimYaw(); }
                 @Override public boolean independentPitch() { return usesIndependentAimPitch(); }
+                @Override public float resolvePitch(float current, float requested) {
+                    return resolveAimPitch(current, requested);
+                }
+                @Override public boolean animatesUnoccupiedPitch() { return animatesUnoccupiedPitchOnClient(); }
                 @Override public boolean towed() { return isTowed(); }
                 @Override public float aimingRenderYaw() { return getAimingRenderYaw(); }
                 @Override public float aimingRenderPitch() { return getAimingRenderPitch(); }
@@ -462,6 +465,30 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         return 1.0F;
     }
 
+    protected float resolveAimPitch(float current, float requested) {
+        return Mth.clamp(requested, getMinAimPitch(), getMaxAimPitch());
+    }
+
+    protected boolean animatesUnoccupiedPitchOnClient() {
+        return false;
+    }
+
+    public void applyClientAimInput(float yawDelta, float pitchDelta) {
+        aiming.applyClientPitchInput(pitchDelta);
+    }
+
+    public final float getClientAimTargetPitch() {
+        return aiming.clientPitchTarget();
+    }
+
+    public final float getClientPredictedAimPitch() {
+        return aiming.clientPitch();
+    }
+
+    protected final void setClientPredictedAimPitch(float pitch) {
+        aiming.setClientPitch(pitch);
+    }
+
     public boolean shouldPredictYawOnClient() {
         return false;
     }
@@ -491,7 +518,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     protected float getAimingRenderPitch() {
-        return getTrackedPitch();
+        return level().isClientSide && usesIndependentAimPitch() ? aiming.clientPitch() : getTrackedPitch();
     }
 
     public void updateRenderedAim(float partialTick) {
@@ -1162,15 +1189,6 @@ public abstract class AbstractSiegeEntity extends LivingEntity
         if (TRACKED_YAW.equals(key) && usesIndependentAimYaw()
                 && Math.abs(Mth.wrapDegrees(entityData.get(TRACKED_YAW) - predictedAimYaw)) < AIM_CORRECTION_DEGREES) {
             entityData.set(TRACKED_YAW, predictedAimYaw);
-        } else if (TRACKED_PITCH.equals(key)) {
-            if (!usesIndependentAimPitch()) {
-                // A fast mouse turn may exceed the correction threshold before its echo
-                // arrives. Manual elevation has no mechanical/terrain solver to correct:
-                // retain the local operator's bounded view, as updateFromController does.
-                aiming.restoreManualPlayerPitch();
-            } else if (Math.abs(entityData.get(TRACKED_PITCH) - predictedAimPitch) < AIM_CORRECTION_DEGREES) {
-                entityData.set(TRACKED_PITCH, predictedAimPitch);
-            }
         }
     }
 
@@ -1216,12 +1234,12 @@ public abstract class AbstractSiegeEntity extends LivingEntity
                     SiegeMovementPhysics.updateClientSteering(this);
                 }
                 predictedAimYaw = entityData.get(TRACKED_YAW);
-                predictedAimPitch = entityData.get(TRACKED_PITCH);
                 aimPredicted = true;
             } else {
                 aimPredicted = false;
                 aiming.updateClientEntityRotation();
             }
+            aiming.syncClientPitch();
             return;
         }
 
@@ -1291,7 +1309,8 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     protected float getPassengerAimTargetPitch(Player player) {
-        return player.getXRot();
+        return level().isClientSide && player.isLocalPlayer() && usesIndependentAimPitch()
+                ? aiming.clientPitchTarget() : player.getXRot();
     }
 
     protected boolean hasLoadingAction() {
@@ -1419,6 +1438,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     protected void removePassenger(Entity passenger) {
         boolean controlledMovement = shouldPassengerControlMovement(passenger);
         super.removePassenger(passenger);
+        aiming.passengerRemoved();
 
         if (controlledMovement) {
             crew.stopAfterControllerRemoved();

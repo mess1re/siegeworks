@@ -31,14 +31,16 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** Real frame/camera/model diagnostic in an isolated world; never packaged in the mod jar. */
 @EventBusSubscriber(modid = "siegeworks", value = Dist.CLIENT)
 public final class ManualAimFrameProbe {
-    private static final String[] TYPES = {"culverin", "serpentine", "mons_meg", "hwacha"};
-    private static final String[] BONES = {"cannon_aim", "cannon_aim", "aim_base", "base"};
-    private static final List<String> CSV = new ArrayList<>(List.of("engine,frame,tick,expected,cameraExpected,camera,aim,model"));
+    private static final String[] TYPES = {"culverin", "serpentine", "mons_meg", "hwacha", "arcballista", "tower_crossbow"};
+    private static final String[] BONES = {"cannon_aim", "cannon_aim", "aim_base", "base", "base", "engine"};
+    private static final List<String> CSV = new ArrayList<>(List.of("engine,frame,tick,expected,cameraExpected,camera,aim,model,mechanism,target"));
     private static volatile int engineId = -1;
     private static boolean started, switching, complete;
     private static int engineIndex, age, frame, failures, totalChecks, engineChecks;
     private static float expected;
     private static float heldPitch;
+    private static float lastAim, lastMechanism, lastMechanismStep;
+    private static int lastTick, movingSubtickFrames, backwards;
     private static double maxCameraError, maxModelError;
 
     public static void tick() {
@@ -54,6 +56,7 @@ public final class ManualAimFrameProbe {
             if (switching) {
                 switching = false;
                 age = frame = engineChecks = failures = 0;
+                movingSubtickFrames = backwards = 0;
                 maxCameraError = maxModelError = 0;
             }
             age++;
@@ -62,7 +65,8 @@ public final class ManualAimFrameProbe {
 
     private static boolean enabled() {
         return Boolean.getBoolean("siegeworks.test.aimScene")
-                && "manual_frame_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"));
+                && ("manual_frame_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))
+                    || "manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine")));
     }
 
     private static void prepareEngine() {
@@ -84,6 +88,7 @@ public final class ManualAimFrameProbe {
                     MinecraftVersionCompat.id("siegeworks", TYPES[engineIndex])).create(level);
             siege.setPos(.5, 100, .5);
             siege.applyYaw(0);
+            siege.setTrackedPitch(siege.getMinAimPitch());
             level.addFreshEntity(siege);
             engineId = siege.getId();
             player.startRiding(siege, true);
@@ -125,23 +130,36 @@ public final class ManualAimFrameProbe {
         SiegeworksKeyMappings.BARREL_SIGHT.setDown(mode == 1);
         boolean freeLook = phase >= 140;
         SiegeworksKeyMappings.FREE_LOOK.setDown(freeLook);
-        if (phase == 140) heldPitch = mc.player.getXRot();
+        if (phase == 140) heldPitch = siege.getRenderedAimPitch();
         double delta = freeLook ? .25 : request - mc.player.getXRot();
         mc.player.turn(0, delta / .15D);
-        if (freeLook) {
-            SiegeAimController.applyFreeLookInput(siege, 0, (float) delta);
-            SiegeAimController.alignPlayerWithSiege(mc.player, siege, true);
-        } else {
-            SiegeAimController.applyManualAimInput(mc.player, siege);
-        }
-        expected = mc.player.getXRot();
-        if (phase == 130) siege.setTrackedPitch(expected == low ? high : low);
+        SiegeAimController.applyAimInput(mc.player, siege, 0, (float) delta);
+        if (phase == 130) siege.setTrackedPitch(siege.getClientAimTargetPitch() == low ? high : low);
     }
 
     private static void verify() {
         var siege = current();
         if (siege == null) return;
         var mc = Minecraft.getInstance();
+        expected = siege.getRenderedAimPitch();
+        float target = siege.getClientAimTargetPitch();
+        float mechanism = siege.getClientPredictedAimPitch();
+        if (frame > 0) {
+            double movement = expected - lastAim;
+            float step = mechanism - lastMechanism;
+            if (siege.tickCount == lastTick) {
+                if (movement * (mechanism - lastAim) < -1.0E-4 || Math.abs(step) > .001) backwards++;
+                if (Math.abs(movement) > .001) movingSubtickFrames++;
+            } else {
+                if (step * lastMechanismStep > 1.0E-5 && movement * step < -1.0E-4) backwards++;
+                float speed = engineIndex == 2 ? 1 : engineIndex == 5 ? 2 : 2.5F;
+                if (Math.abs(step) > speed * (siege.tickCount - lastTick) + .001) failures++;
+                lastMechanismStep = step;
+            }
+        }
+        lastAim = expected;
+        lastMechanism = mechanism;
+        lastTick = siege.tickCount;
         float camera = mc.gameRenderer.getMainCamera().getXRot();
         boolean freeLook = SiegeAimController.isFreeLookActive(mc.player, siege);
         float viewPitch = freeLook ? SiegeAimController.getFreeLookPitch(siege) : expected;
@@ -154,17 +172,20 @@ public final class ManualAimFrameProbe {
         maxCameraError = Math.max(maxCameraError, cameraError);
         maxModelError = Math.max(maxModelError, modelError);
         if (cameraError > .01 || !Double.isFinite(model) || modelError > .01
-                || freeLook && Math.abs(expected - heldPitch) > .01) {
+                || expected < siege.getMinAimPitch() - .01 || expected > siege.getMaxAimPitch() + .01
+                || freeLook && Math.abs(expected - heldPitch) > 5.01) {
             if (failures++ < 3) LogUtils.getLogger().error("AIM_FRAME mismatch engine={} frame={} tick={} input={} camera={} aim={} model={}",
                     TYPES[engineIndex], frame, siege.tickCount, expected, camera, siege.getRenderedAimPitch(), model);
         }
         CSV.add(TYPES[engineIndex] + "," + frame + "," + siege.tickCount + "," + expected + "," + cameraExpected + "," + camera + ","
-                + siege.getRenderedAimPitch() + "," + model);
+                + siege.getRenderedAimPitch() + "," + model + "," + mechanism + "," + target);
         engineChecks++;
         totalChecks++;
         if (++frame < 480) return;
-        LogUtils.getLogger().info("AIM_FRAME {} engine={} frames={} failures={} maxCameraError={} maxModelError={}",
-                failures == 0 ? "PASS" : "FAIL", TYPES[engineIndex], engineChecks, failures, maxCameraError, maxModelError);
+        if (movingSubtickFrames < 10 || backwards > 0) failures++;
+        LogUtils.getLogger().info("AIM_FRAME {} engine={} frames={} failures={} backwards={} movingSubtickFrames={} maxCameraError={} maxModelError={}",
+                failures == 0 ? "PASS" : "FAIL", TYPES[engineIndex], engineChecks, failures, backwards,
+                movingSubtickFrames, maxCameraError, maxModelError);
         SiegeworksKeyMappings.BARREL_SIGHT.setDown(false);
         SiegeworksKeyMappings.FREE_LOOK.setDown(false);
         if (++engineIndex < TYPES.length) { prepareEngine(); return; }

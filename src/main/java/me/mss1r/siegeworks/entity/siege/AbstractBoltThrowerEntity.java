@@ -89,9 +89,6 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
     private transient boolean clientYawAimInitialized;
     private transient float clientAimTargetYaw;
     private transient float clientPredictedAimYaw;
-    private transient boolean clientPitchAimInitialized;
-    private transient float clientAimTargetPitch;
-    private transient float clientPredictedAimPitch;
     private float previousCollisionAimPitch;
     private float previousCollisionRelativeYaw;
 
@@ -109,8 +106,6 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
         super.removePassenger(passenger);
         if (level().isClientSide) {
             clientYawAimInitialized = false;
-            initializeClientPitchAim();
-            clientAimTargetPitch = clientPredictedAimPitch;
             clientParkedPitchVelocity = 0.0F;
         }
     }
@@ -143,6 +138,7 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
         this.entityData.set(TRACKED_PITCH, resolveAimPitch(getTrackedPitch(), pitch));
     }
 
+    @Override
     protected float resolveAimPitch(float currentPitch, float requestedPitch) {
         float targetPitch = Mth.clamp(requestedPitch, getMinAimPitch(), getMaxAimPitch());
         if (Math.abs(targetPitch - currentPitch) < 0.0001F || isAimPoseClear(targetPitch)) {
@@ -207,10 +203,12 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
         return usesIndependentAimYaw();
     }
 
+    @Override
     public void applyClientAimInput(float yawDelta, float pitchDelta) {
         if (!level().isClientSide) {
             return;
         }
+        super.applyClientAimInput(yawDelta, pitchDelta);
 
         if (usesIndependentAimYaw()) {
             initializeClientYawAim();
@@ -219,23 +217,11 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
                     + Mth.clamp(pendingYaw, -getYawTurnSpeedDegrees(), getYawTurnSpeedDegrees()));
         }
 
-        if (usesIndependentAimPitch()) {
-            initializeClientPitchAim();
-            float pendingPitch = clientAimTargetPitch - clientPredictedAimPitch + pitchDelta;
-            float requestedPitch = clientPredictedAimPitch
-                    + Mth.clamp(pendingPitch, -getPitchTurnSpeedDegrees(), getPitchTurnSpeedDegrees());
-            clientAimTargetPitch = resolveAimPitch(clientPredictedAimPitch, requestedPitch);
-        }
     }
 
     public float getClientAimTargetYaw() {
         initializeClientYawAim();
         return clientAimTargetYaw;
-    }
-
-    public float getClientAimTargetPitch() {
-        initializeClientPitchAim();
-        return clientAimTargetPitch;
     }
 
     public final float getRenderedModelPitch() {
@@ -255,27 +241,11 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
         clientYawAimInitialized = true;
     }
 
-    private void initializeClientPitchAim() {
-        if (clientPitchAimInitialized) {
-            return;
-        }
-        clientPredictedAimPitch = getTrackedPitch();
-        clientAimTargetPitch = clientPredictedAimPitch;
-        clientPitchAimInitialized = true;
-    }
-
     @Override
     protected float getPassengerAimTargetYaw(Player player) {
         return level().isClientSide && player.isLocalPlayer()
                 ? getClientAimTargetYaw()
                 : super.getPassengerAimTargetYaw(player);
-    }
-
-    @Override
-    protected float getPassengerAimTargetPitch(Player player) {
-        return level().isClientSide && player.isLocalPlayer()
-                ? getClientAimTargetPitch()
-                : super.getPassengerAimTargetPitch(player);
     }
 
     @Override
@@ -301,25 +271,6 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
     }
 
     @Override
-    public void turnTowardsPitch(float targetPitch) {
-        if (!level().isClientSide) {
-            float currentPitch = getTrackedPitch();
-            float delta = Mth.clamp(targetPitch, getMinAimPitch(), getMaxAimPitch()) - currentPitch;
-            setTrackedPitch(currentPitch
-                    + Mth.clamp(delta, -getPitchTurnSpeedDegrees(), getPitchTurnSpeedDegrees()));
-            setXRot(getTrackedPitch());
-            lastRiderPitch = getTrackedPitch();
-            return;
-        }
-
-        float delta = targetPitch - clientPredictedAimPitch;
-        float requestedPitch = clientPredictedAimPitch
-                + Mth.clamp(delta, -getPitchTurnSpeedDegrees(), getPitchTurnSpeedDegrees());
-        clientPredictedAimPitch = resolveAimPitch(clientPredictedAimPitch, requestedPitch);
-        lastRiderPitch = clientPredictedAimPitch;
-    }
-
-    @Override
     public void onSiegeTick(ServerLevel serverLevel) {
         super.onSiegeTick(serverLevel);
         if (!shouldReturnToParkedPitch()) {
@@ -339,20 +290,19 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
     }
 
     private void tickClientPitchState() {
-        initializeClientPitchAim();
         if (shouldReturnToParkedPitch()) {
-            ParkedPitchStep step = advanceParkedPitch(clientPredictedAimPitch, clientParkedPitchVelocity);
-            clientPredictedAimPitch = step.pitch();
-            clientAimTargetPitch = clientPredictedAimPitch;
+            ParkedPitchStep step = advanceParkedPitch(getClientPredictedAimPitch(), clientParkedPitchVelocity);
+            setClientPredictedAimPitch(step.pitch());
             clientParkedPitchVelocity = step.velocity();
             return;
         }
 
         clientParkedPitchVelocity = 0.0F;
-        if (!(getFirstPassenger() instanceof Player player) || !player.isLocalPlayer()) {
-            clientPredictedAimPitch = getTrackedPitch();
-            clientAimTargetPitch = clientPredictedAimPitch;
-        }
+    }
+
+    @Override
+    protected boolean animatesUnoccupiedPitchOnClient() {
+        return shouldReturnToParkedPitch();
     }
 
     protected boolean shouldReturnToParkedPitch() {
@@ -650,15 +600,6 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
             return clientPredictedAimYaw;
         }
         return getAimingYaw();
-    }
-
-    @Override
-    protected float getAimingRenderPitch() {
-        if (level().isClientSide) {
-            initializeClientPitchAim();
-            return clientPredictedAimPitch;
-        }
-        return super.getAimingRenderPitch();
     }
 
     protected Vec3 getMouthOffset() {

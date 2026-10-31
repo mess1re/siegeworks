@@ -19,6 +19,56 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder("siegeworks_aim_regression")
 @PrefixGameTestTemplate(false)
 public final class AimRegressionGameTests {
+    @GameTest(template = "empty", timeoutTicks = 35)
+    public static void everyArtilleryOperatorUsesRateLimitedElevationTargets(GameTestHelper helper) {
+        for (int x = 0; x < 40; x++) for (int z = 0; z < 40; z++)
+            helper.setBlock(new BlockPos(x, 1, z), Blocks.STONE);
+        AbstractSiegeEntity[] engines = {
+                SiegeworksEntities.CULVERIN_ENTITY.get().create(helper.getLevel()),
+                SiegeworksEntities.SERPENTINE_ENTITY.get().create(helper.getLevel()),
+                SiegeworksEntities.MONS_MEG_ENTITY.get().create(helper.getLevel()),
+                SiegeworksEntities.HWACHA_ENTITY.get().create(helper.getLevel()),
+                SiegeworksEntities.ARCBALLISTA_ENTITY.get().create(helper.getLevel()),
+                SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(helper.getLevel())};
+        float[] speeds = {2.5F, 2.5F, 1, 2.5F, 2.5F, 2};
+        var riders = new net.minecraft.world.entity.player.Player[engines.length];
+        float[] previous = new float[engines.length];
+        float[] low = new float[engines.length];
+        for (int i = 0; i < engines.length; i++) {
+            var siege = engines[i];
+            siege.setPos(helper.absoluteVec(new Vec3(7 + (i % 3) * 12, 2, 8 + (i / 3) * 18)));
+            siege.setTrackedPitch(0);
+            helper.getLevel().addFreshEntity(siege);
+            riders[i] = SiegeGameTestPlayers.createRideable(helper.getLevel());
+            helper.assertTrue(riders[i].startRiding(siege, true), "The fixture must have an operator");
+            helper.assertTrue(siege.usesIndependentPitchAim(), "Artillery must use a mechanical elevation target");
+        }
+        for (int tick = 1; tick <= 20; tick++) {
+            int at = tick;
+            helper.runAfterDelay(tick, () -> {
+                for (int i = 0; i < engines.length; i++) {
+                    var siege = engines[i];
+                    float pitch = siege.getTrackedPitch();
+                    helper.assertTrue(Math.abs(pitch - previous[i]) <= speeds[i] + .01,
+                            "The operator bypassed the elevation rate on " + siege.getType() + ": " + previous[i] + " -> " + pitch);
+                    helper.assertTrue(pitch >= siege.getMinAimPitch() - .01 && pitch <= siege.getMaxAimPitch() + .01,
+                            "The operator bypassed the elevation bounds");
+                    previous[i] = pitch;
+                    if (at == 10) low[i] = pitch;
+                    riders[i].setXRot(at < 10 ? -90 : 90);
+                    riders[i].rideTick();
+                    siege.setPassengerAimTargetPitch(at < 10 ? -90 : 90);
+                    if (at == 20) {
+                        helper.assertTrue(low[i] < -.1 && pitch > low[i] + .1, "The mechanism must follow both directions");
+                        riders[i].discard();
+                        siege.discard();
+                    }
+                }
+                if (at == 20) helper.succeed();
+            });
+        }
+    }
+
     @GameTest(template = "empty")
     public static void remoteAndMechanicalElevationRetainsTickInterpolation(GameTestHelper helper) {
         for (AbstractSiegeEntity siege : new AbstractSiegeEntity[] {

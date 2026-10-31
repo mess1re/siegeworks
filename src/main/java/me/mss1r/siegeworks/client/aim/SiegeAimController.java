@@ -3,6 +3,7 @@ package me.mss1r.siegeworks.client.aim;
 import me.mss1r.siegeworks.client.SiegeworksKeyMappings;
 import me.mss1r.siegeworks.config.SiegeworksClientConfig;
 import me.mss1r.siegeworks.entity.siege.AbstractFieldGunEntity;
+import me.mss1r.siegeworks.entity.siege.AbstractBoltThrowerEntity;
 import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
 import net.minecraft.client.KeyMapping;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
@@ -103,8 +104,19 @@ public final class SiegeAimController {
         }
     }
 
-    /** Applies the bounded mouse view of an engine whose elevation follows the operator directly. */
-    public static void applyManualAimInput(LocalPlayer player, AbstractSiegeEntity siege) {
+    /** Mouse input sets mechanical targets; the view and model follow the same resolved angles. */
+    public static void applyAimInput(LocalPlayer player, AbstractSiegeEntity siege, float yawDelta, float pitchDelta) {
+        if (isFreeLookActive(player, siege)) {
+            applyFreeLookInput(siege, yawDelta, pitchDelta);
+            alignPlayerWithSiege(player, siege, true);
+            return;
+        }
+        siege.applyClientAimInput(yawDelta, pitchDelta);
+        if (siege instanceof AbstractBoltThrowerEntity boltThrower && siege.usesIndependentAim()) {
+            player.setYRot(boltThrower.getClientAimTargetYaw());
+        }
+        if (siege.usesIndependentPitchAim()) player.setXRot(siege.getClientAimTargetPitch());
+        if (siege instanceof AbstractBoltThrowerEntity) return;
         float pitch = Mth.clamp(player.getXRot(), siege.getMinAimPitch(), siege.getMaxAimPitch());
         alignPlayerWithSiege(player, siege, false);
         player.setXRot(pitch);
