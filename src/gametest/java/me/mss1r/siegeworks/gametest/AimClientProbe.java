@@ -7,6 +7,7 @@ import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 //? if forge {
@@ -45,6 +46,9 @@ public final class AimClientProbe {
         if (!Boolean.getBoolean("siegeworks.test.aimScene")) return;
         if ("draft_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
             DraftTeamClientProbe.tick(); return;
+        }
+        if ("arcballista_parking".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
+            arcballistaParking(); return;
         }
         if ("manual_frame_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))
                 || "manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
@@ -103,6 +107,57 @@ public final class AimClientProbe {
             LogUtils.getLogger().info("AIM_CLIENT completed");
             mc.stop();
         }
+    }
+
+    private static volatile int parkedArcballistaId = -1;
+    private static int parkingChecks, parkingFailures;
+
+    private static void arcballistaParking() {
+        var mc = Minecraft.getInstance();
+        var server = mc.getSingleplayerServer();
+        if (mc.player == null || mc.level == null || mc.screen != null || server == null) return;
+        if (!started) {
+            started = true;
+            mc.options.pauseOnLostFocus = false;
+            server.execute(() -> {
+                var player = server.getPlayerList().getPlayers().get(0);
+                var level = player.serverLevel();
+                player.stopRiding();
+                level.getEntities((Entity) null, new AABB(-30, 90, -30, 30, 130, 30), e -> e != player)
+                        .forEach(Entity::discard);
+                for (var pos : BlockPos.betweenClosed(new BlockPos(-15, 99, -15), new BlockPos(15, 110, 15)))
+                    level.setBlockAndUpdate(pos, (pos.getY() == 99 ? Blocks.CALCITE : Blocks.AIR).defaultBlockState());
+                player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+                player.teleportTo(6.5, 100, .5); player.setYRot(90); player.setXRot(10);
+                level.setDayTime(6000);
+                var arc = SiegeworksEntities.ARCBALLISTA_ENTITY.get().create(level);
+                arc.setPos(.5, 100, .5); arc.applyYaw(0); arc.setTrackedPitch(25);
+                level.addFreshEntity(arc);
+                parkedArcballistaId = arc.getId();
+            });
+        }
+        if (!(mc.level.getEntity(parkedArcballistaId) instanceof me.mss1r.siegeworks.entity.siege.ArcballistaEntity arc)) return;
+        mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+        mc.player.setYRot(90); mc.player.yRotO = 90;
+        mc.player.setXRot(10); mc.player.xRotO = 10;
+        ticks++;
+        var renderer = mc.getEntityRenderDispatcher().getRenderer(arc);
+        if (renderer instanceof software.bernie.geckolib.renderer.GeoEntityRenderer<?> geo && ticks > 10) {
+            geo.getGeoModel().getBone("base").ifPresent(bone -> {
+                float angle = (float) Math.toDegrees(bone.getRotX());
+                parkingChecks++;
+                if (angle < -25.01F || angle > 35.01F
+                        || arc.getTrackedPitch() < -35.01F || arc.getTrackedPitch() > 25.01F) parkingFailures++;
+            });
+        }
+        if (ticks == 200) {
+            if (parkingChecks < 150) parkingFailures++;
+            LogUtils.getLogger().info("ARCBALLISTA_PARK {} checks={} failures={} trackedPitch={} renderedPitch={}",
+                    parkingFailures == 0 ? "PASS" : "FAIL", parkingChecks, parkingFailures,
+                    arc.getTrackedPitch(), arc.getRenderedModelPitch());
+            net.minecraft.client.Screenshot.grab(mc.gameDirectory, "arcballista-parked-limit.png", mc.getMainRenderTarget(), m -> {});
+        }
+        if (ticks == 210) mc.stop();
     }
 
     private static int networkWaiting;

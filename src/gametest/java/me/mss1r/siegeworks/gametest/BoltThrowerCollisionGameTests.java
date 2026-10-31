@@ -10,9 +10,11 @@ import me.mss1r.axiomata.collision.StructureCollisionResolver;
 import me.mss1r.siegeworks.gameplay.collision.generated.GeneratedCollisionShapes;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 //? if forge {
@@ -30,6 +32,53 @@ public final class BoltThrowerCollisionGameTests {
     private static final double EPSILON = 1.0E-7D;
 
     private BoltThrowerCollisionGameTests() {
+    }
+
+    @GameTest(template = "empty")
+    public static void arcballistaParkingAndTowingRespectItsMechanicalPitchRange(GameTestHelper helper) {
+        ArcballistaEntity arcballista = createArcballista(helper);
+        arcballista.setTrackedPitch(89);
+        helper.assertTrue(Math.abs(arcballista.getTrackedPitch() - 25) < .001,
+                "An unattended arcballista exceeded its depression limit");
+        for (int i = 0; i < 200; i++) {
+            arcballista.onSiegeTick(helper.getLevel());
+            helper.assertTrue(arcballista.getTrackedPitch() >= -35 && arcballista.getTrackedPitch() <= 25,
+                    "Parking exceeded the arcballista's mechanical range");
+        }
+        helper.assertTrue(Math.abs(arcballista.getTrackedPitch() + 35) < .001,
+                "The parked arcballista did not stop at its elevation limit");
+        var horse = EntityType.HORSE.create(helper.getLevel());
+        helper.assertTrue(horse.startRiding(arcballista, true), "The arcballista rejected its draft mount");
+        for (int i = 0; i < 200; i++) arcballista.onSiegeTick(helper.getLevel());
+        helper.assertTrue(Math.abs(arcballista.getTrackedPitch()) < .001,
+                "The towed arcballista did not return to its level transport pose");
+        horse.stopRiding();
+        for (int i = 0; i < 200; i++) arcballista.onSiegeTick(helper.getLevel());
+        helper.assertTrue(Math.abs(arcballista.getTrackedPitch() + 35) < .001,
+                "Unhitching restored the obsolete vertical parking pose");
+        horse.discard();
+        arcballista.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void loadingAnArcballistaClampsOldVerticalParkingAngles(GameTestHelper helper) {
+        for (float oldPitch : new float[]{-89, 89}) {
+            ArcballistaEntity original = createArcballista(helper);
+            CompoundTag tag = new CompoundTag();
+            original.save(tag);
+            tag.putFloat("TrackedPitch", oldPitch);
+            ArcballistaEntity loaded = createArcballista(helper);
+            loaded.load(tag);
+            float expected = oldPitch < 0 ? -35 : 25;
+            helper.assertTrue(Math.abs(loaded.getTrackedPitch() - expected) < .001,
+                    "Loading kept an obsolete arcballista pitch: " + loaded.getTrackedPitch());
+            helper.assertTrue(Math.abs(loaded.getXRot() - expected) < .001,
+                    "Loading left the visual angle outside the mechanical range");
+            original.discard();
+            loaded.discard();
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "empty")
