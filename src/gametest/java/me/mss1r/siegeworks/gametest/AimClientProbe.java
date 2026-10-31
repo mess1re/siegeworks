@@ -107,6 +107,7 @@ public final class AimClientProbe {
     }
 
     private static int networkWaiting;
+    private static volatile int signEngineId;
     private static void signProbe() {
         var mc = Minecraft.getInstance();
         var server = mc.getSingleplayerServer();
@@ -118,8 +119,12 @@ public final class AimClientProbe {
                 var level = player.serverLevel();
                 level.getEntitiesOfClass(AbstractSiegeEntity.class, new AABB(-30, 90, -30, 30, 130, 30))
                         .forEach(net.minecraft.world.entity.Entity::discard);
+                level.setDayTime(6000);
                 for (int x=-15; x<=15; x++) for (int z=-15; z<=15; z++)
                     level.setBlockAndUpdate(new BlockPos(x,99,z), Blocks.CALCITE.defaultBlockState());
+                for (int x=-4; x<=4; x++) for (int y=100; y<=106; y++)
+                    level.setBlockAndUpdate(new BlockPos(x,y,6),
+                            ((x+y)%2==0 ? Blocks.RED_WOOL : Blocks.OAK_LOG).defaultBlockState());
                 player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
                 player.teleportTo(0.5,100,-6);
                 player.setYRot(0); player.setXRot(-10);
@@ -127,11 +132,12 @@ public final class AimClientProbe {
                         me.mss1r.siegeworks.platform.MinecraftVersionCompat.id("axiomata", "construction_hammer"));
                 player.getInventory().setItem(0, new net.minecraft.world.item.ItemStack(hammer));
                 player.getInventory().selected=0;
-                var engine = SiegeworksEntities.CULVERIN_ENTITY.get().create(level);
-                engine.buildProgress().begin("siegeworks:culverin", null);
+                var engine = SiegeworksEntities.MONS_MEG_ENTITY.get().create(level);
+                engine.buildProgress().begin("siegeworks:mons_meg", null);
                 engine.orientForPlacement(0);
                 engine.setPos(0.5,100,0.5);
                 level.addFreshEntity(engine);
+                signEngineId = engine.getId();
             });
         }
         ticks++;
@@ -141,7 +147,29 @@ public final class AimClientProbe {
             LogUtils.getLogger().info("STAGE_SIGN screenshot hammer={} tag={}",mc.player.getMainHandItem(),
                     mc.player.getMainHandItem().is(me.mss1r.axiomata.blueprint.api.BlueprintTags.CONSTRUCTION_HAMMERS));
         }
-        if (ticks==120) mc.stop();
+        if (ticks==110) server.execute(() -> {
+            var engine=(AbstractSiegeEntity)server.overworld().getEntity(signEngineId);
+            var tag=new net.minecraft.nbt.CompoundTag();
+            engine.buildProgress().save(tag);
+            var recipe=me.mss1r.axiomata.blueprint.api.definition.BlueprintDefinitions.get("siegeworks:mons_meg");
+            tag.putInt("BuildStage", recipe.stageCount()-1);
+            tag.putDouble("BuildHits",2);
+            engine.buildProgress().load(tag);
+            me.mss1r.axiomata.blueprint.internal.construction.ConstructionSync.changed(engine);
+        });
+        if (ticks==160) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-late.png",mc.getMainRenderTarget(),m->{});
+        if (ticks==170) server.execute(() -> server.getPlayerList().getPlayers().get(0)
+                .setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY));
+        if (ticks==210) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-no-hammer.png",mc.getMainRenderTarget(),m->{});
+        if (ticks==220) server.execute(() -> {
+            var player=server.getPlayerList().getPlayers().get(0);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                    new net.minecraft.world.item.ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
+                            me.mss1r.siegeworks.platform.MinecraftVersionCompat.id("axiomata","construction_hammer"))));
+            player.serverLevel().setDayTime(18000);
+        });
+        if (ticks==260) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-night.png",mc.getMainRenderTarget(),m->{});
+        if (ticks==280) mc.stop();
     }
     private static boolean networkStarted;
     private static double networkLastZ;
