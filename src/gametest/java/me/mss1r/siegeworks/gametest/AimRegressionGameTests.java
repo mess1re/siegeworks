@@ -2,6 +2,7 @@ package me.mss1r.siegeworks.gametest;
 
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
+import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -18,6 +19,45 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder("siegeworks_aim_regression")
 @PrefixGameTestTemplate(false)
 public final class AimRegressionGameTests {
+    @GameTest(template = "empty")
+    public static void remoteAndMechanicalElevationRetainsTickInterpolation(GameTestHelper helper) {
+        for (AbstractSiegeEntity siege : new AbstractSiegeEntity[] {
+                SiegeworksEntities.CULVERIN_ENTITY.get().create(helper.getLevel()),
+                SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(helper.getLevel())}) {
+            siege.setPos(helper.absoluteVec(new Vec3(10, 10, 10)));
+            siege.setTrackedPitch(0);
+            siege.updateRenderedAim(0);
+            siege.setTrackedPitch(4);
+            siege.updateRenderedAim(.25F);
+            helper.assertTrue(Math.abs(siege.getRenderedAimPitch() - 1) < .001,
+                    "A remote or mechanical elevation must interpolate from its previous tick");
+            siege.updateRenderedAim(.75F);
+            helper.assertTrue(Math.abs(siege.getRenderedAimPitch() - 3) < .001,
+                    "A remote or mechanical elevation must advance smoothly within the tick");
+            siege.updateRenderedAim(.75F);
+            helper.assertTrue(Math.abs(siege.getRenderedAimPitch() - 3) < .001,
+                    "Repeated camera/model reads must not advance the angle twice");
+            siege.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void renderedElevationDoesNotCacheAnOldTargetAtTheSamePartialTick(GameTestHelper helper) {
+        var siege = SiegeworksEntities.CULVERIN_ENTITY.get().create(helper.getLevel());
+        siege.setTrackedPitch(0);
+        siege.updateRenderedAim(0);
+        siege.setTrackedPitch(2);
+        siege.updateRenderedAim(.5F);
+        helper.assertTrue(Math.abs(siege.getRenderedAimPitch() - 1) < .001, "The first target must interpolate");
+        siege.setTrackedPitch(4);
+        siege.updateRenderedAim(.5F);
+        helper.assertTrue(Math.abs(siege.getRenderedAimPitch() - 2) < .001,
+                "A changed target at the same partial tick must not reuse stale camera/model state");
+        siege.discard();
+        helper.succeed();
+    }
+
     @GameTest(template = "empty")
     public static void viewLimitPreservesPreviousFrameWhileVehicleTurns(GameTestHelper helper) {
         var siege = SiegeworksEntities.MANTLET_ENTITY.get().create(helper.getLevel());

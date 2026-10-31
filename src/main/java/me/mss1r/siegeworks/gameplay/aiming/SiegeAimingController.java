@@ -25,8 +25,6 @@ public final class SiegeAimingController {
     private float renderedPitch;
     private float lastRenderedTargetYaw;
     private float lastRenderedTargetPitch;
-    private int renderedUpdateTick = Integer.MIN_VALUE;
-    private float renderedUpdatePartialTick = Float.NaN;
 
     public SiegeAimingController(AbstractSiegeEntity siege, Host host) {
         this.siege = siege;
@@ -115,20 +113,14 @@ public final class SiegeAimingController {
         }
         previousRenderedYaw = lastRenderedTargetYaw;
         previousRenderedPitch = lastRenderedTargetPitch;
-        renderedUpdateTick = Integer.MIN_VALUE;
-        renderedUpdatePartialTick = Float.NaN;
     }
 
     public void updateRendered(float partialTick) {
-        if (renderedUpdateTick == siege.tickCount
-                && Math.abs(renderedUpdatePartialTick - partialTick) < 1.0E-4F) {
-            return;
-        }
-        renderedUpdateTick = siege.tickCount;
-        renderedUpdatePartialTick = partialTick;
-
         float targetYaw = host.aimingRenderYaw();
-        float targetPitch = host.aimingRenderPitch();
+        Player manualOperator = siege.level().isClientSide && !host.independentPitch() && !host.towed()
+                ? controllingPlayer().filter(Player::isLocalPlayer).orElse(null) : null;
+        float targetPitch = manualOperator == null ? host.aimingRenderPitch()
+                : Mth.clamp(manualOperator.getXRot(), host.minimumPitch(), host.maximumPitch());
         if (!renderedInitialized) {
             previousRenderedYaw = targetYaw;
             previousRenderedPitch = targetPitch;
@@ -145,7 +137,10 @@ public final class SiegeAimingController {
         float interpolation = Mth.clamp(partialTick, 0.0F, 1.0F);
         renderedYaw = Mth.wrapDegrees(previousRenderedYaw
                 + Mth.wrapDegrees(targetYaw - previousRenderedYaw) * interpolation);
-        renderedPitch = Mth.lerp(interpolation, previousRenderedPitch, targetPitch);
+        // Mouse input already advances every frame. Interpolating it again by the tick's
+        // partial time makes the view lag and reverse as that time wraps back to zero.
+        // Tick-driven mechanisms and remote operators still need interpolation.
+        renderedPitch = manualOperator == null ? Mth.lerp(interpolation, previousRenderedPitch, targetPitch) : targetPitch;
     }
 
     public float renderedYaw() {

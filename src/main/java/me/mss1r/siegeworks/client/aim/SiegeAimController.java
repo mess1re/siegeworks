@@ -3,6 +3,7 @@ package me.mss1r.siegeworks.client.aim;
 import me.mss1r.siegeworks.client.SiegeworksKeyMappings;
 import me.mss1r.siegeworks.config.SiegeworksClientConfig;
 import me.mss1r.siegeworks.entity.siege.AbstractFieldGunEntity;
+import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
 import net.minecraft.client.KeyMapping;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import net.minecraft.client.player.LocalPlayer;
@@ -100,6 +101,15 @@ public final class SiegeAimController {
             player.setXRot(pitch);
             player.xRotO = pitch;
         }
+    }
+
+    /** Applies the bounded mouse view of an engine whose elevation follows the operator directly. */
+    public static void applyManualAimInput(LocalPlayer player, AbstractSiegeEntity siege) {
+        float pitch = Mth.clamp(player.getXRot(), siege.getMinAimPitch(), siege.getMaxAimPitch());
+        alignPlayerWithSiege(player, siege, false);
+        player.setXRot(pitch);
+        player.xRotO = pitch;
+        SiegePassengerPhysics.clampView(siege, player, player);
     }
 
     private static void lockPlayerBodyToSiege(LocalPlayer player, AbstractSiegeEntity siege) {

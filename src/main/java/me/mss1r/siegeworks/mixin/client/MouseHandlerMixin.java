@@ -78,10 +78,6 @@ public abstract class MouseHandlerMixin {
             return;
         }
 
-        float pitch = Mth.clamp(player.getXRot(), siege.getMinAimPitch(), siege.getMaxAimPitch());
-        SiegeAimController.alignPlayerWithSiege(player, siege, false);
-        player.setXRot(pitch);
-        player.xRotO = pitch;
-        SiegePassengerPhysics.clampView(siege, player, player);
+        SiegeAimController.applyManualAimInput(player, siege);
     }
 }
