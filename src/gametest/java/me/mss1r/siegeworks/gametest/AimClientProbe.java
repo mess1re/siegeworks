@@ -138,10 +138,21 @@ public final class AimClientProbe {
                 engine.setPos(0.5,100,0.5);
                 level.addFreshEntity(engine);
                 signEngineId = engine.getId();
+                // Finished machines behind the label reproduce interference from later entity draws.
+                var rear = SiegeworksEntities.TREBUCHET_ENTITY.get().create(level);
+                rear.setPos(0.5,100,10);
+                level.addFreshEntity(rear);
+                for (int side : new int[]{-1,1}) {
+                    var gun = SiegeworksEntities.CULVERIN_ENTITY.get().create(level);
+                    gun.setPos(side*5.0,100,5);
+                    level.addFreshEntity(gun);
+                }
             });
         }
         ticks++;
-        mc.player.setYRot(0); mc.player.setXRot(-10);
+        mc.player.setYRot(ticks < 280 ? 0 : (float)Math.toDegrees(-Math.atan2(
+                0.5-mc.player.getX(), 0.5-mc.player.getZ())));
+        mc.player.setXRot(-10);
         if (ticks==100) {
             net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign.png",mc.getMainRenderTarget(),m->{});
             LogUtils.getLogger().info("STAGE_SIGN screenshot hammer={} tag={}",mc.player.getMainHandItem(),
@@ -169,7 +180,13 @@ public final class AimClientProbe {
             player.serverLevel().setDayTime(18000);
         });
         if (ticks==260) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-night.png",mc.getMainRenderTarget(),m->{});
-        if (ticks==280) mc.stop();
+        if (ticks==280) server.execute(() -> {
+            var player=server.getPlayerList().getPlayers().get(0);
+            player.teleportTo(4.5,100,-6);
+            player.serverLevel().setDayTime(6000);
+        });
+        if (ticks==330) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-oblique.png",mc.getMainRenderTarget(),m->{});
+        if (ticks==350) mc.stop();
     }
     private static boolean networkStarted;
     private static double networkLastZ;
