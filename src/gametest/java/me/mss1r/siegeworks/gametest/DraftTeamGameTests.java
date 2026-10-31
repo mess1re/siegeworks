@@ -20,6 +20,31 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class DraftTeamGameTests {
     @GameTest(template = "empty")
+    public static void hitchedMountsDoNotRunASecondMovementSolver(GameTestHelper helper) {
+        for (var type : java.util.List.of(EntityType.HORSE, EntityType.DONKEY, EntityType.MULE, EntityType.CAMEL)) {
+            var horse = type.create(helper.getLevel());
+            var siege = SiegeworksEntities.CULVERIN_ENTITY.get().create(helper.getLevel());
+            siege.setPos(helper.absoluteVec(new Vec3(20, 4, 20)));
+            helper.assertTrue(horse.startRiding(siege, true), "The engine rejected " + type);
+            siege.positionRider(horse);
+            Vec3 hitched = horse.position();
+            horse.setDeltaMovement(new Vec3(.25, -.08, .25));
+            horse.travel(new Vec3(1, 0, 1));
+            helper.assertTrue(horse.position().distanceToSqr(hitched) < 1E-8,
+                    "Vanilla travel moved a hitched " + type + " away from its harness");
+            horse.stopRiding();
+            horse.setDeltaMovement(new Vec3(.25, 0, 0));
+            Vec3 unhitched = horse.position();
+            horse.travel(Vec3.ZERO);
+            helper.assertTrue(horse.position().distanceToSqr(unhitched) > .01,
+                    "Unhitching did not restore ordinary movement for " + type);
+            horse.discard();
+            siege.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
     public static void hitchingUsesTheAuthoredTransportOrientationForEveryEngine(GameTestHelper helper) {
         for (var type : types()) for (float yaw : new float[]{0, 90, 179, -179}) {
             AbstractSiegeEntity siege = type.create(helper.getLevel());

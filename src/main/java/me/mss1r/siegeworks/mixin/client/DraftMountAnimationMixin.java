@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class DraftMountAnimationMixin {
+    // Onager passengers sit in its bucket, but hitched animals must retain their standing gait.
     @Redirect(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/LivingEntity;isPassenger()Z", ordinal = 0))
     private boolean siegeworks$standWhileDrawingEngine(LivingEntity entity) {

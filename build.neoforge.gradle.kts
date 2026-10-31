@@ -150,7 +150,7 @@ neoForge {
             systemProperty(
                 "neoforge.enabledGameTestNamespaces",
                 providers.gradleProperty("gameTestNamespaces")
-                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb,${modId}_aim_regression,${modId}_banners")
+                    .getOrElse("$modId,${modId}_collision,${modId}_tower,${modId}_ladder,${modId}_ladder_regression,${modId}_ladder_climb,${modId}_aim_regression,${modId}_banners,${modId}_draft")
             )
         }
     }

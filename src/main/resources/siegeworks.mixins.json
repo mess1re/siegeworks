@@ -6,7 +6,7 @@
   "refmap": "siegeworks.refmap.json",
   "mixins": [
     "DraftMountControlMixin",
-    "DraftMountRotationMixin",
+    "DraftMountMovementMixin",
     "LadderTraversalMovementMixin",
     "LadderTraversalNavigationMixin",
     "LadderTraversalPushMixin",

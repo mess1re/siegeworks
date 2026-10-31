@@ -243,9 +243,12 @@ public final class FieldGunCollisionGameTests {
     }
 
     private static void assertHorseClear(GameTestHelper helper, Horse horse) {
-        if (horse.isPassenger() && helper.getLevel().getBlockCollisions(horse,
-                horse.getBoundingBox().deflate(1.0E-3D)).iterator().hasNext()) {
-            helper.fail("A towing horse walked into a wall at " + horse.position());
+        if (!horse.isPassenger()) return;
+        AABB box = horse.getBoundingBox().deflate(1.0E-3D);
+        for (var shape : helper.getLevel().getBlockCollisions(horse, box)) {
+            helper.fail("A towing horse overlaps blocks: feet=" + horse.position() + " box=" + box
+                    + " collision=" + shape.toAabbs() + " engine=" + horse.getVehicle().position()
+                    + " yaw=" + horse.getVehicle().getYRot());
         }
     }
 
