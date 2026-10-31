@@ -230,7 +230,7 @@
   "message.siegeworks.recruits.no_siege_engines": "Нет подходящих осадных подразделений для этой команды.",
   "message.siegeworks.recruits.ladder_invalid_location": "Лестницу нельзя поставить в этом месте.",
   "message.siegeworks.ladder.pickup_unavailable": "Нельзя поднять лестницу, пока её используют.",
-  "message.siegeworks.ladder.push_from_top": "Упирайте шест в верх лестницы со стены, на которую она опирается.",
+  "message.siegeworks.ladder.push_from_top": "Упирайте шест в верхнюю часть лестницы со стороны стены.",
   "message.siegeworks.ladder.pushing": "Сталкиваете лестницу: %s%%",
   "message.siegeworks.ladder.pushed": "Лестница опрокинута.",
   "message.siegeworks.ladder.not_owner": "Эта лестница принадлежит другому игроку.",

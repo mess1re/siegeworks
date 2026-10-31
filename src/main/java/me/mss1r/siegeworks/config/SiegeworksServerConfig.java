@@ -132,7 +132,7 @@ public final class SiegeworksServerConfig {
                 .defineInRange("healthLoss", 0.35D, 0.0D, 1.0D);
         builder.pop();
 
-        builder.comment("Pushing a siege ladder off a wall by bracing a pole against its top, holding use.")
+        builder.comment("Pushing a siege ladder off a wall by bracing a pole against its upper part, holding use.")
                 .push("ladderPushing");
         LADDER_PUSH_SECONDS = builder
                 .comment("Seconds of bracing that push an empty, upright ladder away.")

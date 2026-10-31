@@ -19,6 +19,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.level.ClipContext;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -26,7 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Pushing a siege ladder off a wall: a defender on the wall braces a pole against its top and holds use until it goes.
+ * Pushing a siege ladder off a wall: a defender on the wall braces a pole against its upper part and holds use until it goes.
  * The time it takes grows with the ladder's lean and with everyone on it.
  */
 public final class LadderPush {
@@ -34,13 +36,13 @@ public final class LadderPush {
             MinecraftVersionCompat.id(Siegeworks.MOD_ID, "ladder_pushers"));
     /** Use repeats every four ticks while held; a longer gap means the brace was let go. */
     private static final int BRACE_GAP_TICKS = 8;
-    /** How far below the ladder's top the feet may be and still brace against it from the wall. */
-    private static final double BELOW_TOP = 2.5D;
-    /** How far past the top, toward the wall's face, a brace may start: a defender leans over the parapet. */
-    private static final double BEFORE_TOP = 0.75D;
+    /** How far below the contact the feet may be when bracing from the wall. */
+    private static final double BELOW_CONTACT = 2.5D;
+    /** How far the defender may lean toward the foot past the contact before leaving the wall side. */
+    private static final double WALL_SIDE_ALLOWANCE = 0.75D;
     /** The least lean a braced ladder is eased to: it is still against the wall until the last push. */
     private static final double MIN_HELD_LEAN_DEGREES = 2.0D;
-    /** How far off the line of sight a ladder's top may be and still count as looked at. */
+    /** Half the ladder's working width plus the fork. */
     private static final double LOOK_TOLERANCE = 1.0D;
     /** How far around the player to look for ladders: a long one's foot is well away from its top. */
     private static final double LADDER_SEARCH = 24.0D;
@@ -51,7 +53,7 @@ public final class LadderPush {
     private final Map<UUID, Brace> braces = new HashMap<>();
 
     /**
-     * Braces long weapons against the ladder top looked at, on each use repeated while the button is held. Their own
+     * Braces long weapons against the reachable upper part of a ladder, on each use repeated while the button is held. Their own
      * use is skipped meanwhile; the forked pole braces through its own use instead.
      */
     public static void register() {
@@ -70,31 +72,79 @@ public final class LadderPush {
         });
     }
 
-    /**
-     * The ladder whose top {@code player} looks at within reach, if any. Its hitbox stays at its foot, so the top is
-     * found by where it is rather than by aiming at the entity.
-     */
+    /** The nearest reachable upper rail or rung looked at, using the same target as bracing. */
     @Nullable
     public static SiegeLadderEntity ladderLookedAt(Player player) {
-        double reach = MinecraftVersionCompat.entityInteractionRange(player) + 0.5D;
-        Vec3 eye = player.getEyePosition();
-        Vec3 look = player.getLookAngle();
         SiegeLadderEntity best = null;
-        double bestOffset = LOOK_TOLERANCE;
+        double closest = Double.POSITIVE_INFINITY;
         for (SiegeLadderEntity ladder : player.level().getEntitiesOfClass(SiegeLadderEntity.class,
                 player.getBoundingBox().inflate(LADDER_SEARCH))) {
-            if (ladder.isCarried()) {
-                continue;
-            }
-            Vec3 toTop = ladder.topPoint().subtract(eye);
-            double along = toTop.dot(look);
-            double offset = toTop.subtract(look.scale(along)).length();
-            if (along > 0.0D && toTop.length() <= reach && offset < bestOffset) {
+            Vec3 contact = bracePoint(ladder, player);
+            if (contact != null && player.getEyePosition().distanceToSqr(contact) < closest) {
                 best = ladder;
-                bestOffset = offset;
+                closest = player.getEyePosition().distanceToSqr(contact);
             }
         }
         return best;
+    }
+
+    /** Contact with the upper working span, rather than a single point at the ladder's tip. */
+    @Nullable
+    private static Vec3 bracePoint(SiegeLadderEntity ladder, Player player) {
+        if (ladder.isCarried() || !ladder.isFullyBuilt() || Math.abs(ladder.getLeanAngleDegrees()) < 3.0F) {
+            return null;
+        }
+        Vec3 top = ladder.topPoint();
+        if (top.y <= ladder.getY()) return null;
+        Vec3 eye = player.getEyePosition();
+        double reach = MinecraftVersionCompat.entityInteractionRange(player) + 0.5D;
+        Vec3 look = player.getLookAngle();
+        Vec3 contact = closestOnSpan(eye, look.scale(reach), ladder.position().lerp(top, .5D), top);
+        if (contact == null) return null;
+        Vec3 toContact = contact.subtract(eye);
+        double along = toContact.dot(look);
+        if (along <= 0 || toContact.lengthSqr() > reach * reach + 1.0E-6D
+                || toContact.subtract(look.scale(along)).lengthSqr() > LOOK_TOLERANCE * LOOK_TOLERANCE) {
+            return null;
+        }
+        Vec3 offset = player.position().subtract(contact);
+        Vec3 uphill = ladder.uphillVector();
+        if (offset.x * uphill.x + offset.z * uphill.z < -WALL_SIDE_ALLOWANCE
+                || player.getY() < contact.y - BELOW_CONTACT) return null;
+        var obstruction = player.level().clip(new ClipContext(eye, contact,
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        return obstruction.getType() == HitResult.Type.MISS ? contact : null;
+    }
+
+    /** Closest reachable point on the working span to the finite look segment. */
+    @Nullable
+    private static Vec3 closestOnSpan(Vec3 eye, Vec3 ray, Vec3 start, Vec3 end) {
+        Vec3 span = end.subtract(start);
+        Vec3 offset = eye.subtract(start);
+        double rayLength = ray.lengthSqr();
+        double spanLength = span.lengthSqr();
+        // Clip to the reach sphere first. The closest point to the ray endpoint can be
+        // just outside reach even though the next rail/rung along the same span is reachable.
+        double projection = span.dot(offset);
+        double discriminant = projection * projection - spanLength * (offset.lengthSqr() - rayLength);
+        if (discriminant < 0 || spanLength < 1.0E-8D) return null;
+        double root = Math.sqrt(discriminant);
+        double near = Math.max(0, (projection - root) / spanLength);
+        double far = Math.min(1, (projection + root) / spanLength);
+        if (near > far) return null;
+        start = start.add(span.scale(near));
+        span = span.scale(far - near);
+        spanLength = span.lengthSqr();
+        if (spanLength < 1.0E-8D) return start;
+        offset = eye.subtract(start);
+        double raySpan = ray.dot(span);
+        double rayOffset = ray.dot(offset);
+        double spanOffset = span.dot(offset);
+        double denominator = rayLength * spanLength - raySpan * raySpan;
+        double alongRay = denominator > 1.0E-8D
+                ? Mth.clamp((raySpan * spanOffset - spanLength * rayOffset) / denominator, 0, 1) : 0;
+        double alongSpan = Mth.clamp((raySpan * alongRay + spanOffset) / spanLength, 0, 1);
+        return start.add(span.scale(alongSpan));
     }
 
     /** Whether the stack braces against ladders: a pole from the tag, or a weapon reaching far enough. */
@@ -109,15 +159,9 @@ public final class LadderPush {
         return minimum > 0.0D && MinecraftVersionCompat.entityReachBonus(player) >= minimum;
     }
 
-    /** Whether {@code player} stands where the ladder's top can be pushed: on the wall side of it, near its top. */
+    /** Whether the player can brace against the upper rail or rung currently under their crosshair. */
     public static boolean canBrace(SiegeLadderEntity ladder, Player player) {
-        Vec3 top = ladder.topPoint();
-        Vec3 uphill = ladder.uphillVector();
-        Vec3 offset = player.position().subtract(top);
-        return Math.abs(ladder.getLeanAngleDegrees()) >= 3.0F
-                && offset.x * uphill.x + offset.z * uphill.z >= -BEFORE_TOP
-                && player.getY() >= top.y - BELOW_TOP
-                && player.getEyePosition().distanceTo(top) <= MinecraftVersionCompat.entityInteractionRange(player) + 0.5D;
+        return bracePoint(ladder, player) != null;
     }
 
     /** Ticks of bracing that push the ladder off, from the server config, its lean and the climbers on it. */

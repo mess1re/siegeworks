@@ -188,7 +188,7 @@ public final class LadderPushGameTests {
 
     private static void use(SiegeLadderEntity ladder, Player player, int tick) {
         if (player.getMainHandItem().getItem() instanceof me.mss1r.siegeworks.item.ForkedPoleItem) {
-            // As the held pole does: braces against the ladder top in sight, not the ladder it was given
+            // As the held pole does: braces against the reachable ladder part in sight, not the ladder it was given
             SiegeLadderEntity seen = LadderPush.ladderLookedAt(player);
             if (seen != null) seen.braceWith(player, InteractionHand.MAIN_HAND);
         } else if (tick % 4 == 1) {
