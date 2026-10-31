@@ -107,6 +107,7 @@ public final class AimClientProbe {
     private static boolean networkStarted;
     private static double networkLastZ;
     private static int networkTicks;
+    private static int networkHoldTicks;
     private static void networkLadder() {
         var mc=Minecraft.getInstance();
         if(mc.player==null || mc.level==null) {
@@ -136,13 +137,16 @@ public final class AimClientProbe {
         }
         networkTicks++;
         mc.player.setYRot(0);
-        mc.options.keyUp.setDown(mc.player.getZ()<9.2);
+        // Remain above the ground longer than vanilla's flight timeout before finishing the climb.
+        boolean holding = mc.player.getY() >= 101.5 && networkHoldTicks < 140;
+        if (holding) networkHoldTicks++;
+        mc.options.keyUp.setDown(!holding && mc.player.getZ()<9.2);
         double back=networkLastZ-mc.player.getZ();
         networkLastZ=mc.player.getZ();
         if(back>.5) {mc.options.keyUp.setDown(false);LogUtils.getLogger().error("NETWORK_LADDER FAIL rollback={} pos={}",back,mc.player.position());mc.stop();}
         if(networkTicks%40==0) LogUtils.getLogger().info("NETWORK_LADDER tick={} pos={} ground={}",networkTicks,mc.player.position(),mc.player.onGround());
-        if(networkTicks>=200 && mc.player.getZ()>8.6 && Math.abs(mc.player.getY()-104)<.15 && mc.player.onGround()) {
-            mc.options.keyUp.setDown(false);LogUtils.getLogger().info("NETWORK_LADDER PASS ticks={} pos={}",networkTicks,mc.player.position());mc.stop();
+        if(networkTicks>=200 && networkHoldTicks==140 && mc.player.getZ()>8.6 && Math.abs(mc.player.getY()-104)<.15 && mc.player.onGround()) {
+            mc.options.keyUp.setDown(false);LogUtils.getLogger().info("NETWORK_LADDER PASS ticks={} holdTicks={} pos={}",networkTicks,networkHoldTicks,mc.player.position());mc.stop();
         } else if(networkTicks==600) {
             mc.options.keyUp.setDown(false);LogUtils.getLogger().error("NETWORK_LADDER FAIL stalled at {}",mc.player.position());mc.stop();
         }

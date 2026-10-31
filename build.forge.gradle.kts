@@ -177,6 +177,7 @@ legacyForge {
             server()
             if (providers.gradleProperty("test.networkPort").isPresent) {
                 gameDirectory = rootProject.file("build/network-server-forge")
+                systemProperty("siegeworks.test.networkLadder", "true")
             }
             systemProperty("siegeworks.debug.instantFire", "true")
             systemProperty("siegeworks.debug.autoDrive", "true")

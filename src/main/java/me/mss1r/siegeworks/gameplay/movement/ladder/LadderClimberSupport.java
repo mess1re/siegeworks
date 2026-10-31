@@ -4,6 +4,7 @@ import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.axiomata.collision.system.StructureClimbingSystem;
 import me.mss1r.axiomata.collision.system.VirtualPlatformSupport;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -33,6 +34,7 @@ public final class LadderClimberSupport {
     private static final double LANDING_DEPTH = 3.0D;
     /** Movement along the ladder, per tick, that counts as walking onto it. */
     private static final double ENTRY_SPEED = 0.01D;
+    private static final double SERVER_RUNG_CONTACT_TOLERANCE = 0.1D;
     private static final double STEEP_UPWARD_SPEED_FACTOR = 0.12D;
     private static final double STEEP_DOWNWARD_SPEED_FACTOR = 0.65D;
     private static final double STEEP_SIDE_SPEED_FACTOR = 0.55D;
@@ -150,7 +152,7 @@ public final class LadderClimberSupport {
         Vec3 at = new Vec3(climbStep.position().x, platformY, climbStep.position().z);
         if (!LadderTraversalCollision.passage(entity, entity.position(), at)) return;
         entity.move(MoverType.SELF, at.subtract(entity.position()));
-        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+        if (entity instanceof ServerPlayer player) {
             // This displacement is applied outside handleMovePlayer. Its next
             // packet must start from the corrected server position, not the old rung.
             player.connection.resetPosition();
@@ -187,6 +189,13 @@ public final class LadderClimberSupport {
             // those are is known on the server only, so the client poses any mob it finds standing on a rung.
             return entity.level().isClientSide;
         }
+        double rung = host.platformY(localY);
+        // Packet movement can precede the server's previous-position capture.
+        // Feet already on a rung are contact even when this tick's movement delta is zero.
+        if (entity instanceof ServerPlayer
+                && Math.abs(entity.getY() - rung) <= SERVER_RUNG_CONTACT_TOLERANCE) {
+            return true;
+        }
         Vec3 forward = host.forwardVector();
         double moved = (entity.getX() - entity.xo) * forward.x + (entity.getZ() - entity.zo) * forward.z;
         double uphill = moved * uphillDirection(angle);
@@ -196,7 +205,6 @@ public final class LadderClimberSupport {
         if (localY >= host.ladderLength() - ENTRY_ZONE && uphill < -ENTRY_SPEED) {
             return true;
         }
-        double rung = host.platformY(localY);
         return entity.yo >= rung - 0.05D && entity.getY() <= rung + 0.45D && entity.getY() < entity.yo;
     }
 

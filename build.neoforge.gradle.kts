@@ -135,6 +135,7 @@ neoForge {
             server()
             if (providers.gradleProperty("test.networkPort").isPresent) {
                 gameDirectory = rootProject.file("build/network-server-neoforge")
+                systemProperty("siegeworks.test.networkLadder", "true")
             }
             if (!providers.gradleProperty("test.networkPort").isPresent)
                 gameDirectory = rootProject.file("run/${sc.current.version}-neoforge")
