@@ -120,6 +120,8 @@ public final class AimClientProbe {
                 level.getEntitiesOfClass(AbstractSiegeEntity.class, new AABB(-30, 90, -30, 30, 130, 30))
                         .forEach(net.minecraft.world.entity.Entity::discard);
                 level.setDayTime(6000);
+                for (int x=-3; x<=3; x++) for (int y=100; y<=106; y++)
+                    level.setBlockAndUpdate(new BlockPos(x,y,-2), Blocks.AIR.defaultBlockState());
                 for (int x=-15; x<=15; x++) for (int z=-15; z<=15; z++)
                     level.setBlockAndUpdate(new BlockPos(x,99,z), Blocks.CALCITE.defaultBlockState());
                 for (int x=-4; x<=4; x++) for (int y=100; y<=106; y++)
@@ -140,7 +142,7 @@ public final class AimClientProbe {
                 signEngineId = engine.getId();
                 // Finished machines behind the label reproduce interference from later entity draws.
                 var rear = SiegeworksEntities.TREBUCHET_ENTITY.get().create(level);
-                rear.setPos(0.5,100,10);
+                rear.setPos(0.5,100,18);
                 level.addFreshEntity(rear);
                 for (int side : new int[]{-1,1}) {
                     var gun = SiegeworksEntities.CULVERIN_ENTITY.get().create(level);
@@ -186,7 +188,24 @@ public final class AimClientProbe {
             player.serverLevel().setDayTime(6000);
         });
         if (ticks==330) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-oblique.png",mc.getMainRenderTarget(),m->{});
-        if (ticks==350) mc.stop();
+        if (ticks==340) server.execute(() -> {
+            var player=server.getPlayerList().getPlayers().get(0);
+            player.teleportTo(0.5,100,-6);
+            for (int x=-3; x<=-1; x++) for (int y=100; y<=106; y++)
+                player.serverLevel().setBlockAndUpdate(new BlockPos(x,y,-2), Blocks.STONE.defaultBlockState());
+        });
+        if (ticks==390) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-partial-wall.png",mc.getMainRenderTarget(),m->{});
+        if (ticks==400) server.execute(() -> {
+            for (int x=-3; x<=3; x++) for (int y=100; y<=106; y++)
+                server.overworld().setBlockAndUpdate(new BlockPos(x,y,-2), Blocks.STONE.defaultBlockState());
+        });
+        if (ticks==450) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-behind-wall.png",mc.getMainRenderTarget(),m->{});
+        if (ticks==460) server.execute(() -> {
+            for (int x=-3; x<=3; x++) for (int y=100; y<=106; y++)
+                server.overworld().setBlockAndUpdate(new BlockPos(x,y,-2), Blocks.AIR.defaultBlockState());
+        });
+        if (ticks==510) net.minecraft.client.Screenshot.grab(mc.gameDirectory,"stage-sign-uncovered.png",mc.getMainRenderTarget(),m->{});
+        if (ticks==530) mc.stop();
     }
     private static boolean networkStarted;
     private static double networkLastZ;
