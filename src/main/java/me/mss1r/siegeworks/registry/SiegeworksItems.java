@@ -51,7 +51,7 @@ public interface SiegeworksItems {
     RegistrySupplier<Item> CLAY_POT = ITEMS.register("clay_pot", () ->
             new IncendiaryPotItem(SiegeworksBlocks.FIRE_PROJECTILE.get(), new Item.Properties().stacksTo(1)));
     RegistrySupplier<Item> RAMROD = ITEMS.register("ramrod", () -> new Item(new Item.Properties().stacksTo(1).durability(256)));
-    /** A pole with a fork at its end, braced against a siege ladder's upper part to push it off the wall. */
+    /** A pole with a fork at its end, braced against a siege ladder from the wall to push it off. */
     RegistrySupplier<Item> FORKED_POLE = ITEMS.register("forked_pole", () -> new me.mss1r.siegeworks.item.ForkedPoleItem(me.mss1r.siegeworks.item.ForkedPoleItem.properties()));
 
     static void registerItems() {
