@@ -190,9 +190,10 @@ public final class LadderClimberSupport {
             return entity.level().isClientSide;
         }
         double rung = host.platformY(localY);
-        // Packet movement can precede the server's previous-position capture.
-        // Feet already on a rung are contact even when this tick's movement delta is zero.
-        if (entity instanceof ServerPlayer
+        // Logged-in players receive packet positions before previous-position capture.
+        // Simulated actors still use their local movement deltas below.
+        if (entity instanceof ServerPlayer player
+                && player.getServer().getPlayerList().getPlayer(player.getUUID()) == player
                 && Math.abs(entity.getY() - rung) <= SERVER_RUNG_CONTACT_TOLERANCE) {
             return true;
         }
