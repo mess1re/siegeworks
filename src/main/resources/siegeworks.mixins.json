@@ -10,7 +10,8 @@
     "LadderTraversalMovementMixin",
     "LadderTraversalNavigationMixin",
     "LadderTraversalPushMixin",
-    "RecruitsPathNodeEvaluatorMixin"
+    "RecruitsPathNodeEvaluatorMixin",
+    "SiegeMovementMixin"
   ],
   "client": [
     "client.CapeLayerMixin",

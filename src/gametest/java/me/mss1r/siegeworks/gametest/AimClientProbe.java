@@ -47,6 +47,9 @@ public final class AimClientProbe {
         if ("draft_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
             DraftTeamClientProbe.tick(); return;
         }
+        if ("gravity_scene".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
+            SiegeGravityClientProbe.tick(); return;
+        }
         if ("arcballista_parking".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
             arcballistaParking(); return;
         }
