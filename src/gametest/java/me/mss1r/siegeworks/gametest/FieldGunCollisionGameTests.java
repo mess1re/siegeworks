@@ -193,6 +193,23 @@ public final class FieldGunCollisionGameTests {
         });
     }
 
+    @GameTest(template = "empty")
+    public static void repeatedPassengerUpdatesCannotSnapAHorseDownAfterAStep(GameTestHelper helper) {
+        var gun = hitchedCulverin(helper, 0);
+        var horse = gun.getTowingMounts().get(0);
+        Vec3 seat = gun.position().add(me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
+        BlockPos step = BlockPos.containing(seat);
+        helper.getLevel().setBlockAndUpdate(step, Blocks.STONE.defaultBlockState());
+        gun.positionRider(horse);
+        double raisedY = horse.getY();
+        helper.assertTrue(raisedY > gun.getY() + .9D, "The horse did not step onto the raised block");
+        helper.getLevel().setBlockAndUpdate(step, Blocks.AIR.defaultBlockState());
+        gun.positionRider(horse);
+        helper.assertTrue(horse.getY() >= raisedY - .1D,
+                "A second passenger update snapped the horse down in the same tick");
+        helper.succeed();
+    }
+
     private static CulverinEntity hitchedCulverin(GameTestHelper helper, float yaw) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);

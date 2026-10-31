@@ -31,7 +31,7 @@ public final class SiegePassengerPhysics {
     public static Vec3 positionMount(AbstractSiegeEntity siege, Entity mount, Vec3 seat) {
         Descent next = descent(mount);
         Vec3 feet = mountFooting(siege, mount, seat);
-        DESCENTS.put(mount, new Descent(next.tick, next.startY,
+        DESCENTS.put(mount, new Descent(next.tick, Math.max(next.startY, feet.y),
                 feet.y < next.startY - FOOTING_INSET ? next.velocity : 0));
         return feet;
     }
