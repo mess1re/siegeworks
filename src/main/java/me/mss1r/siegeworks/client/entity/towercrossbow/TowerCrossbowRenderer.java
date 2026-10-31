@@ -18,8 +18,13 @@ public class TowerCrossbowRenderer extends SiegeConstructionRenderer<TowerCrossb
     }
 
     @Override
-    protected void applyRotations(TowerCrossbowEntity animatable, PoseStack poseStack, float ageInTicks,
+    //? if forge {
+    /*protected void applyRotations(TowerCrossbowEntity animatable, PoseStack poseStack, float ageInTicks,
                                   float rotationYaw, float partialTick) {
+    *///?} else {
+    protected void applyRotations(TowerCrossbowEntity animatable, PoseStack poseStack, float ageInTicks,
+                                  float rotationYaw, float partialTick, float nativeScale) {
+        //?}
         float yaw = Mth.rotLerp(partialTick, animatable.yRotO, animatable.getYRot());
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw - 180.0F));
     }

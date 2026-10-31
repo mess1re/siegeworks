@@ -43,6 +43,9 @@ public final class AimClientProbe {
     //?}
         if (Boolean.getBoolean("siegeworks.test.networkLadder")) { networkLadder(); return; }
         if (!Boolean.getBoolean("siegeworks.test.aimScene")) return;
+        if ("draft_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
+            DraftTeamClientProbe.tick(); return;
+        }
         if ("manual_frame_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))
                 || "manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
             ManualAimFrameProbe.tick(); return;
