@@ -76,6 +76,8 @@ public final class RecruitsLadderTrafficGameTests {
             recruit.setOwnerUUID(Optional.of(commander.getUUID()));
             recruit.setIsOwned(true);
             recruit.setPersistenceRequired();
+            recruit.setHoldPos(recruit.position());
+            recruit.setFollowState(2);
             level.addFreshEntity(recruit);
             held[i] = recruit.position();
         }
@@ -116,10 +118,9 @@ public final class RecruitsLadderTrafficGameTests {
         GameTestQuiet.keep(helper);
         for (int x = 0; x < 32; x++) for (int z = 0; z < 32; z++)
             helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
-        // Fifteen-metre ladder against a fourteen-metre wall, matching the user's steep setup.
+        // Fifteen-metre ladder against a fourteen-metre wall.
         if (suspendedPlatform) {
-            // Geometry read from the user's saved world: a one-block-thick platform and one
-            // narrow pillar at its front, not an artificial solid wall hiding approach errors.
+            // A thin platform and a narrow front pillar expose unsupported approaches hidden by a solid wall.
             for (int x = 11; x <= 19; x++) for (int z = 23; z < 31; z++)
                 helper.setBlock(new BlockPos(x, 14, z), Blocks.STONE);
             for (int y = 1; y < 14; y++) helper.setBlock(new BlockPos(15, y, 23), Blocks.STONE);
@@ -156,11 +157,16 @@ public final class RecruitsLadderTrafficGameTests {
             recruit.setIsOwned(true);
             recruit.setPersistenceRequired();
             recruit.setAggroState(3); // passive: no unrelated hostile targets in this movement test
+            // Use a real hold order while the ladder settles; free movement can leave the arena before the tested order.
+            recruit.setHoldPos(recruit.position());
+            recruit.setFollowState(2);
             level.addFreshEntity(recruit);
         }
         helper.runAfterDelay(110, () -> {
             helper.assertTrue(ladder.isReadyForAutomatedClimb(), "Tall ladder did not settle");
             for (int i = 0; i < troops.length; i++) {
+                helper.assertTrue(troops[i].isAlive() && troops[i].getHealth() >= troops[i].getMaxHealth() - .01,
+                        "Troop was injured before its movement order: " + troops[i].position());
                 if (toLanding) sendTo(troops[i], ladder.getAutomatedTopExit());
                 else issue(troops[i], commander, order, i);
             }
@@ -194,8 +200,12 @@ public final class RecruitsLadderTrafficGameTests {
                                     + " " + ladder.describeAutomatedClimber(recruit));
                     if (entered[i] && !routing && recruit.getY() >= ladder.getAutomatedTopExit().y - .1)
                         finished[i] = true;
-                    helper.assertTrue(recruit.isAlive() && recruit.getHealth() >= recruit.getMaxHealth() - .01,
+                    if (!recruit.isAlive() || recruit.getHealth() < recruit.getMaxHealth() - .01) helper.fail(
                             "Tall ladder traffic injured a troop: " + recruit.position()
+                                    + " health=" + recruit.getHealth() + "/" + recruit.getMaxHealth() + " tick=" + now
+                                    + " box=" + recruit.getBoundingBox() + " blocks="
+                                    + java.util.stream.StreamSupport.stream(level.getBlockCollisions(recruit,
+                                    recruit.getBoundingBox()).spliterator(), false).flatMap(shape -> shape.toAabbs().stream()).toList()
                                     + " source=" + recruit.getLastDamageSource() + " by=" + describe(recruit.getLastHurtByMob())
                                     + " " + ladder.describeAutomatedClimber(recruit));
                 }
