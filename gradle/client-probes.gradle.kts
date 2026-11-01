@@ -11,6 +11,7 @@ if (isFabricProbe || probeWorld != null) {
             val engine = providers.gradleProperty("test.aimSceneEngine").getOrElse(if (isFabricProbe) "manual_suite" else "tower_crossbow")
             val (result, expected) = when (engine) {
                 "manual_suite", "manual_frame_suite" -> "AIM_FRAME" to 6
+                "tower_pair" -> "AIM_FRAME" to 1
                 "draft_suite" -> "DRAFT_CLIENT" to 6
                 "gravity_scene" -> "GRAVITY_CLIENT" to 1
                 "arcballista_parking" -> "ARCBALLISTA_PARK" to 1

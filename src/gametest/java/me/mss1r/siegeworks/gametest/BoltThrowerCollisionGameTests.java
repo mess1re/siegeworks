@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.block.Blocks;
 
 public final class BoltThrowerCollisionGameTests {
     public static final String NAMESPACE = StructureCollisionGameTests.NAMESPACE;
@@ -154,6 +155,47 @@ public final class BoltThrowerCollisionGameTests {
                         && cullingBounds.minY <= modelBounds.minY && cullingBounds.maxY >= modelBounds.maxY
                         && cullingBounds.minZ <= modelBounds.minZ && cullingBounds.maxZ >= modelBounds.maxZ,
                 "Arcballista culling bounds do not contain its complete collision model");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void nearbySiegeTowerPreservesGroundLimitedAimWhenPlacedFirst(GameTestHelper helper) {
+        assertNearbyTowerAim(helper, true);
+    }
+
+    @GameTest(template = "empty")
+    public static void nearbySiegeTowerPreservesGroundLimitedAimWhenPlacedLast(GameTestHelper helper) {
+        assertNearbyTowerAim(helper, false);
+    }
+
+    private static void assertNearbyTowerAim(GameTestHelper helper, boolean towerFirst) {
+        var level = helper.getLevel();
+        for (int x = 0; x < 40; x++) for (int z = 0; z < 40; z++)
+            helper.setBlock(new BlockPos(x, 0, z), Blocks.CALCITE);
+        Vec3 position = helper.absoluteVec(new Vec3(15, 1, 15));
+        var reference = createTowerCrossbow(helper);
+        reference.setPos(position);
+        level.addFreshEntity(reference);
+        reference.setTrackedPitch(reference.getMinAimPitch());
+        float groundLimit = reference.getTrackedPitch();
+        helper.assertTrue(groundLimit > reference.getMinAimPitch() + .01,
+                "The fixture must exercise collision-limited elevation");
+        reference.discard();
+
+        var tower = SiegeworksEntities.SIEGE_TOWER_ENTITY.get().create(level);
+        tower.setPos(position.add(5, 0, 5));
+        var crossbow = createTowerCrossbow(helper);
+        crossbow.setPos(position);
+        if (towerFirst) { level.addFreshEntity(tower); level.addFreshEntity(crossbow); }
+        else { level.addFreshEntity(crossbow); level.addFreshEntity(tower); }
+        try {
+            crossbow.setTrackedPitch(crossbow.getMinAimPitch());
+            helper.assertTrue(Math.abs(crossbow.getTrackedPitch() - groundLimit) < .0001,
+                    "The nearby tower changed the clear, ground-limited aim: " + groundLimit + " -> " + crossbow.getTrackedPitch());
+            helper.assertTrue(!StructureCollisionResolver.intersects(crossbow, crossbow.collisionGroups(),
+                    tower, me.mss1r.axiomata.collision.StructureGeometry.solid(tower), 0),
+                    "The accepted mechanism pose intersects the tower");
+        } finally { crossbow.discard(); tower.discard(); }
         helper.succeed();
     }
 

@@ -35,7 +35,8 @@ public final class AimClientProbe {
             arcballistaParking(); return;
         }
         if ("manual_frame_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))
-                || "manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
+                || "manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))
+                || "tower_pair".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
             ManualAimFrameProbe.tick(); return;
         }
         if ("sign_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {

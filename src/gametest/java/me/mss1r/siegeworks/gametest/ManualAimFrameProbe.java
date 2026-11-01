@@ -27,6 +27,7 @@ public final class ManualAimFrameProbe {
     private static int engineIndex, age, frame, failures, totalChecks, engineChecks, modelChecks;
     private static double sampledModelPitch = Double.NaN;
     private static float expected;
+    private static long profileLastFrame, profileFrameTotal, profileFrameMax;
     private static float heldPitch;
     private static float lastAim, lastMechanism, lastMechanismStep;
     private static int lastTick, movingSubtickFrames, backwards;
@@ -42,6 +43,7 @@ public final class ManualAimFrameProbe {
         if (mc.player == null || mc.level == null || mc.screen != null || mc.getSingleplayerServer() == null) return;
         if (!started) {
             started = true;
+            if (towerPair()) engineIndex = 5;
             mc.options.enableVsync().set(false);
             mc.options.framerateLimit().set(120);
             prepareEngine();
@@ -57,10 +59,14 @@ public final class ManualAimFrameProbe {
         }
     }
 
+    private static boolean towerPair() {
+        return "tower_pair".equals(System.getProperty("siegeworks.test.aimSceneEngine"));
+    }
+
     private static boolean enabled() {
         return Boolean.getBoolean("siegeworks.test.aimScene")
                 && ("manual_frame_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))
-                    || "manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine")));
+                    || "manual_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine")) || towerPair());
     }
 
     private static void prepareEngine() {
@@ -84,6 +90,11 @@ public final class ManualAimFrameProbe {
             siege.applyYaw(0);
             siege.setTrackedPitch(siege.getMinAimPitch());
             level.addFreshEntity(siege);
+            if (towerPair()) {
+                var tower = me.mss1r.siegeworks.registry.SiegeworksEntities.SIEGE_TOWER_ENTITY.get().create(level);
+                tower.setPos(siege.position().add(5, 0, 5));
+                level.addFreshEntity(tower);
+            }
             engineId = siege.getId();
             player.startRiding(siege, true);
         });
@@ -119,24 +130,36 @@ public final class ManualAimFrameProbe {
         float request = phase < 40 ? low + (high - low) * phase / 40
                 : phase < 80 ? high - (high - low) * (phase - 40) / 40
                 : phase < 100 ? high + 30 : phase < 120 ? low - 30 : (low + high) * .5F;
-        int mode = frame / 160;
-        mc.options.framerateLimit().set(mode == 0 ? 60 : mode == 1 ? 144 : 30);
+        int mode = towerPair() ? 0 : frame / 160;
+        if (towerPair()) request = low - 30;
+        mc.options.framerateLimit().set(towerPair() ? 120 : mode == 0 ? 60 : mode == 1 ? 144 : 30);
         mc.options.setCameraType(mode == 0 ? CameraType.THIRD_PERSON_BACK
                 : mode == 1 ? CameraType.FIRST_PERSON : CameraType.THIRD_PERSON_FRONT);
         SiegeworksKeyMappings.BARREL_SIGHT.setDown(mode == 1);
-        boolean freeLook = phase >= 140;
+        boolean freeLook = !towerPair() && phase >= 140;
         SiegeworksKeyMappings.FREE_LOOK.setDown(freeLook);
         if (phase == 140) heldPitch = siege.getRenderedAimPitch();
         double delta = freeLook ? .25 : request - mc.player.getXRot();
         mc.player.turn(0, delta / .15D);
         SiegeAimController.applyAimInput(mc.player, siege, 0, (float) delta);
-        if (phase == 130) siege.setTrackedPitch(siege.getClientAimTargetPitch() == low ? high : low);
+        if (!towerPair() && phase == 130) siege.setTrackedPitch(siege.getClientAimTargetPitch() == low ? high : low);
     }
 
     private static void verify() {
         var siege = current();
         if (siege == null) return;
         var mc = Minecraft.getInstance();
+        if (towerPair()) {
+            long now = System.nanoTime();
+            if (profileLastFrame != 0) {
+                long elapsed = now - profileLastFrame;
+                profileFrameTotal += elapsed;
+                profileFrameMax = Math.max(profileFrameMax, elapsed);
+            }
+            profileLastFrame = now;
+            if ((frame + 1) % 120 == 0) LogUtils.getLogger().info("TOWER_PAIR_FRAME frames={} meanMs={} maxMs={} pitch={}",
+                    frame + 1, profileFrameTotal / 1_000_000.0 / Math.max(1, frame), profileFrameMax / 1_000_000.0, siege.getTrackedPitch());
+        }
         expected = siege.getRenderedAimPitch();
         float target = siege.getClientAimTargetPitch();
         float mechanism = siege.getClientPredictedAimPitch();
@@ -177,7 +200,7 @@ public final class ManualAimFrameProbe {
         engineChecks++;
         totalChecks++;
         if (++frame < 480) return;
-        if (movingSubtickFrames < 10 || backwards > 0 || modelChecks < 100) failures++;
+        if ((!towerPair() && movingSubtickFrames < 10) || backwards > 0 || modelChecks < 100) failures++;
         LogUtils.getLogger().info("AIM_FRAME {} engine={} frames={} modelFrames={} failures={} backwards={} movingSubtickFrames={} maxCameraError={} maxModelError={}",
                 failures == 0 ? "PASS" : "FAIL", TYPES[engineIndex], engineChecks, modelChecks, failures, backwards,
                 movingSubtickFrames, maxCameraError, maxModelError);
