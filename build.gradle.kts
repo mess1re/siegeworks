@@ -21,6 +21,7 @@ loom {
 
 repositories {
     mavenCentral()
+    maven("https://maven.jamieswhiteshirt.com/libs-release") { content { includeGroup("com.jamieswhiteshirt") } }
     maven("https://jitpack.io") {
         content { includeGroupByRegex("com\\.github\\.mess1re.*") }
         metadataSources { mavenPom(); artifact(); ignoreGradleMetadataRedirection() }
