@@ -20,6 +20,7 @@ public final class NativeClientGameEvents {
     }
     @SubscribeEvent
     public static void overlay(RenderGuiOverlayEvent.Pre event) {
+        if (event.getOverlay().id().equals(VanillaGuiOverlay.MOUNT_HEALTH.id()) && SiegeworksClientGameEvents.hideVehicleHealth()) event.setCanceled(true);
         if (event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id()) && SiegeworksClientGameEvents.hideCrosshair()) event.setCanceled(true);
     }
 }

@@ -18,6 +18,9 @@ public final class SiegeAimingController {
     private float passengerYawTarget;
     private boolean hasPassengerPitchTarget;
     private float passengerPitchTarget;
+    private boolean clientPitchInitialized;
+    private float clientPitchTarget;
+    private float clientPitch;
     private boolean renderedInitialized;
     private float previousRenderedYaw;
     private float previousRenderedPitch;
@@ -25,8 +28,6 @@ public final class SiegeAimingController {
     private float renderedPitch;
     private float lastRenderedTargetYaw;
     private float lastRenderedTargetPitch;
-    private int renderedUpdateTick = Integer.MIN_VALUE;
-    private float renderedUpdatePartialTick = Float.NaN;
 
     public SiegeAimingController(AbstractSiegeEntity siege, Host host) {
         this.siege = siege;
@@ -91,12 +92,66 @@ public final class SiegeAimingController {
     }
 
     public void turnTowardsPitch(float targetPitch) {
-        float currentPitch = trackedPitch();
+        boolean predicted = siege.level().isClientSide && host.independentPitch();
+        float currentPitch = predicted ? clientPitch() : trackedPitch();
         float delta = Mth.clamp(targetPitch, host.minimumPitch(), host.maximumPitch()) - currentPitch;
-        setTrackedPitch(currentPitch
-                + Mth.clamp(delta, -host.pitchTurnSpeed(), host.pitchTurnSpeed()));
-        siege.setXRot(trackedPitch());
-        siege.lastRiderPitch = trackedPitch();
+        float next = host.resolvePitch(currentPitch,
+                currentPitch + Mth.clamp(delta, -host.pitchTurnSpeed(), host.pitchTurnSpeed()));
+        if (predicted) {
+            clientPitch = next;
+        } else {
+            setTrackedPitch(next);
+            siege.setXRot(trackedPitch());
+        }
+        siege.lastRiderPitch = next;
+    }
+
+    /** The same bounded mouse target and per-tick prediction for every elevation mechanism. */
+    public void applyClientPitchInput(float delta) {
+        if (!siege.level().isClientSide || !host.independentPitch()) return;
+        float current = clientPitch();
+        float pending = clientPitchTarget - current + delta;
+        clientPitchTarget = host.resolvePitch(current,
+                current + Mth.clamp(pending, -host.pitchTurnSpeed(), host.pitchTurnSpeed()));
+    }
+
+    public float clientPitchTarget() {
+        initializeClientPitch();
+        return clientPitchTarget;
+    }
+
+    public float clientPitch() {
+        initializeClientPitch();
+        return clientPitch;
+    }
+
+    private void initializeClientPitch() {
+        if (clientPitchInitialized) return;
+        clientPitch = trackedPitch();
+        clientPitchTarget = clientPitch;
+        clientPitchInitialized = true;
+    }
+
+    /** An unoccupied mechanism may animate toward rest; otherwise it follows the authoritative angle. */
+    public void syncClientPitch() {
+        if (!host.independentPitch()) return;
+        initializeClientPitch();
+        if (!host.animatesUnoccupiedPitch()
+                && (host.towed() || controllingPlayer().filter(Player::isLocalPlayer).isEmpty())) {
+            clientPitch = trackedPitch();
+            clientPitchTarget = clientPitch;
+        }
+    }
+
+    public void setClientPitch(float pitch) {
+        initializeClientPitch();
+        clientPitch = pitch;
+        clientPitchTarget = pitch;
+    }
+
+    public void passengerRemoved() {
+        hasPassengerPitchTarget = false;
+        if (siege.level().isClientSide && clientPitchInitialized) clientPitchTarget = clientPitch;
     }
 
     /**
@@ -115,18 +170,9 @@ public final class SiegeAimingController {
         }
         previousRenderedYaw = lastRenderedTargetYaw;
         previousRenderedPitch = lastRenderedTargetPitch;
-        renderedUpdateTick = Integer.MIN_VALUE;
-        renderedUpdatePartialTick = Float.NaN;
     }
 
     public void updateRendered(float partialTick) {
-        if (renderedUpdateTick == siege.tickCount
-                && Math.abs(renderedUpdatePartialTick - partialTick) < 1.0E-4F) {
-            return;
-        }
-        renderedUpdateTick = siege.tickCount;
-        renderedUpdatePartialTick = partialTick;
-
         float targetYaw = host.aimingRenderYaw();
         float targetPitch = host.aimingRenderPitch();
         if (!renderedInitialized) {
@@ -150,14 +196,14 @@ public final class SiegeAimingController {
 
     public float renderedYaw() {
         if (!siege.isFullyBuilt()) {
-            return 0.0F;
+            return host.aimingRenderYaw();
         }
         return renderedInitialized ? renderedYaw : host.aimingRenderYaw();
     }
 
     public float renderedPitch() {
         if (!siege.isFullyBuilt()) {
-            return 0.0F;
+            return host.aimingRenderPitch();
         }
         return renderedInitialized ? renderedPitch : host.aimingRenderPitch();
     }
@@ -191,14 +237,12 @@ public final class SiegeAimingController {
         }
     }
 
-    /** Manual elevation follows the operator's view with the same bounds on both sides. */
-    public void restoreManualPlayerPitch() {
-        controllingPlayer().ifPresent(player -> setTrackedPitch(player.getXRot()));
-    }
-
     public void updateClientEntityRotation() {
         float targetYaw = trackedYaw();
         if (host.independentYaw()) {
+            // The turret may turn independently; the chassis must not follow
+            // LivingEntity's automatic head/body yaw adjustment.
+            siege.setYBodyRot(siege.getYRot());
             siege.setYHeadRot(targetYaw);
             siege.lastRiderYaw = targetYaw;
             float pitch = trackedPitch();
@@ -309,6 +353,8 @@ public final class SiegeAimingController {
         float pitchTurnSpeed();
         boolean independentYaw();
         boolean independentPitch();
+        float resolvePitch(float current, float requested);
+        boolean animatesUnoccupiedPitch();
         boolean towed();
         float aimingRenderYaw();
         float aimingRenderPitch();

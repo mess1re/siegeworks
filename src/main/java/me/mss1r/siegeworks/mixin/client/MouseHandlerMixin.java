@@ -2,7 +2,6 @@ package me.mss1r.siegeworks.mixin.client;
 
 import me.mss1r.siegeworks.client.aim.SiegeAimController;
 import me.mss1r.siegeworks.client.aim.SiegeAimView;
-import me.mss1r.siegeworks.entity.siege.AbstractBoltThrowerEntity;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
 import net.minecraft.client.Minecraft;
@@ -60,28 +59,6 @@ public abstract class MouseHandlerMixin {
 
         float yawDelta = Mth.wrapDegrees(player.getYRot() - siegeworks$yawBeforeAimInput);
         float pitchDelta = player.getXRot() - siegeworks$pitchBeforeAimInput;
-        if (SiegeAimController.isFreeLookActive(player, siege)) {
-            SiegeAimController.applyFreeLookInput(siege, yawDelta, pitchDelta);
-            SiegeAimController.alignPlayerWithSiege(player, siege, true);
-            return;
-        }
-
-        if (siege instanceof AbstractBoltThrowerEntity boltThrower) {
-            boltThrower.applyClientAimInput(yawDelta, pitchDelta);
-
-            if (boltThrower.usesIndependentAim()) {
-                player.setYRot(boltThrower.getClientAimTargetYaw());
-            }
-            if (boltThrower.usesIndependentPitchAim()) {
-                player.setXRot(boltThrower.getClientAimTargetPitch());
-            }
-            return;
-        }
-
-        float pitch = Mth.clamp(player.getXRot(), siege.getMinAimPitch(), siege.getMaxAimPitch());
-        SiegeAimController.alignPlayerWithSiege(player, siege, false);
-        player.setXRot(pitch);
-        player.xRotO = pitch;
-        SiegePassengerPhysics.clampView(siege, player, player);
+        SiegeAimController.applyAimInput(player, siege, yawDelta, pitchDelta);
     }
 }

@@ -69,7 +69,11 @@ public abstract class TowedSiegeRenderer<T extends AbstractSiegeEntity & GeoAnim
         float ageInTicks = animatable.tickCount + partialTick;
         float bodyRotation = Mth.rotLerp(partialTick, animatable.yBodyRotO, animatable.yBodyRot);
 
-        applyRotations(animatable, poseStack, ageInTicks, bodyRotation, partialTick);
+        //? if <1.21 {
+        /*applyRotations(animatable, poseStack, ageInTicks, bodyRotation, partialTick);
+        *///?} else {
+        applyRotations(animatable, poseStack, ageInTicks, bodyRotation, partialTick, animatable.getScale());
+        //?}
         poseStack.translate(0.0F, 0.01F, 0.0F);
     }
 
@@ -95,9 +99,15 @@ public abstract class TowedSiegeRenderer<T extends AbstractSiegeEntity & GeoAnim
     }
 
     @Override
-    protected void applyRotations(T animatable, PoseStack poseStack, float ageInTicks,
+    //? if <1.21 {
+    /*protected void applyRotations(T animatable, PoseStack poseStack, float ageInTicks,
                                   float rotationYaw, float partialTick) {
-        applyBaseRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick);
+        applyBaseRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick, 1);
+    *///?} else {
+    protected void applyRotations(T animatable, PoseStack poseStack, float ageInTicks,
+                                  float rotationYaw, float partialTick, float nativeScale) {
+        applyBaseRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick, nativeScale);
+        //?}
 
         if (animatable.isTowed()) {
             poseStack.mulPose(Axis.YP.rotationDegrees(animatable.towedModelTurnDegrees()));
@@ -105,7 +115,11 @@ public abstract class TowedSiegeRenderer<T extends AbstractSiegeEntity & GeoAnim
     }
 
     protected void applyBaseRotations(T animatable, PoseStack poseStack, float ageInTicks,
-                                      float rotationYaw, float partialTick) {
-        super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick);
+                                      float rotationYaw, float partialTick, float nativeScale) {
+        //? if <1.21 {
+        /*super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick);
+        *///?} else {
+        super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick, nativeScale);
+        //?}
     }
 }

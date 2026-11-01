@@ -8,14 +8,21 @@ if (isFabricProbe || probeWorld != null) {
         doLast {
             val directory = if (isFabricProbe) "client-probe/$probeMinecraft-fabric" else "aim-client-$probeLoader"
             val log = rootProject.file("build/$directory/logs/latest.log").readText()
-            check(!log.contains("AIM_MANUAL FAIL")) { "Client aiming regression failed; see build/$directory/logs/latest.log" }
             val engine = providers.gradleProperty("test.aimSceneEngine").getOrElse(if (isFabricProbe) "manual_suite" else "tower_crossbow")
-            val manual = engine in listOf("manual_suite", "culverin", "serpentine", "mons_meg")
-            if (manual) {
-                val expected = if (engine == "manual_suite") 3 else 1
-                check(Regex("AIM_MANUAL PASS").findAll(log).count() == expected) { "Client aiming probe did not complete $expected engines" }
+            val (result, expected) = when (engine) {
+                "manual_suite", "manual_frame_suite" -> "AIM_FRAME" to 6
+                "draft_suite" -> "DRAFT_CLIENT" to 6
+                "gravity_scene" -> "GRAVITY_CLIENT" to 1
+                "arcballista_parking" -> "ARCBALLISTA_PARK" to 1
+                else -> "AIM_CLIENT" to 0
+            }
+            check(!log.contains("$result FAIL")) { "Client regression failed; see build/$directory/logs/latest.log" }
+            if (expected > 0) {
+                check(Regex("$result PASS").findAll(log).count() == expected) {
+                    "Client probe did not complete $expected scenarios ($result)"
+                }
             } else {
-                check(log.contains("AIM_CLIENT completed")) { "Client aiming probe did not complete" }
+                check(log.contains("$result completed")) { "Client probe did not complete" }
             }
         }
     }

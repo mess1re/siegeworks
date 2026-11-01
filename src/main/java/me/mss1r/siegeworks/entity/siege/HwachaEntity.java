@@ -195,6 +195,16 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
     }
 
     @Override
+    protected boolean usesIndependentAimPitch() {
+        return true;
+    }
+
+    @Override
+    protected float getPitchTurnSpeedDegrees() {
+        return 2.5F;
+    }
+
+    @Override
     public float getMaxAimPitch() {
         return 15.0F;
     }

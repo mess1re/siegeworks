@@ -73,7 +73,11 @@ public class SiegeTowerRenderer extends TowedSiegeRenderer<SiegeTowerEntity> {
 
         poseStack.pushPose();
         float bodyYaw = Mth.rotLerp(partialTick, tower.yBodyRotO, tower.yBodyRot);
-        applyRotations(tower, poseStack, tower.tickCount + partialTick, bodyYaw, partialTick);
+        //? if <1.21 {
+        /*applyRotations(tower, poseStack, tower.tickCount + partialTick, bodyYaw, partialTick);
+        *///?} else {
+        applyRotations(tower, poseStack, tower.tickCount + partialTick, bodyYaw, partialTick, tower.getScale());
+        //?}
         poseStack.translate(0.0D, 0.01D, 0.0D);
 
         for (int slot = 0; slot < SiegeTowerEntity.BANNER_SLOT_COUNT; slot++) {

@@ -132,10 +132,11 @@ public final class SiegeworksServerConfig {
                 .defineInRange("healthLoss", 0.35D, 0.0D, 1.0D);
         builder.pop();
 
-        builder.comment("Pushing a siege ladder off a wall by bracing a pole against its top, holding use.")
+        builder.comment("Pushing a siege ladder off a wall by bracing a pole from an elevated footing, holding use.")
                 .push("ladderPushing");
         LADDER_PUSH_SECONDS = builder
-                .comment("Seconds of bracing that push an empty, upright ladder away.")
+                .comment("Seconds of bracing at the tip that push an empty, upright ladder away.",
+                        "A lower contact takes proportionally longer because it provides less leverage.")
                 .defineInRange("baseSeconds", 1.5D, 0.0D, 60.0D);
         LADDER_PUSH_PER_CLIMBER = builder
                 .comment("Share of that time each climber on the ladder adds: 0.5 makes three climbers take 2.5 times as long.")

@@ -263,7 +263,12 @@ tasks.named<ProcessResources>("processTestmodResources") {
     filesMatching("fabric.mod.json") { expand("mod_version" to modVersion) }
 }
 
+val resetGameTestWorld = tasks.register<Delete>("resetGameTestWorld") {
+    delete(rootProject.file("run/$mcVersion-fabric-gametest/world"))
+}
+
 tasks.withType<JavaExec>().matching { it.name == "runGameTest" }.configureEach {
+    dependsOn(resetGameTestWorld)
     doFirst {
         val directory = rootProject.file("run/$mcVersion-fabric-gametest")
         directory.mkdirs()
@@ -275,7 +280,7 @@ tasks.withType<JavaExec>().matching { it.name == "runGameTest" }.configureEach {
 val generatedRuntimeTests = layout.buildDirectory.dir("generated/runtime-tests")
 val sharedGameTests = commonProject.sourceSets.getByName("gametest").java
 val adaptRuntimeTests = tasks.register("adaptRuntimeTests") {
-    dependsOn(commonProject.tasks.named("stonecutterGenerate"))
+    dependsOn(commonProject.tasks.named("stonecutterGenerateGametest"))
     inputs.files(sharedGameTests)
     outputs.dir(generatedRuntimeTests)
     doLast {
@@ -291,7 +296,9 @@ val adaptRuntimeTests = tasks.register("adaptRuntimeTests") {
             val original = file.readText()
             val selected = original.contains("StructureCollisionGameTests.NAMESPACE") || file.name in listOf(
                 "StructureCollisionGameTests.java", "AimRegressionGameTests.java", "BannerGameTests.java", "SiegeGameTestPlayers.java",
-                "AimClientProbe.java", "BannerClientProbe.java")
+                "AimClientProbe.java", "BannerClientProbe.java", "ManualAimFrameProbe.java",
+                "DraftTeamClientProbe.java", "SiegeGravityClientProbe.java", "DraftTeamGameTests.java",
+                "SiegeGravityGameTests.java", "LadderBraceTargetGameTests.java", "SiegeStackReloadGameTests.java")
             if (!selected) return@forEach
             val testMethod = Regex("@GameTest\\(([^)]*)\\)\\s+public static void (\\w+)\\(GameTestHelper helper\\)")
             testMethod.findAll(original).forEach { match ->
@@ -310,18 +317,31 @@ val adaptRuntimeTests = tasks.register("adaptRuntimeTests") {
                 .replace("net.minecraftforge.common.util.FakePlayer", "net.fabricmc.fabric.api.entity.FakePlayer")
                 .replace("net.neoforged.neoforge.common.util.FakePlayer", "net.fabricmc.fabric.api.entity.FakePlayer")
                 .replace("FakePlayerFactory.get(", "FakePlayer.get(")
-            if (file.name in listOf("AimClientProbe.java", "BannerClientProbe.java")) {
+            if (file.name in listOf("AimClientProbe.java", "BannerClientProbe.java", "ManualAimFrameProbe.java", "DraftTeamClientProbe.java")) {
                 source = source
+                    .replace(Regex("(?s)@SubscribeEvent\\(priority\\s*=.*?(?=    private static void constructionProbe\\()"), "")
                     .replace(Regex("import net\\.(minecraftforge|neoforged)\\.[^;]+;"), "")
                     .replace(Regex("@EventBusSubscriber[^\\n]+"), "")
                     .replace("@SubscribeEvent", "")
                     .replace(Regex("public static void tick\\([^)]*\\)"), "public static void tick()")
                     .replace(Regex("public static void frame\\([^)]*\\)"), "public static void frame()")
+                    .replace(Regex("public static void beforeFrame\\([^)]*\\)"), "public static void beforeFrame()")
+                    .replace(Regex("public static void afterFrame\\([^)]*\\)"), "public static void afterFrame()")
+                    .replace("public static void rendered(RenderLivingEvent.Post<?, ?> event)",
+                        "public static void rendered(net.minecraft.world.entity.LivingEntity renderedEntity, net.minecraft.client.model.EntityModel<?> renderedModel, float renderedPartialTick)")
+                    .replace("event.getEntity()", "renderedEntity")
+                    .replace("event.getRenderer().getModel()", "renderedModel")
+                    .replace("event.getPartialTick()", "renderedPartialTick")
                     .replace(Regex("if \\(event\\.phase != TickEvent\\.Phase\\.END\\) return;"), "")
+            }
+            if (file.name in listOf("ManualAimFrameProbe.java", "DraftTeamClientProbe.java")) {
+                source = source.replace(Regex("public static void onGeoRender\\([^)]*\\)\\s*\\{[^{}]*\\}"), "")
+                // Fabric's test mixin supplies native frame boundaries to the shared callbacks.
+                source = source.replace(Regex("public static void (frame|beforeFrame|afterFrame)\\([^)]*\\)\\s*\\{[^{}]*\\}"), "")
             }
             directory.resolve(file.name).writeText(source)
         }
-        check(count == 75) { "Expected 75 shared game tests, adapted $count" }
+        check(count == 106) { "Expected 106 shared game tests, adapted $count" }
         bridge.append("}\n")
         directory.resolve("FabricGameTestBridge.java").writeText(bridge.toString())
     }

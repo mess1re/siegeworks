@@ -105,7 +105,8 @@ public final class FieldGunCollisionGameTests {
             helper.assertTrue(gun.getZ() > startZ + 3.0D, "The towed Culverin did not drive toward the wall");
             helper.assertTrue(stillTicks[0] > 20, "The towed Culverin is still driving");
             helper.assertTrue(horse.getBoundingBox().maxZ > wallZ - 0.5D,
-                    "The towed Culverin stopped short of the wall");
+                    "The towed Culverin stopped short of the wall: gun=" + gun.position()
+                            + ", horse=" + horse.getBoundingBox() + ", wallZ=" + wallZ);
         });
     }
 
@@ -165,6 +166,51 @@ public final class FieldGunCollisionGameTests {
         });
     }
 
+    @GameTest(template = "empty")
+    public static void staleGroundFlagDoesNotLetAnEngineFly(GameTestHelper helper) {
+        var gun = createCulverin(helper);
+        double before = gun.getY();
+        gun.setOnGround(true);
+        gun.setDeltaMovement(Vec3.ZERO);
+        me.mss1r.siegeworks.gameplay.movement.SiegeMovementPhysics.updateSiegeVelocity(gun);
+        helper.assertTrue(gun.getY() < before - .07D, "A stale ground flag suspended the engine in air");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 50)
+    public static void hitchedHorseFallsOntoLowerGroundInsteadOfSnapping(GameTestHelper helper) {
+        var gun = hitchedCulverin(helper, 0);
+        var horse = gun.getTowingMounts().get(0);
+        // A horse has just left a raised step while the wheels remain on the lower floor.
+        Vec3 seat = gun.position().add(me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
+        horse.setPos(seat.x, gun.getY() + 1, seat.z);
+        double before = horse.getY();
+        gun.positionRider(horse);
+        helper.assertTrue(before - horse.getY() > 0 && before - horse.getY() < .1D,
+                "The harness snapped its horse down to the ground: " + (before - horse.getY()));
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(Math.abs(horse.getY() - gun.getY()) < .01D, "The horse did not land on the lower floor");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty")
+    public static void repeatedPassengerUpdatesCannotSnapAHorseDownAfterAStep(GameTestHelper helper) {
+        var gun = hitchedCulverin(helper, 0);
+        var horse = gun.getTowingMounts().get(0);
+        Vec3 seat = gun.position().add(me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
+        BlockPos step = BlockPos.containing(seat);
+        helper.getLevel().setBlockAndUpdate(step, Blocks.STONE.defaultBlockState());
+        gun.positionRider(horse);
+        double raisedY = horse.getY();
+        helper.assertTrue(raisedY > gun.getY() + .9D, "The horse did not step onto the raised block");
+        helper.getLevel().setBlockAndUpdate(step, Blocks.AIR.defaultBlockState());
+        gun.positionRider(horse);
+        helper.assertTrue(horse.getY() >= raisedY - .1D,
+                "A second passenger update snapped the horse down in the same tick");
+        helper.succeed();
+    }
+
     private static CulverinEntity hitchedCulverin(GameTestHelper helper, float yaw) {
         ServerLevel level = helper.getLevel();
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);
@@ -198,9 +244,12 @@ public final class FieldGunCollisionGameTests {
     }
 
     private static void assertHorseClear(GameTestHelper helper, Horse horse) {
-        if (horse.isPassenger() && helper.getLevel().getBlockCollisions(horse,
-                horse.getBoundingBox().deflate(1.0E-3D)).iterator().hasNext()) {
-            helper.fail("A towing horse walked into a wall at " + horse.position());
+        if (!horse.isPassenger()) return;
+        AABB box = horse.getBoundingBox().deflate(1.0E-3D);
+        for (var shape : helper.getLevel().getBlockCollisions(horse, box)) {
+            helper.fail("A towing horse overlaps blocks: feet=" + horse.position() + " box=" + box
+                    + " collision=" + shape.toAabbs() + " engine=" + horse.getVehicle().position()
+                    + " yaw=" + horse.getVehicle().getYRot());
         }
     }
 

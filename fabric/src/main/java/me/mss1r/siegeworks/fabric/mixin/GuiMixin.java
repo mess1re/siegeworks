@@ -11,4 +11,8 @@ public abstract class GuiMixin {
     private void siegeworks$crosshair(CallbackInfo ci) {
         if (SiegeworksClientGameEvents.hideCrosshair()) ci.cancel();
     }
+    @Inject(method="renderVehicleHealth", at=@At("HEAD"), cancellable=true)
+    private void siegeworks$vehicleHealth(CallbackInfo ci) {
+        if (SiegeworksClientGameEvents.hideVehicleHealth()) ci.cancel();
+    }
 }

@@ -13,7 +13,7 @@ public class ArcballistaRenderer extends TowedSiegeRenderer<ArcballistaEntity> {
 
     @Override
     protected void applyBaseRotations(ArcballistaEntity animatable, PoseStack poseStack,
-                                      float ageInTicks, float rotationYaw, float partialTick) {
+                                      float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
         animatable.updateRenderedAim(partialTick);
         float yaw = animatable.getRenderedAimYaw();
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw - 180.0F));

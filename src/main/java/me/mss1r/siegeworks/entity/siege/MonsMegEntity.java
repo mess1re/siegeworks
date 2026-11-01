@@ -189,6 +189,11 @@ public class MonsMegEntity extends AbstractSiegeEntity implements GeoEntity, Sie
     }
 
     @Override
+    protected boolean usesIndependentAimPitch() {
+        return true;
+    }
+
+    @Override
     public float getMaxAimPitch() {
         return 3.5F;
     }

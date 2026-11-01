@@ -230,7 +230,7 @@
   "message.siegeworks.recruits.no_siege_engines": "No eligible siege units can use that command.",
   "message.siegeworks.recruits.ladder_invalid_location": "The ladder cannot be placed at that location.",
   "message.siegeworks.ladder.pickup_unavailable": "The ladder cannot be picked up while it is in use.",
-  "message.siegeworks.ladder.push_from_top": "Brace the pole against the ladder's top, from the wall it leans on.",
+  "message.siegeworks.ladder.push_from_top": "Stand on the wall and brace the pole against a reachable part of the ladder.",
   "message.siegeworks.ladder.pushing": "Pushing the ladder off: %s%%",
   "message.siegeworks.ladder.pushed": "The ladder goes over.",
   "message.siegeworks.ladder.not_owner": "You do not own this ladder.",

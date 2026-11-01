@@ -119,6 +119,11 @@ public final class SiegeworksClientGameEvents {
                 && !SiegeAimController.isFreeLookActive(minecraft.player, siege);
     }
 
+    public static boolean hideVehicleHealth() {
+        var player = Minecraft.getInstance().player;
+        return player != null && player.getVehicle() instanceof AbstractSiegeEntity;
+    }
+
     private static void sendAimUpdate(LocalPlayer player) {
         Entity vehicle = player.getVehicle();
         if (vehicle instanceof AbstractSiegeEntity siege) {
@@ -134,11 +139,10 @@ public final class SiegeworksClientGameEvents {
                 if (siege.usesIndependentAim()) {
                     requestedYaw = boltThrower.getClientAimTargetYaw();
                 }
-                if (siege.usesIndependentPitchAim()) {
-                    requestedPitch = boltThrower.getClientAimTargetPitch();
-                }
             }
-            if (!siege.usesIndependentPitchAim()) {
+            if (siege.usesIndependentPitchAim()) {
+                requestedPitch = siege.getClientAimTargetPitch();
+            } else {
                 siege.setTrackedPitch(player.getXRot());
             }
             SiegeworksNetworking.sendToServer(new SiegeYawC2SPayload(requestedYaw, requestedPitch));

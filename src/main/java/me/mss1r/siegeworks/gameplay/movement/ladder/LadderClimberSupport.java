@@ -4,6 +4,7 @@ import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.axiomata.collision.system.StructureClimbingSystem;
 import me.mss1r.axiomata.collision.system.VirtualPlatformSupport;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -29,10 +30,11 @@ public final class LadderClimberSupport {
     private static final double STEP_ON_HEIGHT = 0.6D;
     /** Getting on by walking happens within this much of either end. */
     private static final double ENTRY_ZONE = 1.5D;
-    /** How far below the feet a block may be and still be a landing to step onto from the ladder's top. */
-    private static final double LANDING_DEPTH = 1.0D;
+    /** A landing within vanilla's safe drop distance also permits leaving an overhanging top rung. */
+    private static final double LANDING_DEPTH = 3.0D;
     /** Movement along the ladder, per tick, that counts as walking onto it. */
     private static final double ENTRY_SPEED = 0.01D;
+    private static final double SERVER_RUNG_CONTACT_TOLERANCE = 0.1D;
     private static final double STEEP_UPWARD_SPEED_FACTOR = 0.12D;
     private static final double STEEP_DOWNWARD_SPEED_FACTOR = 0.65D;
     private static final double STEEP_SIDE_SPEED_FACTOR = 0.55D;
@@ -150,6 +152,11 @@ public final class LadderClimberSupport {
         Vec3 at = new Vec3(climbStep.position().x, platformY, climbStep.position().z);
         if (!LadderTraversalCollision.passage(entity, entity.position(), at)) return;
         entity.move(MoverType.SELF, at.subtract(entity.position()));
+        if (entity instanceof ServerPlayer player) {
+            // This displacement is applied outside handleMovePlayer. Its next
+            // packet must start from the corrected server position, not the old rung.
+            player.connection.resetPosition();
+        }
         climbStates.put(entity.getId(), new ClimbState(localY, host.gameTick()));
         entity.setDeltaMovement(slowMovement(velocity, angle, steep));
         entity.setOnGround(true);
@@ -182,6 +189,14 @@ public final class LadderClimberSupport {
             // those are is known on the server only, so the client poses any mob it finds standing on a rung.
             return entity.level().isClientSide;
         }
+        double rung = host.platformY(localY);
+        // Logged-in players receive packet positions before previous-position capture.
+        // Simulated actors still use their local movement deltas below.
+        if (entity instanceof ServerPlayer player
+                && player.getServer().getPlayerList().getPlayer(player.getUUID()) == player
+                && Math.abs(entity.getY() - rung) <= SERVER_RUNG_CONTACT_TOLERANCE) {
+            return true;
+        }
         Vec3 forward = host.forwardVector();
         double moved = (entity.getX() - entity.xo) * forward.x + (entity.getZ() - entity.zo) * forward.z;
         double uphill = moved * uphillDirection(angle);
@@ -191,7 +206,6 @@ public final class LadderClimberSupport {
         if (localY >= host.ladderLength() - ENTRY_ZONE && uphill < -ENTRY_SPEED) {
             return true;
         }
-        double rung = host.platformY(localY);
         return entity.yo >= rung - 0.05D && entity.getY() <= rung + 0.45D && entity.getY() < entity.yo;
     }
 

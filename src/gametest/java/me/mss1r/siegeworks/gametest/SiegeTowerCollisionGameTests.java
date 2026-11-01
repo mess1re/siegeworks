@@ -161,7 +161,9 @@ public final class SiegeTowerCollisionGameTests {
         occupant.setNoAi(true);
         occupant.setPos(surface.x, landingY + 2.0D, surface.z);
         helper.assertTrue(level.addFreshEntity(tower), "Failed to add ramp landing tower");
-        tower.tick();
+        // This fixture deliberately raises the wheels off the floor to align the ramp.
+        // Register geometry without advancing gravity before the landing assertion.
+        me.mss1r.axiomata.collision.system.StructureCollisionSystem.register(tower);
         helper.assertTrue(level.addFreshEntity(occupant), "Failed to add ramp landing occupant");
 
         StructureCollisionResolver.ResolvedMovement rampLanding =

@@ -246,6 +246,10 @@ val loader = project.path.split(':')[1]
 val minecraft = project.name
 val commonSets = commonProject.extensions.getByType<SourceSetContainer>()
 val gametest = sets.create("gametest")
+if (providers.gradleProperty("enable_recruits_compat_runtime").orNull?.toBoolean() != true) {
+    gametest.java.exclude("me/mss1r/siegeworks/gametest/RecruitsCrewAndFireGameTests.java")
+    gametest.java.exclude("me/mss1r/siegeworks/gametest/RecruitsLadderTrafficGameTests.java")
+}
 gametest.java.setSrcDirs(commonSets.getByName("gametest").java.srcDirs)
 gametest.resources.setSrcDirs(commonSets.getByName("gametest").resources.srcDirs)
 gametest.compileClasspath += sets.getByName("main").compileClasspath + sets.getByName("main").output
@@ -261,7 +265,7 @@ testLoom.runConfigs.register("gameTestServer") {
     property("$loader.enableGameTest", "true")
     property("$loader.gameTestServer", "true")
     property("$loader.enabledGameTestNamespaces", providers.gradleProperty("gameTestNamespaces")
-        .getOrElse("siegeworks_aim_regression,siegeworks_collision,siegeworks_banners"))
+        .getOrElse("siegeworks_aim_regression,siegeworks_collision,siegeworks_banners,siegeworks_draft,siegeworks_gravity,siegeworks_pole_regression,siegeworks_stack_regression"))
 }
 testLoom.runConfigs.named("client") {
     property("siegeworks.debug.instantFire", "true")
@@ -282,12 +286,17 @@ testLoom.runConfigs.named("client") {
         property("siegeworks.test.bannerScene", "true")
     }
 }
+val resetGameTestWorld = tasks.register<Delete>("resetGameTestWorld") {
+    delete(gameDirectory.resolve("world"))
+}
 val prepareStructures = tasks.register<Copy>("prepareGameTestStructures") {
+    dependsOn(resetGameTestWorld)
     from(rootProject.file("src/gametest/resources/gameteststructures"))
     into(gameDirectory.resolve("gameteststructures"))
     doLast { gameDirectory.resolve("eula.txt").writeText("eula=true\n") }
 }
-tasks.named("compileGametestJava") { dependsOn(commonProject.tasks.named("stonecutterGenerate")) }
+tasks.named("compileGametestJava") { dependsOn(commonProject.tasks.named("stonecutterGenerateGametest")) }
+tasks.named("processGametestResources") { dependsOn(commonProject.tasks.named("stonecutterGenerateGametest")) }
 tasks.matching { it.name == "runGameTestServer" }.configureEach { dependsOn(prepareStructures) }
 
 

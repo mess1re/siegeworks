@@ -150,7 +150,11 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
         float ageInTicks = animatable.tickCount + partialTick;
         float bodyRotation = Mth.rotLerp(partialTick, animatable.yBodyRotO, animatable.yBodyRot);
 
-        applyRotations(animatable, poseStack, ageInTicks, bodyRotation, partialTick);
+        //? if <1.21 {
+        /*applyRotations(animatable, poseStack, ageInTicks, bodyRotation, partialTick);
+        *///?} else {
+        applyRotations(animatable, poseStack, ageInTicks, bodyRotation, partialTick, animatable.getScale());
+        //?}
         poseStack.translate(0.0F, 0.01F, 0.0F);
     }
 
@@ -194,8 +198,13 @@ public class TrebuchetRenderer extends SiegeConstructionRenderer<TrebuchetEntity
     }
 
     @Override
-    protected void applyRotations(TrebuchetEntity animatable, PoseStack poseStack, float ageInTicks,
+    //? if <1.21 {
+    /*protected void applyRotations(TrebuchetEntity animatable, PoseStack poseStack, float ageInTicks,
                                   float rotationYaw, float partialTick) {
+    *///?} else {
+    protected void applyRotations(TrebuchetEntity animatable, PoseStack poseStack, float ageInTicks,
+                                  float rotationYaw, float partialTick, float nativeScale) {
+        //?}
         poseStack.mulPose(Axis.YP.rotationDegrees(-animatable.getYRot() - 180.0F));
     }
 }

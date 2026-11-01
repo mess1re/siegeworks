@@ -1,5 +1,7 @@
 package me.mss1r.siegeworks.gameplay.crew;
 
+import com.google.common.collect.MapMaker;
+import java.util.Map;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -12,6 +14,36 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class SiegePassengerPhysics {
     /** How far a hitched animal's feet may sink into or float above the ground. */
     private static final double FOOTING_INSET = 1.0E-3D;
+    private record Descent(long tick, double startY, double velocity) {}
+    private static final Map<Entity, Descent> DESCENTS = new MapMaker().weakKeys().makeMap();
+
+    private static Descent descent(Entity mount) {
+        long tick = mount.level().getGameTime();
+        Descent previous = DESCENTS.get(mount);
+        if (previous != null && previous.tick == tick) {
+            return previous;
+        }
+        double velocity = previous != null && previous.tick == tick - 1 ? previous.velocity : 0;
+        return new Descent(tick, mount.getY(), Math.max(-3.92D, velocity - 0.08D));
+    }
+
+    /** Commit suspension state only when positioning a passenger, never during clearance probes. */
+    public static Vec3 positionMount(AbstractSiegeEntity siege, Entity mount, Vec3 seat) {
+        Descent next = descent(mount);
+        Vec3 feet = mountFooting(siege, mount, seat);
+        DESCENTS.put(mount, new Descent(next.tick, Math.max(next.startY, feet.y),
+                feet.y < next.startY - FOOTING_INSET ? next.velocity : 0));
+        return feet;
+    }
+
+    private static Vec3 descendTo(Entity mount, Vec3 target) {
+        Descent state = descent(mount);
+        if (target.y >= state.startY) {
+            return target;
+        }
+        return new Vec3(target.x, Math.max(target.y, state.startY + state.velocity), target.z);
+    }
+
     private SiegePassengerPhysics() {
     }
 
@@ -115,11 +147,11 @@ public final class SiegePassengerPhysics {
             }
         }
         if (highest == Double.NEGATIVE_INFINITY || Math.abs(highest - seat.y) < FOOTING_INSET) {
-            return seat;
+            return descendTo(mount, seat);
         }
         AABB there = standing.move(0.0D, highest - seat.y, 0.0D).deflate(FOOTING_INSET);
         return mount.level().getBlockCollisions(mount, there).iterator().hasNext()
-                ? seat
-                : new Vec3(seat.x, highest, seat.z);
+                ? descendTo(mount, seat)
+                : descendTo(mount, new Vec3(seat.x, highest, seat.z));
     }
 }

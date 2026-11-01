@@ -27,10 +27,8 @@ import java.util.List;
 public class ArcballistaEntity extends AbstractBoltThrowerEntity {
     private static final Vec3 ARCBALLISTA_PIVOT_PIXELS = new Vec3(0.0D, 10.0D, 1.0D);
     private static final Vec3 ARCBALLISTA_BOLT_PIVOT_PIXELS = new Vec3(0.0D, 14.5D, -20.0D);
-    private static final float FREE_MIN_AIM_PITCH = -89.0F;
-    private static final float FREE_MAX_AIM_PITCH = 89.0F;
-    private static final float OPERATED_MIN_AIM_PITCH = -35.0F;
-    private static final float OPERATED_MAX_AIM_PITCH = 25.0F;
+    private static final float MIN_AIM_PITCH = -35.0F;
+    private static final float MAX_AIM_PITCH = 25.0F;
     private static final double BEAM_HALF_WIDTH_PIXELS = 1.9D;
     private static final double BEAM_BOTTOM_Y_PIXELS = 11.0D;
     private static final double BEAM_MIDDLE_Y_PIXELS = 12.5D;
@@ -104,17 +102,12 @@ public class ArcballistaEntity extends AbstractBoltThrowerEntity {
 
     @Override
     public float getMinAimPitch() {
-        return hasAimingOperator() ? OPERATED_MIN_AIM_PITCH : FREE_MIN_AIM_PITCH;
+        return MIN_AIM_PITCH;
     }
 
     @Override
     public float getMaxAimPitch() {
-        return hasAimingOperator() ? OPERATED_MAX_AIM_PITCH : FREE_MAX_AIM_PITCH;
-    }
-
-    private boolean hasAimingOperator() {
-        Entity passenger = getFirstPassenger();
-        return passenger instanceof LivingEntity && !AbstractSiegeEntity.isDraftMount(passenger);
+        return MAX_AIM_PITCH;
     }
 
     @Override

@@ -62,6 +62,50 @@ public final class LadderPushGameTests {
         });
     }
 
+    @GameTest(template = "empty", timeoutTicks = SETTLE_TICKS + HOLD_TICKS * 2 + 120, batch = BATCH + "low_wall")
+    public static void aLongLadderCanBePushedFromALowWallWithoutReachingItsTip(GameTestHelper helper) {
+        SiegeLadderEntity ladder = ladderAgainstAWall(helper, 4, 7, 5);
+        Player[] defender = new Player[1];
+        float[] leaning = {0};
+        helper.runAfterDelay(SETTLE_TICKS, () -> {
+            helper.assertTrue(ladder.isReadyForAutomatedClimb(), "The long ladder did not settle against the low wall: lean="
+                    + ladder.getLeanAngleDegrees() + ", foot=" + ladder.position() + ", top=" + ladder.topPoint());
+            leaning[0] = ladder.getLeanAngleDegrees();
+            defender[0] = onTheWall(helper, ladder, new ItemStack(SiegeworksItems.FORKED_POLE.get()), 7);
+            // Stand by the outer parapet rather than directly under the overhanging tip.
+            defender[0].setPos(defender[0].getX(), defender[0].getY(), helper.absoluteVec(new Vec3(0, 0, 8.5)).z);
+            lookAtWallHeight(ladder, defender[0]);
+            helper.assertTrue(defender[0].getEyePosition().distanceTo(ladder.topPoint()) > 4.5,
+                    "The tip must remain out of reach above the low wall: lean=" + leaning[0]
+                            + ", foot=" + ladder.position() + ", top=" + ladder.topPoint()
+                            + ", player=" + defender[0].position());
+            helper.assertTrue(LadderPush.canBrace(ladder, defender[0]),
+                    "The defender cannot reach the lower shaft from the wall: stance=" + defender[0].position()
+                            + ", top=" + ladder.topPoint() + ", lean=" + leaning[0]);
+        });
+        for (int tick = 1; tick <= HOLD_TICKS * 2; tick++) {
+            int at = tick;
+            helper.runAfterDelay(SETTLE_TICKS + tick, () -> {
+                lookAtWallHeight(ladder, defender[0]);
+                use(ladder, defender[0], at);
+            });
+        }
+        helper.runAfterDelay(SETTLE_TICKS + HOLD_TICKS * 2 + 100, () -> {
+            helper.assertTrue(ladder.getLeanAngleDegrees() * leaning[0] < 0,
+                    "The lower brace failed to push the long ladder over: " + leaning[0] + " -> " + ladder.getLeanAngleDegrees());
+            helper.assertTrue(defender[0].getMainHandItem().getDamageValue() == 1,
+                    "The completed lower brace must wear the pole exactly once");
+            helper.succeed();
+        });
+    }
+
+    private static void lookAtWallHeight(SiegeLadderEntity ladder, Player player) {
+        Vec3 top = ladder.topPoint();
+        double fraction = Math.min(1, (player.getY() + 1 - ladder.getY()) / (top.y - ladder.getY()));
+        player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
+                ladder.position().lerp(top, fraction));
+    }
+
     /** Bracing eases the ladder off the wall; let go before the last push, and it falls back onto it. */
     @GameTest(template = "empty", timeoutTicks = SETTLE_TICKS + 120, batch = BATCH + "let_go")
     public static void aLadderLetGoHalfwayFallsBackOntoTheWall(GameTestHelper helper) {
@@ -188,7 +232,7 @@ public final class LadderPushGameTests {
 
     private static void use(SiegeLadderEntity ladder, Player player, int tick) {
         if (player.getMainHandItem().getItem() instanceof me.mss1r.siegeworks.item.ForkedPoleItem) {
-            // As the held pole does: braces against the ladder top in sight, not the ladder it was given
+            // As the held pole does: braces against the reachable ladder part in sight, not the ladder it was given
             SiegeLadderEntity seen = LadderPush.ladderLookedAt(player);
             if (seen != null) seen.braceWith(player, InteractionHand.MAIN_HAND);
         } else if (tick % 4 == 1) {

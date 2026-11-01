@@ -5,13 +5,13 @@
   "compatibilityLevel": "${java_compatibility}",
   "mixins": [
     "ExplosionPositionAccessor",
-    "DraftCamelWalkAnimationMixin",
     "DraftMountControlMixin",
-    "DraftMountRotationMixin",
+    "DraftMountMovementMixin",
     "LadderTraversalMovementMixin",
     "LadderTraversalNavigationMixin",
     "LadderTraversalPushMixin",
-    "RecruitsPathNodeEvaluatorMixin"
+    "RecruitsPathNodeEvaluatorMixin",
+    "SiegeMovementMixin"
   ],
   "client": [
     "client.CapeLayerMixin",
