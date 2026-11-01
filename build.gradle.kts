@@ -116,6 +116,10 @@ tasks.named<ProcessResources>("processResources") {
 }
 
 
+if (minecraftVersion == "1.21.1") {
+    sourceSets.main { java.exclude("me/mss1r/siegeworks/mixin/RecruitsPathNodeEvaluatorMixin.java") }
+}
+
 val commonJava = sourceSets.main.get().allJava
 val checkCommonBoundary = tasks.register("checkCommonBoundary") {
     group = "verification"

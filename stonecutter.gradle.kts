@@ -24,6 +24,12 @@ val transformerGate = gradle.sharedServices.registerIfAbsent(
 subprojects {
     val platform = path.split(':').getOrNull(1)
     if (platform in listOf("forge", "neoforge", "fabric")) extra["loom.platform"] = platform
+    // Recruits 1.21.1 inherits Axiomata's vanilla node hook instead of overriding it.
+    tasks.withType<org.gradle.language.jvm.tasks.ProcessResources>().configureEach {
+        if (project.name == "1.21.1") filesMatching("siegeworks.mixins.json") {
+            filter { line: String -> if (line.trim() == "\"RecruitsPathNodeEvaluatorMixin\",") "" else line }
+        }
+    }
     tasks.withType<TransformingTask>().configureEach {
         usesService(transformerGate)
         transformerLocation.set(layout.buildDirectory.dir("architectury-transformer/$name"))
