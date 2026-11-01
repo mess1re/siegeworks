@@ -90,9 +90,13 @@ repositories {
     maven("https://maven.nucleoid.xyz/") { content { includeGroup("eu.pb4") } }
     mavenCentral()
     maven("https://maven.jamieswhiteshirt.com/libs-release") { content { includeGroup("com.jamieswhiteshirt") } }
-    maven("https://jitpack.io") {
-        content { includeGroupByRegex("com\\.github\\.mess1re.*") }
-        metadataSources { mavenPom(); artifact(); ignoreGradleMetadataRedirection() }
+    exclusiveContent {
+        forRepository {
+            maven("https://jitpack.io") {
+                metadataSources { mavenPom(); artifact(); ignoreGradleMetadataRedirection() }
+            }
+        }
+        filter { includeGroupByRegex("com\\.github\\.mess1re.*") }
     }
     maven("https://maven.architectury.dev/") { name = "Architectury" }
     maven("https://maven.fabricmc.net/") { name = "Fabric" }

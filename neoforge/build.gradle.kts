@@ -83,9 +83,13 @@ configurations {
 repositories {
     maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") { content { includeGroupByRegex("software\\.bernie.*") } }
     mavenCentral()
-    maven("https://jitpack.io") {
-        content { includeGroupByRegex("com\\.github\\.mess1re.*") }
-        metadataSources { mavenPom(); artifact(); ignoreGradleMetadataRedirection() }
+    exclusiveContent {
+        forRepository {
+            maven("https://jitpack.io") {
+                metadataSources { mavenPom(); artifact(); ignoreGradleMetadataRedirection() }
+            }
+        }
+        filter { includeGroupByRegex("com\\.github\\.mess1re.*") }
     }
     maven("https://maven.architectury.dev/") { name = "Architectury" }
     maven("https://maven.fabricmc.net/") { name = "Fabric" }
