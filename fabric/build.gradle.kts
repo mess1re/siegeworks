@@ -230,6 +230,9 @@ publishing {
 tasks.named<Jar>("sourcesJar") { from(commonProject.sourceSets.main.get().allSource) }
 tasks.withType<Jar>().configureEach {
     if (!name.startsWith("remap")) {
+        if (mcVersion == "1.20.1") {
+            from(rootProject.file("licenses/reach-entity-attributes-MIT.txt")) { into("META-INF/licenses") }
+        }
         from(rootProject.file("LICENSE")) { into("META-INF") }
         from(rootProject.file("LICENSE-ASSETS.md")) { into("META-INF") }
     }

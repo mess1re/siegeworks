@@ -29,20 +29,6 @@ public final class SiegePlatformImpl {
     public static net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity) {
         return me.mss1r.axiomata.platform.AxiomataPlatform.persistentData(entity);
     }
-    public static double entityReach(Player player) {
-        //? if >=1.21 {
-        return player.entityInteractionRange();
-        //?} else {
-        /*return com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes.getAttackRange(player, player.isCreative() ? 6 : 3);
-        *///?}
-    }
-    public static double blockReach(Player player) {
-        //? if >=1.21 {
-        return player.blockInteractionRange();
-        //?} else {
-        /*return com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes.getReachDistance(player, player.isCreative() ? 5 : 4.5);
-        *///?}
-    }
     public static boolean isFakePlayer(Player player) { return player instanceof FakePlayer; }
     public static SiegeDeploymentItem deploymentItem(Supplier<? extends EntityType<?>> type, Item.Properties properties) {
         return new SiegeDeploymentItem(type, properties);

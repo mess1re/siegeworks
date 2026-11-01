@@ -35,8 +35,6 @@ public final class SiegePlatformImpl {
         };
     }
     public static net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity) { return entity.getPersistentData(); }
-    public static double entityReach(Player player) { return player.getEntityReach(); }
-    public static double blockReach(Player player) { return player.getBlockReach(); }
     public static boolean isFakePlayer(Player player) { return player instanceof FakePlayer; }
     public static net.minecraft.world.entity.ai.attributes.Attribute entityReachAttribute() { return net.minecraftforge.common.ForgeMod.ENTITY_REACH.get(); }
     public static double entityReachBonus(Player player) {

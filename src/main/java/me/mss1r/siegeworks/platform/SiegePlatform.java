@@ -11,8 +11,8 @@ import net.minecraft.world.item.Item;
 public final class SiegePlatform {
     private SiegePlatform() {}
     @ExpectPlatform public static net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity) { throw new AssertionError(); }
-    @ExpectPlatform public static double entityReach(Player player) { throw new AssertionError(); }
-    @ExpectPlatform public static double blockReach(Player player) { throw new AssertionError(); }
+    public static double entityReach(Player player) { return me.mss1r.axiomata.platform.AxiomataPlatform.entityReach(player); }
+    public static double blockReach(Player player) { return me.mss1r.axiomata.platform.AxiomataPlatform.blockReach(player); }
     @ExpectPlatform public static me.mss1r.siegeworks.block.IncendiaryPotBlock incendiaryPot(net.minecraft.world.level.block.state.BlockBehaviour.Properties properties) { throw new AssertionError(); }
     @ExpectPlatform public static boolean isFakePlayer(Player player) { throw new AssertionError(); }
     @ExpectPlatform public static double entityReachBonus(Player player) { throw new AssertionError(); }
