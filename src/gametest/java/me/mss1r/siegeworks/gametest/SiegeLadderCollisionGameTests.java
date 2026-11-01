@@ -14,16 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(SiegeLadderCollisionGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class SiegeLadderCollisionGameTests {
     public static final String NAMESPACE = StructureCollisionGameTests.NAMESPACE;
 

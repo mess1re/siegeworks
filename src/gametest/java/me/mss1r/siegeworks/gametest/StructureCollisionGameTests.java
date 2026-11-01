@@ -16,16 +16,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(StructureCollisionGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class StructureCollisionGameTests {
     public static final String NAMESPACE = Siegeworks.MOD_ID + "_collision";
 

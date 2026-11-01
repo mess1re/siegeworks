@@ -30,6 +30,9 @@ subprojects {
             filter { line: String -> if (line.trim() == "\"RecruitsPathNodeEvaluatorMixin\",") "" else line }
         }
     }
+    tasks.withType<JavaExec>().configureEach {
+        systemProperty("siegeworks.test.filter", providers.gradleProperty("gameTestFilter").getOrElse(""))
+    }
     tasks.withType<TransformingTask>().configureEach {
         usesService(transformerGate)
         transformerLocation.set(layout.buildDirectory.dir("architectury-transformer/$name"))

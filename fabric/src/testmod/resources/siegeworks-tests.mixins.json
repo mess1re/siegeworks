@@ -12,6 +12,7 @@
   "client": [
     "ProbeFrameMixin",
     "ProbeLivingRenderMixin",
-    "ProbeGeoRenderMixin"
+    "ProbeGeoRenderMixin",
+    "ProbeVehicleHealthMixin"
   ]
 }

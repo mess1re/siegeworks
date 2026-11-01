@@ -12,16 +12,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(SiegeLadderQueueGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class SiegeLadderQueueGameTests {
     public static final String NAMESPACE = StructureCollisionGameTests.NAMESPACE;
 

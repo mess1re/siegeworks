@@ -8,16 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder("siegeworks_draft")
-@PrefixGameTestTemplate(false)
 public final class DraftTeamGameTests {
     @GameTest(template = "empty")
     public static void hitchedMountsDoNotRunASecondMovementSolver(GameTestHelper helper) {

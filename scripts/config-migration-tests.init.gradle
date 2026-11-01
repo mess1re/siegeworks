@@ -1,17 +1,17 @@
-// Use with -PgameTestNamespaces=siegeworks_config,siegeworks_config_upgrade and runGameTestServer.
-// Seeds only the disposable GameTest world, after its normal reset, before the loader opens its configs.
+// Seeds only the native disposable GameTest world after reset and before config loading.
+// Fabric uses runLifecycleTest to exercise the ordinary server lifecycle and both config scopes.
+// Use -PgameTestNamespaces=siegeworks_config,siegeworks_config_upgrade with this init script.
 gradle.projectsEvaluated {
     allprojects { project ->
-        if (project.tasks.findByName('prepareGameTestStructures') != null) {
-            project.tasks.named('prepareGameTestStructures').configure {
-                outputs.upToDateWhen { false }
-                doLast {
-                    def worldConfigs = project.rootProject.file("run/gametest/${project.name}/world/serverconfig")
-                    project.copy {
-                        from(project.rootProject.file('src/gametest/resources/config-migration'))
-                        into(worldConfigs)
-                    }
-                }
+        if (project.extensions.extraProperties.has('gameTestDirectory') && project.tasks.findByName('runGameTestServer') != null) {
+            def gameDirectory = project.extensions.extraProperties.get('gameTestDirectory')
+            def seed = project.tasks.register('seedConfigMigration', Copy) {
+                dependsOn(project.tasks.named('resetGameTestWorld'))
+                from(project.rootProject.file('src/gametest/resources/config-migration'))
+                into(new File(gameDirectory, 'world/serverconfig'))
+            }
+            project.tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+                dependsOn(seed)
             }
         }
     }

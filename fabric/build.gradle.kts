@@ -256,12 +256,17 @@ dependencies {
 loom.mods {
     maybeCreate("siegeworks_fabric_tests").sourceSet(testmod)
 }
+val gameTestDirectory = rootProject.file("run/$mcVersion-fabric-gametest")
+extra["gameTestDirectory"] = gameTestDirectory
+
 loom.runs {
     register("gameTest") {
         server()
         source(testmod)
-        runDir(rootProject.file("run/$mcVersion-fabric-gametest").relativeTo(projectDir).path)
+        runDir(gameTestDirectory.relativeTo(projectDir).path)
         vmArg("-Dfabric-api.gametest")
+        property("siegeworks.test.namespaces", providers.gradleProperty("gameTestNamespaces").getOrElse(
+            "siegeworks_aim_regression,siegeworks_collision,siegeworks_banners,siegeworks_draft,siegeworks_gravity,siegeworks_pole_regression,siegeworks_stack_regression"))
         vmArg("-Dfabric-api.gametest.report-file=${layout.buildDirectory.file("test-results/fabric-gametest.xml").get().asFile}")
     }
 }
@@ -271,90 +276,59 @@ tasks.named<ProcessResources>("processTestmodResources") {
 }
 
 val resetGameTestWorld = tasks.register<Delete>("resetGameTestWorld") {
-    delete(rootProject.file("run/$mcVersion-fabric-gametest/world"))
+    delete(gameTestDirectory.resolve("world"))
 }
 
 tasks.withType<JavaExec>().matching { it.name == "runGameTest" }.configureEach {
     dependsOn(resetGameTestWorld)
     doFirst {
-        val directory = rootProject.file("run/$mcVersion-fabric-gametest")
+        val directory = gameTestDirectory
         directory.mkdirs()
         directory.resolve("eula.txt").writeText("eula=true\n")
         layout.buildDirectory.dir("test-results").get().asFile.mkdirs()
     }
 }
 
-val generatedRuntimeTests = layout.buildDirectory.dir("generated/runtime-tests")
 val sharedGameTests = commonProject.sourceSets.getByName("gametest").java
-val adaptRuntimeTests = tasks.register("adaptRuntimeTests") {
-    dependsOn(commonProject.tasks.named("stonecutterGenerateGametest"))
-    inputs.files(sharedGameTests)
-    outputs.dir(generatedRuntimeTests)
-    doLast {
-        val directory = generatedRuntimeTests.get().asFile
-        directory.mkdirs()
-        val bridge = StringBuilder("package me.mss1r.siegeworks.gametest;\n" +
-            "import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;\n" +
-            "import net.minecraft.gametest.framework.GameTest;\n" +
-            "import net.minecraft.gametest.framework.GameTestHelper;\n" +
-            "public final class FabricGameTestBridge implements FabricGameTest {\n")
-        var count = 0
-        sharedGameTests.files.sortedBy { it.name }.forEach { file ->
-            val original = file.readText()
-            val selected = original.contains("StructureCollisionGameTests.NAMESPACE") || file.name in listOf(
-                "StructureCollisionGameTests.java", "AimRegressionGameTests.java", "BannerGameTests.java", "SiegeGameTestPlayers.java",
-                "AimClientProbe.java", "BannerClientProbe.java", "ManualAimFrameProbe.java",
-                "DraftTeamClientProbe.java", "SiegeGravityClientProbe.java", "DraftTeamGameTests.java",
-                "SiegeGravityGameTests.java", "LadderBraceTargetGameTests.java", "SiegeStackReloadGameTests.java")
-            if (!selected) return@forEach
-            val testMethod = Regex("@GameTest\\(([^)]*)\\)\\s+public static void (\\w+)\\(GameTestHelper helper\\)")
-            testMethod.findAll(original).forEach { match ->
-                val arguments = match.groupValues[1].replace("\"empty\"", "\"siegeworks_fabric_tests:empty\"")
-                val method = match.groupValues[2]
-                val owner = file.nameWithoutExtension
-                bridge.append("    @GameTest($arguments)\n    public void ${owner}_$method(GameTestHelper helper) { $owner.$method(helper); }\n")
-                count++
-            }
-            var source = original
-                .replace(Regex("import net\\.(minecraftforge|neoforged\\.neoforge)\\.gametest\\.(GameTestHolder|PrefixGameTestTemplate);"), "")
-                .replace(Regex("@GameTestHolder\\([^\\n]+\\)"), "")
-                .replace("@PrefixGameTestTemplate(false)", "")
-                .replace("net.minecraftforge.common.util.FakePlayerFactory", "net.fabricmc.fabric.api.entity.FakePlayer")
-                .replace("net.neoforged.neoforge.common.util.FakePlayerFactory", "net.fabricmc.fabric.api.entity.FakePlayer")
-                .replace("net.minecraftforge.common.util.FakePlayer", "net.fabricmc.fabric.api.entity.FakePlayer")
-                .replace("net.neoforged.neoforge.common.util.FakePlayer", "net.fabricmc.fabric.api.entity.FakePlayer")
-                .replace("FakePlayerFactory.get(", "FakePlayer.get(")
-            if (file.name in listOf("AimClientProbe.java", "BannerClientProbe.java", "ManualAimFrameProbe.java", "DraftTeamClientProbe.java")) {
-                source = source
-                    .replace(Regex("(?s)@SubscribeEvent\\(priority\\s*=.*?(?=    private static void constructionProbe\\()"), "")
-                    .replace(Regex("import net\\.(minecraftforge|neoforged)\\.[^;]+;"), "")
-                    .replace(Regex("@EventBusSubscriber[^\\n]+"), "")
-                    .replace("@SubscribeEvent", "")
-                    .replace(Regex("public static void tick\\([^)]*\\)"), "public static void tick()")
-                    .replace(Regex("public static void frame\\([^)]*\\)"), "public static void frame()")
-                    .replace(Regex("public static void beforeFrame\\([^)]*\\)"), "public static void beforeFrame()")
-                    .replace(Regex("public static void afterFrame\\([^)]*\\)"), "public static void afterFrame()")
-                    .replace("public static void rendered(RenderLivingEvent.Post<?, ?> event)",
-                        "public static void rendered(net.minecraft.world.entity.LivingEntity renderedEntity, net.minecraft.client.model.EntityModel<?> renderedModel, float renderedPartialTick)")
-                    .replace("event.getEntity()", "renderedEntity")
-                    .replace("event.getRenderer().getModel()", "renderedModel")
-                    .replace("event.getPartialTick()", "renderedPartialTick")
-                    .replace(Regex("if \\(event\\.phase != TickEvent\\.Phase\\.END\\) return;"), "")
-            }
-            if (file.name in listOf("ManualAimFrameProbe.java", "DraftTeamClientProbe.java")) {
-                source = source.replace(Regex("public static void onGeoRender\\([^)]*\\)\\s*\\{[^{}]*\\}"), "")
-                // Fabric's test mixin supplies native frame boundaries to the shared callbacks.
-                source = source.replace(Regex("public static void (frame|beforeFrame|afterFrame)\\([^)]*\\)\\s*\\{[^{}]*\\}"), "")
-            }
-            directory.resolve(file.name).writeText(source)
-        }
-        check(count == 106) { "Expected 106 shared game tests, adapted $count" }
-        bridge.append("}\n")
-        directory.resolve("FabricGameTestBridge.java").writeText(bridge.toString())
-    }
+val portableScenarios = objects.sourceDirectorySet("portableScenarios", "Shared runtime test scenarios").apply {
+    srcDirs(sharedGameTests.srcDirs)
+    include("**/ConfigMigrationGameTests.java")
+    include("**/AimRegressionGameTests.java")
+    include("**/BannerGameTests.java")
+    include("**/BatteringRamCollisionGameTests.java")
+    include("**/BoltThrowerCollisionGameTests.java")
+    include("**/ConfigUpgradeGameTests.java")
+    include("**/DraftTeamGameTests.java")
+    include("**/FieldGunCollisionGameTests.java")
+    include("**/HwachaCollisionGameTests.java")
+    include("**/LadderBraceTargetGameTests.java")
+    include("**/MantletCollisionGameTests.java")
+    include("**/MonsMegCollisionGameTests.java")
+    include("**/OnagerCollisionGameTests.java")
+    include("**/SiegeGravityGameTests.java")
+    include("**/SiegeLadderCollisionGameTests.java")
+    include("**/SiegeLadderQueueGameTests.java")
+    include("**/SiegeStackReloadGameTests.java")
+    include("**/SiegeTerrainCollisionGameTests.java")
+    include("**/SiegeTowerCollisionGameTests.java")
+    include("**/StructureCollisionGameTests.java")
+    include("**/TrebuchetCollisionGameTests.java")
+    include("**/SiegeGameTestPlayers.java")
+    include("**/AimClientProbe.java")
+    include("**/BannerClientProbe.java")
+    include("**/ManualAimFrameProbe.java")
+    include("**/DraftTeamClientProbe.java")
+    include("**/SiegeGravityClientProbe.java")
+    include("**/SharedGameTests.java")
+    include("**/RecruitsTestSuites.java")
+    include("**/GameTestQuiet.java")
+    include("**/RecruitsCrewAndFireGameTests.java")
+    include("**/RecruitsLadderTrafficGameTests.java")
 }
-testmod.java.srcDir(generatedRuntimeTests)
-tasks.named("compileTestmodJava") { dependsOn(adaptRuntimeTests) }
+testmod.java.source(portableScenarios)
+
+tasks.named("compileTestmodJava") { dependsOn(commonProject.tasks.named("stonecutterGenerateGametest")) }
+
 tasks.named<ProcessResources>("processTestmodResources") {
     if (mcVersion == "1.21.1") eachFile { path = path.replace("/structures/", "/structure/") }
 }
@@ -369,3 +343,70 @@ loom.runs.register("probeClient") {
 }
 
 apply(from = rootProject.file("gradle/client-probes.gradle.kts"))
+
+// Config migration and optional integrations need the real dedicated-server lifecycle.
+val lifecycleDirectory = rootProject.file("build/lifecycle-server/$mcVersion-fabric")
+val lifecycleReport = layout.buildDirectory.file("test-results/lifecycle.json")
+val globalLifecycleConfigs = providers.gradleProperty("test.globalServerConfigs").getOrElse("true").toBooleanStrict()
+val lifecycleConfigs = lifecycleDirectory.resolve(if (globalLifecycleConfigs) "config" else "world/serverconfig")
+val resetLifecycleWorld = tasks.register<Delete>("resetLifecycleWorld") {
+    delete(lifecycleDirectory)
+}
+val lifecycleNamespaces = providers.gradleProperty("gameTestNamespaces")
+    .getOrElse("siegeworks_config,siegeworks_config_upgrade")
+val prepareLifecycleTest = tasks.register("prepareLifecycleTest") {
+    dependsOn(resetLifecycleWorld)
+    doLast {
+        if ("siegeworks_config_upgrade" in lifecycleNamespaces.split(",")) {
+            project.copy {
+                from(rootProject.file("src/gametest/resources/config-migration"))
+                into(lifecycleConfigs)
+            }
+        }
+        lifecycleReport.get().asFile.delete()
+        lifecycleDirectory.resolve("config").mkdirs()
+        lifecycleDirectory.resolve("config/forgeconfigapiport.toml").writeText("forceGlobalServerConfigs=$globalLifecycleConfigs\n")
+        lifecycleDirectory.resolve("eula.txt").writeText("eula=true\n")
+        lifecycleDirectory.resolve("server.properties").writeText("""
+            online-mode=false
+            server-ip=127.0.0.1
+            server-port=0
+            level-type=minecraft:flat
+            generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}
+            view-distance=2
+            simulation-distance=2
+            max-tick-time=120000
+        """.trimIndent())
+    }
+}
+loom.runs.register("lifecycleTest") {
+    server()
+    source(testmod)
+    runDir(lifecycleDirectory.relativeTo(projectDir).path)
+    programArgs("nogui")
+    property("fabric-api.gametest.command", "true")
+    property("siegeworks.test.lifecycle", "true")
+    property("siegeworks.test.namespaces", lifecycleNamespaces)
+    property("siegeworks.test.report", lifecycleReport.get().asFile.absolutePath)
+    property("siegeworks.test.configDirectory", lifecycleConfigs.absolutePath)
+}
+tasks.named("runLifecycleTest") {
+    dependsOn(prepareLifecycleTest)
+    doLast {
+        val result = lifecycleReport.get().asFile
+        check(result.isFile && result.readText().contains("\"failures\":0")) {
+            "Dedicated-server lifecycle checks failed; see $lifecycleDirectory/logs/latest.log"
+        }
+    }
+}
+
+val testmodJar = tasks.register<Jar>("testmodJar") {
+    archiveClassifier.set("tests-dev")
+    from(testmod.output)
+}
+tasks.register<net.fabricmc.loom.task.RemapJarTask>("remapTestmodJar") {
+    dependsOn(testmodJar)
+    inputFile.set(testmodJar.flatMap { it.archiveFile })
+    archiveClassifier.set("tests")
+    addNestedDependencies.set(false)
+}

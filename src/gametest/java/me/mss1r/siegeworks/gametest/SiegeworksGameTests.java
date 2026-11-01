@@ -227,7 +227,7 @@ public final class SiegeworksGameTests {
         moveToRelative(helper, ballista, 6.0D, 1.0D, 6.0D);
         helper.assertTrue(level.addFreshEntity(ballista), "Failed to add access test ballista");
 
-        net.minecraft.server.level.ServerPlayer owner = SiegeGameTestPlayers.create(level);
+        var owner = SiegeGameTestPlayers.create(level);
         level.players().add(owner);
         Player teammate = SiegeGameTestPlayers.createRideable(level);
         Player stranger = SiegeGameTestPlayers.createRideable(level);
@@ -263,7 +263,7 @@ public final class SiegeworksGameTests {
         moveToRelative(helper, ballista, 6.0D, 1.0D, 6.0D);
         helper.assertTrue(level.addFreshEntity(ballista), "Failed to add capture test ballista");
 
-        net.minecraft.server.level.ServerPlayer owner = SiegeGameTestPlayers.create(level);
+        var owner = SiegeGameTestPlayers.create(level);
         level.players().add(owner);
         ballista.setOwnerUuid(owner.getUUID());
         Player enemy = SiegeGameTestPlayers.createRideable(level);
@@ -300,7 +300,7 @@ public final class SiegeworksGameTests {
         moveToRelative(helper, ballista, 6.0D, 1.0D, 6.0D);
         helper.assertTrue(level.addFreshEntity(ballista), "Failed to add capture refusal ballista");
 
-        net.minecraft.server.level.ServerPlayer owner = SiegeGameTestPlayers.create(level);
+        var owner = SiegeGameTestPlayers.create(level);
         level.players().add(owner);
         Player defender = SiegeGameTestPlayers.createRideable(level);
         Player enemy = SiegeGameTestPlayers.createRideable(level);
@@ -359,7 +359,7 @@ public final class SiegeworksGameTests {
     @GameTest(template = "empty", timeoutTicks = 20)
     public static void carriedLadderCanBeSetUpByItsOwnersSide(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        net.minecraft.server.level.ServerPlayer owner = SiegeGameTestPlayers.create(level);
+        var owner = SiegeGameTestPlayers.create(level);
         level.players().add(owner);
         Player teammate = SiegeGameTestPlayers.createRideable(level);
         Player stranger = SiegeGameTestPlayers.createRideable(level);
@@ -775,7 +775,7 @@ public final class SiegeworksGameTests {
     public static void changingHeldAmmunitionCancelsAndRestartsHwachaLoading(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         HwachaEntity hwacha = SiegeworksEntities.HWACHA_ENTITY.get().create(level);
-        FakePlayer loader = SiegeGameTestPlayers.create(level);
+        var loader = SiegeGameTestPlayers.create(level);
         helper.assertTrue(hwacha != null, "Failed to create Hwacha loading-cancellation test entity");
 
         Vec3 position = helper.absolutePos(new BlockPos(2, 1, 2)).getCenter();
@@ -1288,7 +1288,7 @@ public final class SiegeworksGameTests {
         buildFloor(helper);
         ServerLevel level = helper.getLevel();
         TowerCrossbowEntity towerCrossbow = SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(level);
-        FakePlayer operator = SiegeGameTestPlayers.create(level);
+        var operator = SiegeGameTestPlayers.create(level);
         EnderDragon dragon = EntityType.ENDER_DRAGON.create(level);
         helper.assertTrue(towerCrossbow != null && dragon != null,
                 "Failed to create multipart projectile test entities");
@@ -1724,7 +1724,7 @@ public final class SiegeworksGameTests {
         helper.assertTrue(ladder != null && recruit != null,
                 "Failed to create Recruits ladder relocation test entities");
 
-        FakePlayer commander = SiegeGameTestPlayers.create(level);
+        var commander = SiegeGameTestPlayers.create(level);
         UUID groupId = UUID.randomUUID();
         ladder.setSections(3);
         ladder.setHealth(57.0F);
@@ -2596,7 +2596,7 @@ public final class SiegeworksGameTests {
         ServerLevel level = helper.getLevel();
         SiegeTowerEntity tower = SiegeworksEntities.SIEGE_TOWER_ENTITY.get().create(level);
         SerpentineEntity cannon = SiegeworksEntities.SERPENTINE_ENTITY.get().create(level);
-        FakePlayer operator = SiegeGameTestPlayers.create(level);
+        var operator = SiegeGameTestPlayers.create(level);
         helper.assertTrue(tower != null && cannon != null,
                 "Failed to create creative cannon damage test entities");
 
@@ -2669,7 +2669,7 @@ public final class SiegeworksGameTests {
         helper.assertTrue(tower != null && engineer != null
                         && java.util.Arrays.stream(recruits).allMatch(java.util.Objects::nonNull),
                 "Failed to create Recruits tower test entities");
-        FakePlayer commander = SiegeGameTestPlayers.create(level);
+        var commander = SiegeGameTestPlayers.create(level);
         java.util.UUID groupId = java.util.UUID.randomUUID();
         java.util.UUID unselectedGroupId = java.util.UUID.randomUUID();
 
@@ -2780,7 +2780,7 @@ public final class SiegeworksGameTests {
         helper.assertTrue(tower != null && engineer != null
                         && java.util.Arrays.stream(recruits).allMatch(java.util.Objects::nonNull),
                 "Failed to create Recruits tower test entities");
-        FakePlayer commander = SiegeGameTestPlayers.create(level);
+        var commander = SiegeGameTestPlayers.create(level);
         java.util.UUID groupId = java.util.UUID.randomUUID();
         moveToRelative(helper, tower, 16.0D, 1.0D, 3.0D);
         moveToRelative(helper, engineer, 16.0D, 1.0D, 2.0D);
@@ -2842,7 +2842,7 @@ public final class SiegeworksGameTests {
         }
         helper.assertTrue(tower != null && java.util.Arrays.stream(recruits).allMatch(java.util.Objects::nonNull),
                 "Failed to create Recruits tower test entities");
-        FakePlayer commander = SiegeGameTestPlayers.create(level);
+        var commander = SiegeGameTestPlayers.create(level);
         java.util.UUID groupId = java.util.UUID.randomUUID();
         moveToRelative(helper, tower, 16.0D, 1.0D, 16.0D);
         commander.setPos(tower.getX(), tower.getY(), tower.getZ());
@@ -2919,7 +2919,7 @@ public final class SiegeworksGameTests {
             }
             level.addFreshEntity(recruits[i]);
         }
-        FakePlayer commander = SiegeGameTestPlayers.create(level);
+        var commander = SiegeGameTestPlayers.create(level);
         commander.setPos(crew.tower().getX(), crew.tower().getY(), crew.tower().getZ());
         java.util.UUID groupId = java.util.UUID.randomUUID();
         if (bridgeDown) {
@@ -2974,7 +2974,7 @@ public final class SiegeworksGameTests {
             mob.setPersistenceRequired();
         }
         level.addFreshEntity(recruit);
-        FakePlayer commander = SiegeGameTestPlayers.create(level);
+        var commander = SiegeGameTestPlayers.create(level);
         commander.setPos(crew.tower().getX(), crew.tower().getY(), crew.tower().getZ());
         java.util.UUID groupId = java.util.UUID.randomUUID();
         crew.tower().setDeployed(crew.driver(), true);
@@ -3003,7 +3003,7 @@ public final class SiegeworksGameTests {
         });
     }
 
-    private static Object commandStates(FakePlayer commander, java.util.UUID groupId, int targetId) {
+    private static Object commandStates(net.minecraft.server.level.ServerPlayer commander, java.util.UUID groupId, int targetId) {
         try {
             return Class.forName("me.mss1r.siegeworks.integration.recruits.RecruitsCommandStates")
                     .getMethod("compute", net.minecraft.server.level.ServerPlayer.class, java.util.List.class,

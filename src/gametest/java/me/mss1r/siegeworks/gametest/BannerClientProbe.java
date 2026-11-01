@@ -11,31 +11,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
-//? if <1.21 {
-/*import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.event.TickEvent;
-*///?} else {
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-//?}
 
 /** Opt-in rendering diagnostic in an isolated world, excluded from production jars. */
-@EventBusSubscriber(modid = "siegeworks", value = Dist.CLIENT)
 public final class BannerClientProbe {
     private static int ticks;
     private static TrebuchetEntity siege;
 
-    @SubscribeEvent
-    //? if <1.21 {
-    /*public static void tick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-    *///?} else {
-    public static void tick(ClientTickEvent.Post event) {
-    //?}
+    public static void tick() {
         if (!Boolean.getBoolean("siegeworks.test.bannerScene")) return;
         var mc = Minecraft.getInstance();
         var server = mc.getSingleplayerServer();

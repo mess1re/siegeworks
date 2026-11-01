@@ -12,18 +12,9 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
 import java.util.List;
 
-@GameTestHolder(SiegeTerrainCollisionGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class SiegeTerrainCollisionGameTests {
     public static final String NAMESPACE = StructureCollisionGameTests.NAMESPACE;
 

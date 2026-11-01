@@ -22,20 +22,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(TrebuchetCollisionGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class TrebuchetCollisionGameTests {
     public static final String NAMESPACE = StructureCollisionGameTests.NAMESPACE;
     private static final double EPSILON = 1.0E-6D;
@@ -176,7 +163,7 @@ public final class TrebuchetCollisionGameTests {
         ServerLevel level = helper.getLevel();
         level.addFreshEntity(trebuchet);
         trebuchet.setAmmoLoaded(SiegeAmmo.AMMO_STONE);
-        FakePlayer operator = SiegeGameTestPlayers.create(level);
+        var operator = SiegeGameTestPlayers.create(level);
 
         trebuchet.handleSiegeInteraction(operator, InteractionHand.MAIN_HAND, level);
         helper.assertTrue(trebuchet.getShootAnimationTick() == 0,

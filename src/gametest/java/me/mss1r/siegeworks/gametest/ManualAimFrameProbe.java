@@ -16,20 +16,8 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-//? if <1.21 {
-/*import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.event.TickEvent;
-*///?} else {
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-//?}
 
 /** Real frame/camera/model diagnostic in an isolated world; never packaged in the mod jar. */
-@EventBusSubscriber(modid = "siegeworks", value = Dist.CLIENT)
 public final class ManualAimFrameProbe {
     private static final String[] TYPES = {"culverin", "serpentine", "mons_meg", "hwacha", "arcballista", "tower_crossbow"};
     private static final String[] BONES = {"cannon_aim", "cannon_aim", "aim_base", "base", "base", "engine"};
@@ -104,23 +92,6 @@ public final class ManualAimFrameProbe {
     public static void beforeRenderFrame() { sampledModelPitch = Double.NaN; input(); }
 
     public static void afterRenderFrame() { verify(); }
-
-    @SubscribeEvent
-    //? if <1.21 {
-    /*public static void frame(TickEvent.RenderTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) beforeRenderFrame(); else afterRenderFrame();
-    }
-    *///?} else {
-    public static void beforeFrame(RenderFrameEvent.Pre event) { beforeRenderFrame(); }
-
-    @SubscribeEvent
-    public static void afterFrame(RenderFrameEvent.Post event) { afterRenderFrame(); }
-    //?}
-
-    @SubscribeEvent
-    public static void onGeoRender(software.bernie.geckolib.event.GeoRenderEvent.Entity.Post event) {
-        recordModel(event.getEntity());
-    }
 
     /** Sample the actual world draw before inventory icons reuse GeckoLib's baked bones. */
     public static void recordModel(net.minecraft.world.entity.Entity rendered) {

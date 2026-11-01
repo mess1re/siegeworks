@@ -7,16 +7,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder("siegeworks_gravity")
-@PrefixGameTestTemplate(false)
 public final class SiegeGravityGameTests {
     @GameTest(template = "empty")
     public static void fullMachineTicksAccumulateGravityWithAndWithoutAPlayer(GameTestHelper helper) {

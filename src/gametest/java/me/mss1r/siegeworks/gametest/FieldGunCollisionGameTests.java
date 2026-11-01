@@ -22,16 +22,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(FieldGunCollisionGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class FieldGunCollisionGameTests {
     public static final String NAMESPACE = StructureCollisionGameTests.NAMESPACE;
     private static final double EPSILON = 1.0E-7D;
@@ -183,6 +174,8 @@ public final class FieldGunCollisionGameTests {
         Vec3 feet = SiegePassengerPhysics.mountFooting(gun, horse, seat);
         helper.assertTrue(Math.abs(feet.y - seat.y) < 1E-6,
                 "The draft mount stepped into solid headroom at a wall edge: " + seat + " -> " + feet);
+        horse.discard();
+        gun.discard();
         helper.succeed();
     }
 

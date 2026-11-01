@@ -13,19 +13,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
 import java.util.Optional;
 
 /** Real owned troops and their ordinary goals, including the approach outside the staging radius. */
-@GameTestHolder("siegeworks_ladder_regression")
-@PrefixGameTestTemplate(false)
 public final class RecruitsLadderTrafficGameTests {
     @GameTest(template = "empty", timeoutTicks = 1400, batch = "ladder_owned_traffic")
     public static void followersKeepTheApproachAndClimbATallLadder(GameTestHelper helper) {

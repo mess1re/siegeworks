@@ -10,17 +10,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
 /** Save/load complete entities in both insertion orders, retaining real movement and collision ticks. */
-@GameTestHolder(SiegeStackReloadGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class SiegeStackReloadGameTests {
     public static final String NAMESPACE = "siegeworks_stack_regression";
 

@@ -7,20 +7,11 @@ import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.storage.LevelResource;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@GameTestHolder("siegeworks_config")
-@PrefixGameTestTemplate(false)
 public final class ConfigMigrationGameTests {
     @GameTest(template = "empty")
     public static void convertsMovementAndAllLoadingStages(GameTestHelper helper) {
@@ -185,7 +176,7 @@ public final class ConfigMigrationGameTests {
     }
 
     /** Run with scripts/config-migration-tests.init.gradle to test the real loader before world startup. */
-    @GameTest(template = "empty", templateNamespace = "siegeworks_config_upgrade")
+    @GameTest(template = "siegeworks_config_upgrade:empty")
     public static void loaderMigratesBeforeCorrectionAndLoadsBothFiles(GameTestHelper helper) throws IOException {
         var gun = SiegeworksEntities.CULVERIN_ENTITY.get();
         helper.assertTrue(Math.abs(SiegeworksServerConfig.getMovementSpeed(gun, false) - 0.08) < 1.0E-12, "Legacy direct speed lost");
@@ -198,7 +189,9 @@ public final class ConfigMigrationGameTests {
         helper.assertTrue(SiegeworksServerConfig.getTowerCrewSpeedMultiplier(2) == 0, "Crew requirement lost");
         helper.assertTrue(Math.abs(SiegeworksServerConfig.getTowerCrewSpeedMultiplier(3) - 0.4) < 1.0E-12, "Crew multiplier lost");
         helper.assertTrue(SiegeworksServerConfig.getIncendiaryFuseTicks() == 140, "Unrelated server setting changed");
-        Path configs = helper.getLevel().getServer().getWorldPath(LevelResource.ROOT).resolve("serverconfig");
+        String configDirectory = System.getProperty("siegeworks.test.configDirectory");
+        Path configs = configDirectory != null ? Path.of(configDirectory)
+                : helper.getLevel().getServer().getWorldPath(LevelResource.ROOT).resolve("serverconfig");
         helper.assertTrue(!read(configs.resolve("siegeworks-server.toml")).contains("engines"), "Legacy table persisted");
         helper.assertTrue(Files.exists(configs.resolve("siegeworks-server.toml.pre-engines.bak")), "No pre-migration backup");
         close(helper, read(configs.resolve(SiegeworksEngineConfig.FILE_NAME)), "onager.movement.playerSpeed", 1.2);

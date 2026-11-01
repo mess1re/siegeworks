@@ -16,12 +16,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+//? if >=1.21 {
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.DyeColor;
@@ -29,8 +24,6 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BannerPatterns;
 //?}
 
-@GameTestHolder("siegeworks_banners")
-@PrefixGameTestTemplate(false)
 public final class BannerGameTests {
     private static TrebuchetEntity trebuchet(GameTestHelper helper) {
         var siege = SiegeworksEntities.TREBUCHET_ENTITY.get().create(helper.getLevel());

@@ -17,16 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(BoltThrowerCollisionGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
 public final class BoltThrowerCollisionGameTests {
     public static final String NAMESPACE = StructureCollisionGameTests.NAMESPACE;
     private static final double EPSILON = 1.0E-7D;

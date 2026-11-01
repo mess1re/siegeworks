@@ -268,17 +268,15 @@ val loader = project.path.split(':')[1]
 val minecraft = project.name
 val commonSets = commonProject.extensions.getByType<SourceSetContainer>()
 val gametest = sets.create("gametest")
-if (providers.gradleProperty("enable_recruits_compat_runtime").orNull?.toBoolean() != true) {
-    gametest.java.exclude("me/mss1r/siegeworks/gametest/RecruitsCrewAndFireGameTests.java")
-    gametest.java.exclude("me/mss1r/siegeworks/gametest/RecruitsLadderTrafficGameTests.java")
-}
 gametest.java.setSrcDirs(commonSets.getByName("gametest").java.srcDirs)
+gametest.java.srcDir(rootProject.file("forge/src/gametest/java"))
 gametest.resources.setSrcDirs(commonSets.getByName("gametest").resources.srcDirs)
 gametest.compileClasspath += sets.getByName("main").compileClasspath + sets.getByName("main").output
 gametest.runtimeClasspath += sets.getByName("main").runtimeClasspath + sets.getByName("main").output
 testLoom.createRemapConfigurations(gametest)
 testLoom.mods.maybeCreate("main").sourceSet(gametest)
 val gameDirectory = rootProject.file("run/gametest/$minecraft-$loader")
+extra["gameTestDirectory"] = gameDirectory
 testLoom.runConfigs.register("gameTestServer") {
     server()
     forgeTemplate("gameTestServer")

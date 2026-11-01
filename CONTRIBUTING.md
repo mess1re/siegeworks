@@ -8,7 +8,7 @@ Stonecutter selects Minecraft 1.20.1 or 1.21.1; Architectury connects the shared
 - `forge/src/main` contains Forge 1.20.1 entry points and adapters.
 - `neoforge/src/main` contains NeoForge 1.21.1 entry points and adapters.
 - `fabric/src/main` contains Fabric entry points and adapters for both versions.
-- `src/gametest` contains shared runtime scenarios; `fabric/src/testmod` supplies the Fabric test entry points.
+- `src/gametest` contains shared runtime scenarios. Loader test entry points and event adapters live in `forge/src/gametest`, `neoforge/src/gametest` and `fabric/src/testmod`.
 
 Generated sources under `versions/` and each loader's `versions/` directory are build output.
 
@@ -24,8 +24,8 @@ at the revision in `stonecutter.properties.toml`, fetched from JitPack as
 and `fabric-1.21.1` from the same revision too.
 
 This revision is a build/test API baseline, not a runtime fork requirement. Integration checks
-for `modId=recruits`; Recruits is not included in Siegeworks jars. Integration GameTests use the `siegeworks`
-and `siegeworks_ladder` namespaces and need `-Penable_recruits_compat_runtime=true`.
+for `modId=recruits`; Recruits is not included in Siegeworks jars. Crew and firing checks use `siegeworks_recruits`; owned troop traffic uses
+`siegeworks_ladder_regression`. Legacy integration checks also use `siegeworks` and `siegeworks_ladder`. These need `-Penable_recruits_compat_runtime=true`.
 
 ## Mechanics, configuration and data
 
@@ -39,19 +39,25 @@ Do not duplicate a value in code when it already comes from a data definition or
 
 Collision, terrain movement, deployment, ladders, siege-tower ramps and projectile behavior have deterministic tests or GameTests. Changes in those areas should update the relevant coverage rather than rely only on a manual client check.
 
-To exercise ladder traffic with real Recruits, including three separate groups of twenty walking up and down:
+To exercise owned Recruits following move, follow and formation orders through ladders:
 
 ```sh
-./gradlew :forge:1.20.1:runGameTestServer :neoforge:1.21.1:runGameTestServer -PgameTestNamespaces=siegeworks_ladder,siegeworks_ladder_regression,siegeworks_collision -Penable_recruits_compat_runtime=true
+./gradlew :forge:1.20.1:runGameTestServer :neoforge:1.21.1:runGameTestServer -PgameTestNamespaces=siegeworks_ladder_regression -Penable_recruits_compat_runtime=true
 ```
 
-These tests check health throughout the passage, spacing, actual supported landings, blocked entrances and exits, and cancellation of transient movement control. Keep the ordinary AI enabled in the movement scenarios; making the actors invulnerable or replacing their walk with teleports defeats the checks.
+These scenarios use the ordinary AI and check health, supported landings, route ownership, prolonged stalls and preservation of the original orders.
 
 The regression namespace also exercises owned troops following their commander, formation orders, repeated point orders,
 and a fifteen-metre ladder leading to a thin suspended platform. It checks ownership of the distant approach, unexpected
 route loss and prolonged stalls, rather than only eventual arrival. For a live reproduction, use
 `-Pdebug.recruits=true` with `runClient`, or `/siegeworks debug recruits true` in the world. Ladder traces are opt-in and
 limited to one report per troop per second, with route phase, progress, blockage, destination and navigation ownership.
+
+To check the Forge RTS map bridge through its registered order listeners and map-object actions:
+
+```sh
+./gradlew :forge:1.20.1:runGameTestServer -PgameTestNamespaces=siegeworks_rts_regression -Penable_recruits_compat_runtime=true -Penable_rts_compat_runtime=true
+```
 
 ### Working with unpublished Axiomata changes
 
@@ -72,11 +78,33 @@ Run the shared core scenarios there with Recruits disabled; use a normal client 
 for Recruits integration checks:
 
 ```sh
-./gradlew :fabric:1.20.1:runGameTest :fabric:1.21.1:runGameTest -Penable_recruits_compat_runtime=false -Paxiomata.localDir=/absolute/path/axiomata/build/libs/0.1.0-beta.9
+./gradlew :fabric:1.20.1:runGameTest :fabric:1.21.1:runGameTest -Penable_recruits_compat_runtime=false
 ```
 
-The Fabric targets require Axiomata's Fabric builds. Until those artifacts are published, supply all four
-matching Axiomata jars through the local override above.
+The default dependency pin resolves all four Axiomata targets from JitPack; the local override is optional.
+
+Shared scenarios use vanilla GameTest annotations and are registered by `SharedGameTests` through each loader's
+entry point. Fabric compiles those sources directly; no loader rewrites test Java source.
+`-PgameTestFilter=class.method` selects shared tests by a case-insensitive name fragment for isolated reproductions.
+Run core physics, config migration and active troop traffic in separate servers. Migration fixtures deliberately change movement settings, and projectile scenarios must not share a world with troop traffic.
+
+To check migration through the native loaders, including values loaded before config correction:
+
+```sh
+./gradlew :forge:1.20.1:runGameTestServer :neoforge:1.21.1:runGameTestServer -I scripts/config-migration-tests.init.gradle -PgameTestNamespaces=siegeworks_config,siegeworks_config_upgrade -Penable_recruits_compat_runtime=false -Penable_rts_compat_runtime=false
+```
+
+On Fabric, `runLifecycleTest` runs the same scenarios on an ordinary dedicated server and checks the result
+before returning. Its disposable world is under `build/lifecycle-server`. Forge Config API Port defaults to global
+server configs; repeat with `-Ptest.globalServerConfigs=false` to exercise per-world configs:
+
+```sh
+./gradlew :fabric:1.20.1:runLifecycleTest :fabric:1.21.1:runLifecycleTest -Penable_recruits_compat_runtime=false
+./gradlew :fabric:1.20.1:runLifecycleTest :fabric:1.21.1:runLifecycleTest -Penable_recruits_compat_runtime=true -PgameTestNamespaces=siegeworks_recruits,siegeworks_ladder_regression
+```
+
+`remapTestmodJar` produces a separate Fabric test mod for checking the same scenarios against production jars.
+The distributed Siegeworks jars do not contain these tests.
 
 ## Assets
 

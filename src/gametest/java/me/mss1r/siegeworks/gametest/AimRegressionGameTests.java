@@ -8,16 +8,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder("siegeworks_aim_regression")
-@PrefixGameTestTemplate(false)
 public final class AimRegressionGameTests {
     @GameTest(template = "empty", timeoutTicks = 35)
     public static void everyArtilleryOperatorUsesRateLimitedElevationTargets(GameTestHelper helper) {

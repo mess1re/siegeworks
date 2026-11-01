@@ -10,21 +10,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
-//? if <1.21 {
-/*import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.event.TickEvent;
-*///?} else {
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-//?}
 
 /** Isolated client diagnostic; never included in production jars. */
-@EventBusSubscriber(modid = "siegeworks", value = Dist.CLIENT)
 public final class AimClientProbe {
     private static boolean started;
     private static int ticks;
@@ -35,13 +22,7 @@ public final class AimClientProbe {
     private static float lastPitch;
     private static double maxTurn;
 
-    @SubscribeEvent
-    //? if <1.21 {
-    /*public static void tick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-    *///?} else {
-    public static void tick(ClientTickEvent.Post event) {
-    //?}
+    public static void tick() {
         if (Boolean.getBoolean("siegeworks.test.networkLadder")) { networkLadder(); return; }
         if (!Boolean.getBoolean("siegeworks.test.aimScene")) return;
         if ("draft_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) {
@@ -316,26 +297,11 @@ public final class AimClientProbe {
     private static final String[] CONSTRUCTION_TYPES = {"tower_crossbow", "arcballista", "culverin", "onager"};
     private static int hiddenVehicleHealthFrames;
 
-    @SubscribeEvent(priority =
-            //? if <1.21 {
-            /*net.minecraftforge.eventbus.api.EventPriority.LOWEST,
-            *///?} else {
-            net.neoforged.bus.api.EventPriority.LOWEST,
-            //?}
-            receiveCanceled = true)
-    //? if <1.21 {
-    /*public static void vehicleHealth(net.minecraftforge.client.event.RenderGuiOverlayEvent.Pre event) {
-        boolean vehicleHealth = event.getOverlay().id().equals(
-                net.minecraftforge.client.gui.overlay.VanillaGuiOverlay.MOUNT_HEALTH.id());
-    *///?} else {
-    public static void vehicleHealth(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Pre event) {
-        boolean vehicleHealth = event.getName().equals(
-                net.neoforged.neoforge.client.gui.VanillaGuiLayers.VEHICLE_HEALTH);
-    //?}
+    public static void vehicleHealth(boolean vehicleHealth, boolean canceled) {
         if (!"construction_suite".equals(System.getProperty("siegeworks.test.aimSceneEngine"))) return;
         var player = Minecraft.getInstance().player;
         if (vehicleHealth && player != null && player.getVehicle() instanceof AbstractSiegeEntity) {
-            if (!event.isCanceled()) {
+            if (!canceled) {
                 LogUtils.getLogger().error("VEHICLE_HEALTH_CLIENT FAIL uncanceled health layer");
                 Minecraft.getInstance().stop();
             }
@@ -411,13 +377,7 @@ public final class AimClientProbe {
         }
     }
 
-    @SubscribeEvent
-    //? if <1.21 {
-    /*public static void frame(TickEvent.RenderTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-    *///?} else {
-    public static void frame(RenderFrameEvent.Post event) {
-    //?}
+    public static void frame() {
         if (!Boolean.getBoolean("siegeworks.test.aimScene") || ticks == 0) return;
         var camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         long now = System.nanoTime();

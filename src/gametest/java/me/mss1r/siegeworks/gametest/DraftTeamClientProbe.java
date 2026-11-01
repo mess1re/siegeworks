@@ -22,22 +22,8 @@ import org.joml.Vector3f;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import java.util.HashMap;
 import java.util.Map;
-//? if <1.21 {
-/*import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.client.event.RenderLivingEvent;
-*///?} else {
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-//?}
 
 /** Checks rendered leg poses and GeckoLib's rotation dispatch in an isolated test world. */
-@EventBusSubscriber(modid = "siegeworks", value = Dist.CLIENT)
 public final class DraftTeamClientProbe {
     private static final String[] MACHINES = {"onager", "culverin", "mons_meg", "hwacha", "battering_ram", "siege_tower"};
     private static final String[] ANIMALS = {"horse", "donkey", "mule", "camel", "horse", "horse"};
@@ -210,12 +196,10 @@ public final class DraftTeamClientProbe {
 
     public static void afterRenderFrame() { inspect(false); }
 
-    @SubscribeEvent
-    public static void rendered(RenderLivingEvent.Post<?, ?> event) {
+    public static void rendered(net.minecraft.world.entity.LivingEntity entity, net.minecraft.client.model.EntityModel<?> model, float partialTick) {
         if (!enabled() || switching || complete || age < 65 || age > 235
-                || !(event.getEntity() instanceof AbstractHorse horse)
+                || !(entity instanceof AbstractHorse horse)
                 || !(horse.getVehicle() instanceof AbstractSiegeEntity siege) || siege.getId() != engineId) return;
-        var model = event.getRenderer().getModel();
         try {
             ModelPart leg;
             if (model instanceof HierarchicalModel<?> hierarchical) {
@@ -226,7 +210,7 @@ public final class DraftTeamClientProbe {
                 var tailField = HorseModel.class.getDeclaredField("tail");
                 tailField.setAccessible(true);
                 var tail = (ModelPart) tailField.get(model);
-                float amount = horse.walkAnimation.speed(event.getPartialTick());
+                float amount = horse.walkAnimation.speed(partialTick);
                 if (Math.abs(tail.xRot - ((float) Math.PI / 6 + amount * .75F)) > 1E-5
                         || Math.abs(tail.y - (-5 + amount)) > 1E-5
                         || Math.abs(tail.z - (2 + amount * 2)) > 1E-5) failures++;
@@ -238,14 +222,7 @@ public final class DraftTeamClientProbe {
         } catch (ReflectiveOperationException e) { throw new IllegalStateException(e); }
     }
 
-    @SubscribeEvent
-    //? if <1.21 {
-    /*public static void frame(TickEvent.RenderTickEvent event) { inspect(event.phase == TickEvent.Phase.START); }
-    *///?} else {
-    public static void beforeFrame(RenderFrameEvent.Pre event) { inspect(true); }
-    @SubscribeEvent
-    public static void afterFrame(RenderFrameEvent.Post event) { inspect(false); }
-    //?}
+
 
     private static void inspect(boolean before) {
         var mc = Minecraft.getInstance();
