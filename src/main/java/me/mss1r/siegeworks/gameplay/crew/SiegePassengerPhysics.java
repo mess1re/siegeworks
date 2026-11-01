@@ -132,15 +132,18 @@ public final class SiegePassengerPhysics {
      */
     public static Vec3 mountFooting(AbstractSiegeEntity siege, Entity mount, Vec3 seat) {
         double step = siege.geometryStepHeight();
-        double halfWidth = mount.getBbWidth() * 0.5D - FOOTING_INSET;
+        double halfWidth = mount.getBbWidth() * 0.5D;
         AABB standing = new AABB(seat.x - halfWidth, seat.y, seat.z - halfWidth,
                 seat.x + halfWidth, seat.y + mount.getBbHeight(), seat.z + halfWidth);
+        // Shrink the support footprint, but keep the full body for the headroom check.
+        // Applying the inset twice can allow a step into an upper block at a narrow edge.
+        AABB footprint = standing.deflate(FOOTING_INSET, 0.0D, FOOTING_INSET);
         double highest = Double.NEGATIVE_INFINITY;
         for (VoxelShape shape : mount.level().getBlockCollisions(mount,
-                standing.expandTowards(0.0D, -step, 0.0D).expandTowards(0.0D, step, 0.0D))) {
+                footprint.expandTowards(0.0D, -step, 0.0D).expandTowards(0.0D, step, 0.0D))) {
             for (AABB part : shape.toAabbs()) {
-                if (part.maxX > standing.minX && part.minX < standing.maxX
-                        && part.maxZ > standing.minZ && part.minZ < standing.maxZ
+                if (part.maxX > footprint.minX && part.minX < footprint.maxX
+                        && part.maxZ > footprint.minZ && part.minZ < footprint.maxZ
                         && part.maxY <= seat.y + step + FOOTING_INSET && part.maxY >= seat.y - step) {
                     highest = Math.max(highest, part.maxY);
                 }

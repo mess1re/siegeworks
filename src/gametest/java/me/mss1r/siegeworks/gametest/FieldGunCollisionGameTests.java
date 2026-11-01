@@ -2,6 +2,8 @@ package me.mss1r.siegeworks.gametest;
 
 import java.util.List;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
+import me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics;
+import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.entity.siege.AbstractFieldGunEntity;
 import me.mss1r.siegeworks.entity.siege.CulverinEntity;
 import me.mss1r.siegeworks.entity.siege.SerpentineEntity;
@@ -167,6 +169,24 @@ public final class FieldGunCollisionGameTests {
     }
 
     @GameTest(template = "empty")
+    public static void draftMountDoesNotStepIntoNarrowHeadroom(GameTestHelper helper) {
+        var gun = hitchedCulverin(helper, 0);
+        var horse = gun.getTowingMounts().get(0);
+        BlockPos wall = helper.absolutePos(new BlockPos(20, 1, 16));
+        for (int height = 0; height < 3; height++) {
+            helper.getLevel().setBlockAndUpdate(wall.above(height), Blocks.STONE.defaultBlockState());
+        }
+        // The body grazes the wall by 1.5 mm: its upper blocks still obstruct a step.
+        Vec3 seat = new Vec3(wall.getX() - horse.getBbWidth() * .5D + .0015D,
+                wall.getY(), wall.getZ() + .5D);
+        horse.setPos(seat);
+        Vec3 feet = SiegePassengerPhysics.mountFooting(gun, horse, seat);
+        helper.assertTrue(Math.abs(feet.y - seat.y) < 1E-6,
+                "The draft mount stepped into solid headroom at a wall edge: " + seat + " -> " + feet);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
     public static void staleGroundFlagDoesNotLetAnEngineFly(GameTestHelper helper) {
         var gun = createCulverin(helper);
         double before = gun.getY();
@@ -182,7 +202,7 @@ public final class FieldGunCollisionGameTests {
         var gun = hitchedCulverin(helper, 0);
         var horse = gun.getTowingMounts().get(0);
         // A horse has just left a raised step while the wheels remain on the lower floor.
-        Vec3 seat = gun.position().add(me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
+        Vec3 seat = gun.position().add(SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
         horse.setPos(seat.x, gun.getY() + 1, seat.z);
         double before = horse.getY();
         gun.positionRider(horse);
@@ -198,7 +218,7 @@ public final class FieldGunCollisionGameTests {
     public static void repeatedPassengerUpdatesCannotSnapAHorseDownAfterAStep(GameTestHelper helper) {
         var gun = hitchedCulverin(helper, 0);
         var horse = gun.getTowingMounts().get(0);
-        Vec3 seat = gun.position().add(me.mss1r.siegeworks.gameplay.crew.SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
+        Vec3 seat = gun.position().add(SiegePassengerPhysics.rotatedSeatOffset(gun, horse));
         BlockPos step = BlockPos.containing(seat);
         helper.getLevel().setBlockAndUpdate(step, Blocks.STONE.defaultBlockState());
         gun.positionRider(horse);
@@ -247,9 +267,13 @@ public final class FieldGunCollisionGameTests {
         if (!horse.isPassenger()) return;
         AABB box = horse.getBoundingBox().deflate(1.0E-3D);
         for (var shape : helper.getLevel().getBlockCollisions(horse, box)) {
+            var engine = (AbstractSiegeEntity) horse.getVehicle();
+            Vec3 seat = engine.position().add(SiegePassengerPhysics.rotatedSeatOffset(engine, horse));
             helper.fail("A towing horse overlaps blocks: feet=" + horse.position() + " box=" + box
                     + " collision=" + shape.toAabbs() + " engine=" + horse.getVehicle().position()
-                    + " yaw=" + horse.getVehicle().getYRot());
+                    + " yaw=" + horse.getVehicle().getYRot()
+                    + " seat=" + seat + " footing=" + SiegePassengerPhysics.mountFooting(engine, horse, seat)
+                    + " ticks=" + horse.tickCount + "/" + horse.getVehicle().tickCount);
         }
     }
 
