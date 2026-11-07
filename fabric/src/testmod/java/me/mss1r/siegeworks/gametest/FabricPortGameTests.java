@@ -62,7 +62,11 @@ public final class FabricPortGameTests implements FabricGameTest {
     }
     @GameTest(template=TEMPLATE)
     public void drawingCatalogAndCreativeTabsAreRegistered(GameTestHelper helper) {
-        helper.assertTrue(BlueprintDefinitions.all().size() == 11, "Drawing catalog did not load eleven engines");
+        for (String name : List.of("arcballista", "battering_ram", "culverin", "hwacha", "mantlet",
+                "mons_meg", "onager", "serpentine", "siege_tower", "tower_crossbow", "trebuchet",
+                "hand_cannon", "arquebus"))
+            helper.assertTrue(BlueprintDefinitions.get("siegeworks:" + name) != null,
+                    "Blueprint is missing: " + name);
         for (String name : List.of("siegeworks_items", "siegeworks_engines"))
             helper.assertTrue(BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(MinecraftVersionCompat.id("siegeworks", name)),
                     "Creative tab is missing: " + name);

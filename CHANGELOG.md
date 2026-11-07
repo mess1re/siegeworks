@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.0-beta.11
+
+### Added
+
+- Fabric builds for Minecraft 1.20.1 and 1.21.1.
+- [Hand Cannon and Arquebus](https://github.com/mess1re/siegeworks/wiki/Handheld-Firearms).
+- A casting table and calibre-specific iron ammunition, plus stone cannonballs.
+- The Siege Engineer's Manual and advancements.
+- Banners for the trebuchet.
+- Epic Fight support for handheld firearms, the forked pole and siege ladders; Better Combat support for firearms.
+
+### Changed
+
+- Reworked projectile impacts, secondary fragments and damage to siege engines.
+- Ammunition size and stack limits now depend on calibre.
+- Updated smoke animations and bolt recipes.
+- Requires Axiomata 0.1.0-beta.10. Custom physics profiles need conversion to format 3; see [Updating](https://github.com/mess1re/siegeworks/wiki/Updating).
+
+### Fixed
+
+- Compatibility issues on Mohist and Arclight hybrid servers.
+- Ladder climbing and exiting on servers, including Epic Fight compatibility.
+- Towing, movement on supporting structures, aiming, camera behaviour and model collisions.
+- Construction labels and HUD rendering.
+
 ## 0.1.0-beta.10
 
 ### Added

@@ -28,6 +28,11 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 )
 public final class SiegeworksClientModEvents {
    @SubscribeEvent
+   public static void registerMenuScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+      event.register(me.mss1r.siegeworks.registry.SiegeworksMenus.CASTING.get(), CastingScreen::new);
+   }
+
+   @SubscribeEvent
    public static void clientSetup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) {
       event.enqueueWork(() -> dev.architectury.event.events.client.ClientTickEvent.CLIENT_POST.register(SiegeUpdateNotifier::tick));
    }

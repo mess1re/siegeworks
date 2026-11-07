@@ -7,6 +7,7 @@ import me.mss1r.siegeworks.registry.SiegeworksBlocks;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import me.mss1r.siegeworks.item.FireArrowItem;
 import me.mss1r.siegeworks.item.SiegeLadderDeploymentItem;
+import me.mss1r.siegeworks.item.SiegeManualItem;
 import me.mss1r.siegeworks.item.SiegeDeploymentItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
@@ -16,8 +17,12 @@ import net.minecraft.world.item.Item;
 public interface SiegeworksItems {
     DeferredRegister<Item> ITEMS = DeferredRegister.create(Siegeworks.MOD_ID, Registries.ITEM);
 
+    RegistrySupplier<Item> SIEGE_MANUAL = ITEMS.register("siege_manual", () -> new SiegeManualItem(new Item.Properties().stacksTo(1)));
     RegistrySupplier<Item> BLACK_POWDER = ITEMS.register("black_powder", () -> new Item(new Item.Properties()));
     RegistrySupplier<Item> WHEEL = ITEMS.register("wheel", () -> new Item(new Item.Properties()));
+    RegistrySupplier<Item> FIREARM_LOCK = ITEMS.register("firearm_lock", () -> new Item(new Item.Properties()));
+    RegistrySupplier<Item> HAND_CANNON = ITEMS.register("hand_cannon", () -> me.mss1r.siegeworks.platform.SiegePlatform.firearm("hand_cannon", false));
+    RegistrySupplier<Item> ARQUEBUS = ITEMS.register("arquebus", () -> me.mss1r.siegeworks.platform.SiegePlatform.firearm("arquebus", true));
     RegistrySupplier<Item> BARREL = ITEMS.register("barrel", () -> new Item(new Item.Properties()));
     RegistrySupplier<Item> SERPENTINE_SPAWNER = ITEMS.register("serpentine_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.SERPENTINE_ENTITY, new Item.Properties()));
     RegistrySupplier<Item> CULVERIN_SPAWNER = ITEMS.register("culverin_spawner", () -> me.mss1r.siegeworks.platform.SiegePlatform.deploymentItem(SiegeworksEntities.CULVERIN_ENTITY, new Item.Properties()));
@@ -41,8 +46,11 @@ public interface SiegeworksItems {
     RegistrySupplier<Item> JUNG_SINGIJEON = ITEMS.register("jung_singijeon", () ->
             new Item(new Item.Properties().stacksTo(64)));
     RegistrySupplier<Item> FIRE_ARROW = ITEMS.register("fire_arrow", () -> new FireArrowItem(new Item.Properties()));
-    RegistrySupplier<Item> CANNON_BALL = ITEMS.register("cannon_ball", () -> new BlockItem(SiegeworksBlocks.CANNON_BALL.get(), new Item.Properties().stacksTo(8)));
-    RegistrySupplier<Item> GIANT_CANNON_BALL = ITEMS.register("giant_cannon_ball", () -> new BlockItem(SiegeworksBlocks.GIANT_CANNON_BALL.get(), new Item.Properties().stacksTo(2)));
+    RegistrySupplier<Item> CANNON_BALL = ITEMS.register("cannon_ball", () -> new me.mss1r.siegeworks.item.RoundShotItem(SiegeworksBlocks.CANNON_BALL.get(), new Item.Properties().stacksTo(8), 120));
+    RegistrySupplier<Item> CASTING_TABLE = ITEMS.register("casting_table", () -> new BlockItem(SiegeworksBlocks.CASTING_TABLE.get(), new Item.Properties()));
+    RegistrySupplier<Item> STONE_CANNON_BALL = ITEMS.register("stone_cannon_ball", () ->
+            new me.mss1r.siegeworks.item.RoundShotItem(SiegeworksBlocks.STONE_CANNON_BALL.get(), new Item.Properties().stacksTo(8), 120));
+    RegistrySupplier<Item> GIANT_CANNON_BALL = ITEMS.register("giant_cannon_ball", () -> new me.mss1r.siegeworks.item.RoundShotItem(SiegeworksBlocks.GIANT_CANNON_BALL.get(), new Item.Properties().stacksTo(2), 490));
     RegistrySupplier<Item> GRAPESHOT = ITEMS.register("grapeshot", () ->
             new BlockItem(SiegeworksBlocks.GRAPESHOT.get(), new Item.Properties().stacksTo(2)));
     /** Incendiary pot sealed with a wick. Without a wick it's a {@link #CLAY_POT}, empty or partly filled. */
@@ -51,6 +59,7 @@ public interface SiegeworksItems {
     RegistrySupplier<Item> CLAY_POT = ITEMS.register("clay_pot", () ->
             new IncendiaryPotItem(SiegeworksBlocks.FIRE_PROJECTILE.get(), new Item.Properties().stacksTo(1)));
     RegistrySupplier<Item> RAMROD = ITEMS.register("ramrod", () -> new Item(new Item.Properties().stacksTo(1).durability(256)));
+    RegistrySupplier<Item> FIREARM_RAMROD = ITEMS.register("firearm_ramrod", () -> new Item(new Item.Properties().durability(256)));
     /** A pole with a fork at its end, braced against a siege ladder from the wall to push it off. */
     RegistrySupplier<Item> FORKED_POLE = ITEMS.register("forked_pole", () -> new me.mss1r.siegeworks.item.ForkedPoleItem(me.mss1r.siegeworks.item.ForkedPoleItem.properties()));
 

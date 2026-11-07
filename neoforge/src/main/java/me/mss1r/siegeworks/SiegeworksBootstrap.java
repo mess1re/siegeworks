@@ -21,6 +21,9 @@ public final class SiegeworksBootstrap {
         modContainer.registerConfig(ModConfig.Type.SERVER, new MigratingServerConfigSpec(SiegeworksServerConfig.SPEC.unwrap()));
         modContainer.registerConfig(ModConfig.Type.SERVER, SiegeworksEngineConfig.SPEC.unwrap(), SiegeworksEngineConfig.FILE_NAME);
         initialize(modBus, NeoForge.EVENT_BUS);
+        if (Platform.isModLoaded("epicfight")) {
+            me.mss1r.siegeworks.integration.epicfight.NativeEpicFightCompat.register(modBus);
+        }
         if (Platform.isModLoaded("recruits")) {
             NativeRecruitsEvents.register(modBus);
         }

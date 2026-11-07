@@ -107,6 +107,9 @@ repositories {
 }
 
 dependencies {
+    providers.gradleProperty("runtime.localJars").orNull?.let { directory ->
+        modRuntimeOnly(fileTree(directory) { include("*.jar") })
+    }
     if (mcVersion == "1.20.1") implementation("com.eliotlash.mclib:mclib:20")
     if (mcVersion == "1.20.1") {
         modImplementation("com.jamieswhiteshirt:reach-entity-attributes:2.4.0")
@@ -261,6 +264,7 @@ extra["gameTestDirectory"] = gameTestDirectory
 
 loom.runs {
     register("gameTest") {
+        property("siegeworks.test.filter", providers.gradleProperty("gameTestFilter").getOrElse(""))
         server()
         source(testmod)
         runDir(gameTestDirectory.relativeTo(projectDir).path)
@@ -271,6 +275,7 @@ loom.runs {
     }
 }
 tasks.named<ProcessResources>("processTestmodResources") {
+    from(rootProject.file("src/gametest/resources")) { include("data/**") }
     inputs.property("mod_version", modVersion)
     filesMatching("fabric.mod.json") { expand("mod_version" to modVersion) }
 }
@@ -295,6 +300,7 @@ val portableScenarios = objects.sourceDirectorySet("portableScenarios", "Shared 
     include("**/ConfigMigrationGameTests.java")
     include("**/AimRegressionGameTests.java")
     include("**/BannerGameTests.java")
+    include("**/SiegeAdvancementGameTests.java")
     include("**/BatteringRamCollisionGameTests.java")
     include("**/BoltThrowerCollisionGameTests.java")
     include("**/ConfigUpgradeGameTests.java")
@@ -314,11 +320,17 @@ val portableScenarios = objects.sourceDirectorySet("portableScenarios", "Shared 
     include("**/StructureCollisionGameTests.java")
     include("**/TrebuchetCollisionGameTests.java")
     include("**/SiegeGameTestPlayers.java")
-    include("**/AimClientProbe.java")
-    include("**/BannerClientProbe.java")
-    include("**/ManualAimFrameProbe.java")
-    include("**/DraftTeamClientProbe.java")
-    include("**/SiegeGravityClientProbe.java")
+    include("**/SiegeImpactBalanceGameTests.java")
+    include("**/BoltBalanceGameTests.java")
+    include("**/ShotFlightGameTests.java")
+    include("**/PhysicalImpactGameTests.java")
+    include("**/FragmentCalibrationGameTests.java")
+    include("**/StructureDamageGameTests.java")
+    include("**/ProjectileCalibrationGameTests.java")
+    include("**/StoneAmmunitionGameTests.java")
+    include("**/CastingGameTests.java")
+    include("**/FirearmGameTests.java")
+    include("**/ManualRecipeGameTests.java")
     include("**/SharedGameTests.java")
     include("**/RecruitsTestSuites.java")
     include("**/GameTestQuiet.java")
@@ -333,16 +345,7 @@ tasks.named<ProcessResources>("processTestmodResources") {
     if (mcVersion == "1.21.1") eachFile { path = path.replace("/structures/", "/structure/") }
 }
 
-loom.runs.register("probeClient") {
-    client()
-    source(testmod)
-    runDir(rootProject.file("build/client-probe/$mcVersion-fabric").relativeTo(projectDir).path)
-    programArgs("--quickPlaySingleplayer", providers.gradleProperty("test.aimSceneWorld").getOrElse("AimProbe"))
-    property("siegeworks.test.aimScene", "true")
-    property("siegeworks.test.aimSceneEngine", providers.gradleProperty("test.aimSceneEngine").getOrElse("manual_suite"))
-}
 
-apply(from = rootProject.file("gradle/client-probes.gradle.kts"))
 
 // Config migration and optional integrations need the real dedicated-server lifecycle.
 val lifecycleDirectory = rootProject.file("build/lifecycle-server/$mcVersion-fabric")

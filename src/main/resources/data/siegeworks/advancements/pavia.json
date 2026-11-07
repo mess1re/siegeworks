@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:cast_to_size",
+  "display": {
+    "icon": {
+      "item": "siegeworks:arquebus"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.pavia.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.pavia.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:full_scale",
+  "display": {
+    "icon": {
+      "item": "siegeworks:hwacha_spawner"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.munjongs_volley.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.munjongs_volley.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

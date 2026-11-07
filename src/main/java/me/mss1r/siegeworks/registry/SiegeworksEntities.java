@@ -35,6 +35,11 @@ public interface SiegeworksEntities {
     DeferredRegister<EntityType<?>> ENTITY_TYPES =
             DeferredRegister.create(Siegeworks.MOD_ID, Registries.ENTITY_TYPE);
 
+    RegistrySupplier<EntityType<me.mss1r.siegeworks.entity.projectile.FirearmProjectile>> FIREARM_BALL =
+            ENTITY_TYPES.register("firearm_ball", () -> EntityType.Builder.of(
+                    me.mss1r.siegeworks.entity.projectile.FirearmProjectile::new, MobCategory.MISC)
+                    .sized(0.02F, 0.02F).clientTrackingRange(64).updateInterval(1).build("firearm_ball"));
+
     RegistrySupplier<EntityType<SerpentineEntity>> SERPENTINE_ENTITY =
             ENTITY_TYPES.register("serpentine", () ->
                     EntityType.Builder.of(SerpentineEntity::new, MobCategory.MISC)
@@ -138,6 +143,14 @@ public interface SiegeworksEntities {
                             .clientTrackingRange(DEFAULT_TRACKING_RANGE)
                             .updateInterval(DEFAULT_UPDATE_INTERVAL)
                             .build("cannon_ball"));
+
+    RegistrySupplier<EntityType<CannonProjectile>> STONE_CANNON_BALL =
+            ENTITY_TYPES.register("stone_cannon_ball", () ->
+                    EntityType.Builder.<CannonProjectile>of(CannonProjectile::new, MobCategory.MISC)
+                            .sized(0.25f, 0.25f)
+                            .clientTrackingRange(DEFAULT_TRACKING_RANGE)
+                            .updateInterval(DEFAULT_UPDATE_INTERVAL)
+                            .build("stone_cannon_ball"));
 
     RegistrySupplier<EntityType<ScattershotProjectile>> SCATTERSHOT_PROJECTILE =
             ENTITY_TYPES.register("scattershot_projectile", () ->

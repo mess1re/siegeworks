@@ -1,5 +1,6 @@
 package me.mss1r.siegeworks.entity.siege;
 
+import me.mss1r.siegeworks.gameplay.advancement.HwachaVolleys;
 import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.gameplay.towing.TowingProfile;
 import me.mss1r.siegeworks.api.SiegeActionResult;
@@ -131,6 +132,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
     private int pendingAutomatedNormal;
     private int pendingAutomatedExplosive;
     private int nextShotTicks;
+    private java.util.UUID advancementVolley;
     private float parkedPitchVelocity;
     private float previousCollisionModelPitch;
 
@@ -303,7 +305,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
         if (activeItem == Items.FLINT_AND_STEEL) {
             if (consumeLoadingRequirement(player, hand, createPrimingStage())) {
                 playIgnitionSound(serverLevel);
-                startVolley(player);
+                startVolley(serverLevel, player);
             }
             return;
         }
@@ -409,8 +411,9 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
         }
 
         automatedLoading.reset();
-        playIgnitionSound((ServerLevel) level());
-        startVolley(operator);
+        ServerLevel serverLevel = (ServerLevel) level();
+        playIgnitionSound(serverLevel);
+        startVolley(serverLevel, operator);
         return SiegeActionResult.FIRED;
     }
 
@@ -500,12 +503,13 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
         lastRiderPitch = getTrackedPitch();
     }
 
-    private void startVolley(LivingEntity operator) {
+    private void startVolley(ServerLevel level, LivingEntity operator) {
         if (getLoadedCount() <= 0 || isFiring()) {
             return;
         }
         entityData.set(FIRING_INDEX, 0);
         nextShotTicks = 0;
+        advancementVolley = HwachaVolleys.start(level, operator);
         setOperator(operator);
     }
 
@@ -518,7 +522,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
             setLoadedCount(CAPACITY);
         }
         playIgnitionSound(serverLevel);
-        startVolley(operator);
+        startVolley(serverLevel, operator);
         return true;
     }
 
@@ -548,6 +552,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
         SingijeonProjectile projectile = new SingijeonProjectile(
                 SiegeworksEntities.SINGIJEON_PROJECTILE.get(), this, serverLevel);
         projectile.setExplosive(explosive);
+        projectile.setAdvancementVolley(advancementVolley);
         projectile.setPos(mouth.x, mouth.y, mouth.z);
         projectile.launchWithMotor(direction, trajectory.speedMultiplier());
         projectile.setBaseDamage(getBaseDamage());
@@ -627,6 +632,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
     }
 
     private void finishVolley() {
+        advancementVolley = null;
         setLoadedCount(0);
         entityData.set(EXPLOSIVE_LOW, 0L);
         entityData.set(EXPLOSIVE_HIGH, 0L);
@@ -928,6 +934,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
         tag.putLong(TAG_EXPLOSIVE_HIGH, entityData.get(EXPLOSIVE_HIGH));
         tag.putInt(TAG_FIRING_INDEX, getFiringIndex());
         tag.putInt(TAG_NEXT_SHOT_TICKS, nextShotTicks);
+        if (advancementVolley != null) tag.putUUID("AdvancementVolley", advancementVolley);
     }
 
     @Override
@@ -938,6 +945,7 @@ public class HwachaEntity extends AbstractSiegeEntity implements GeoEntity, Sieg
         entityData.set(EXPLOSIVE_HIGH, tag.getLong(TAG_EXPLOSIVE_HIGH));
         entityData.set(FIRING_INDEX, tag.contains(TAG_FIRING_INDEX) ? tag.getInt(TAG_FIRING_INDEX) : -1);
         nextShotTicks = Math.max(0, tag.getInt(TAG_NEXT_SHOT_TICKS));
+        advancementVolley = tag.hasUUID("AdvancementVolley") ? tag.getUUID("AdvancementVolley") : null;
         setAmmoLoaded(getLoadedCount() > 0 ? "siegeworks:singijeon" : "");
     }
 }

@@ -279,5 +279,17 @@
     "sounds": [
       "siegeworks:siege_engine_damage"
     ]
+  },
+  "firearm_fire": {
+    "subtitle": "sounds.siegeworks.firearm_fire",
+    "sounds": [
+      "siegeworks:firearm_fire"
+    ]
+  },
+  "firearm_powder": {
+    "subtitle": "sounds.siegeworks.firearm_powder",
+    "sounds": [
+      "siegeworks:firearm_powder"
+    ]
   }
 }

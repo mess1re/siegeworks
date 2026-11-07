@@ -11,6 +11,9 @@ import java.util.function.UnaryOperator;
 public final class NativeSharedGameTests {
     @GameTestGenerator
     public static Collection<TestFunction> scenarios() {
-        return SharedGameTests.tests(UnaryOperator.identity(), Set.of());
+        Set<String> namespaces = new java.util.HashSet<>(java.util.Arrays.asList(
+                System.getProperty("siegeworks.test.namespaces", "").split(",")));
+        namespaces.remove("");
+        return SharedGameTests.tests(UnaryOperator.identity(), namespaces);
     }
 }

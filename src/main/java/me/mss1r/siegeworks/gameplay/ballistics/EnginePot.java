@@ -133,7 +133,7 @@ public final class EnginePot {
         Vec3 at = where.get();
         engine.setAmmoLoaded("");
         filling = PotFilling.EMPTY;
-        IncendiaryFuse.burst(level, at, burning, 0, type, profile, engine.getBaseDamage(), engine, null);
+        IncendiaryFuse.burst(level, at, burning, 0, type, profile, engine, null);
     }
 
     /** Passes the pot to the projectile, still lit if it was. */

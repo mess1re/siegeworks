@@ -5,9 +5,7 @@ import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.data.profile.ProjectileVariants;
 import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectileBlastResolver;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpacts;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectilePhysics;
 import me.mss1r.siegeworks.entity.base.SiegeProjectile;
 import me.mss1r.siegeworks.particle.SiegeParticleEffects;
 import me.mss1r.siegeworks.registry.SiegeworksItems;
@@ -48,6 +46,7 @@ public class SingijeonProjectile extends SiegeProjectile {
     private static final EntityDataAccessor<Boolean> MOTOR_BURNING =
             SynchedEntityData.defineId(SingijeonProjectile.class, EntityDataSerializers.BOOLEAN);
 
+    private java.util.UUID advancementVolley;
     private float previousRenderYaw;
     private float previousRenderPitch;
     private int embeddedAge;
@@ -200,20 +199,13 @@ public class SingijeonProjectile extends SiegeProjectile {
         Entity hitTarget = hit.getEntity();
         LivingEntity directTarget = livingTarget(hitTarget);
         rememberHitTarget(hitTarget);
-        boolean directDamageApplied = false;
-        if (directTarget != null) {
-            float damage = ProjectilePhysics.entityDamage(getPhysicsProfile(), (float) getBaseDamage(),
-                    getDeltaMovement().length(), directTarget);
-            directDamageApplied = damageTarget(hitTarget, damage);
-        }
+        var result = directTarget == null ? null : impactTarget(hitTarget, hit.getLocation());
         if (isExplosive()) {
-            if (directDamageApplied) {
-                applyBlastEffects(directTarget, hit.getLocation());
-            }
-            explode(hit.getLocation(), directDamageApplied ? directTarget : null);
+            explode(hit.getLocation());
         } else {
             playNormalImpact(hit.getLocation());
-            discard();
+            if (result != null && result.physics().passedThrough()) continueThrough(result.physics());
+            else discard();
         }
     }
 
@@ -227,7 +219,7 @@ public class SingijeonProjectile extends SiegeProjectile {
             return;
         }
         if (isExplosive()) {
-            explode(drive.position(), null);
+            explode(drive.position());
         } else {
             playNormalImpact(drive.position());
             embedInBlock(new BlockHitResult(drive.position(), hit.getDirection(), drive.block(), false));
@@ -314,7 +306,15 @@ public class SingijeonProjectile extends SiegeProjectile {
                 3, 0.08D, 0.08D, 0.08D, 0.02D);
     }
 
-    private void explode(Vec3 center, LivingEntity excludedTarget) {
+    public void setAdvancementVolley(java.util.UUID volley) {
+        advancementVolley = volley;
+    }
+
+    public java.util.UUID advancementVolley() {
+        return advancementVolley;
+    }
+
+    private void explode(Vec3 center) {
         if (level() instanceof ServerLevel serverLevel) {
             double speed = getDeltaMovement().length();
             float explosionPitch = 0.92F + random.nextFloat() * 0.2F;
@@ -333,31 +333,15 @@ public class SingijeonProjectile extends SiegeProjectile {
             }
             SiegeParticleEffects.rocketExplosion(serverLevel, center);
             arrive(serverLevel, center, speed);
-            ProjectileBlastResolver.applyShock(serverLevel, center, this, getPhysicsProfile(), excludedTarget, speed)
-                    .forEach(target -> applyBlastEffects(target, center));
         }
         discard();
-    }
-
-    private static void applyBlastEffects(LivingEntity target, Vec3 center) {
-        //? if <1.21 {
-        /*target.setSecondsOnFire(5);
-        *///?} else {
-        target.igniteForSeconds(5.0F);
-        //?}
-        Vec3 away = target.position().subtract(center);
-        Vec3 horizontal = new Vec3(away.x, 0.0D, away.z);
-        if (horizontal.lengthSqr() > 1.0E-5D) {
-            horizontal = horizontal.normalize().scale(0.38D);
-            target.push(horizontal.x, 0.16D, horizontal.z);
-            target.hurtMarked = true;
-        }
     }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean(TAG_EXPLOSIVE, isExplosive());
+        if (advancementVolley != null) tag.putUUID("AdvancementVolley", advancementVolley);
         tag.putInt(TAG_EMBEDDED_AGE, embeddedAge);
         if (embeddedBlockPos != null) {
             tag.putLong(TAG_EMBEDDED_BLOCK, embeddedBlockPos.asLong());
@@ -375,6 +359,7 @@ public class SingijeonProjectile extends SiegeProjectile {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         setExplosive(tag.getBoolean(TAG_EXPLOSIVE));
+        advancementVolley = tag.hasUUID("AdvancementVolley") ? tag.getUUID("AdvancementVolley") : null;
         embeddedAge = Math.max(0, tag.getInt(TAG_EMBEDDED_AGE));
         embeddedBlockPos = tag.contains(TAG_EMBEDDED_BLOCK)
                 ? BlockPos.of(tag.getLong(TAG_EMBEDDED_BLOCK))

@@ -33,6 +33,7 @@ public final class SiegeworksClientGameEvents {
 
     public static void updateMovement(LocalPlayer player, net.minecraft.client.player.Input input) {
 
+        if (me.mss1r.siegeworks.client.firearm.FirearmClient.aiming(player)) input.jumping = false;
         Entity vehicle = player.getVehicle();
         if (vehicle instanceof MantletEntity) {
             input.shiftKeyDown = false;
@@ -114,6 +115,7 @@ public final class SiegeworksClientGameEvents {
 
     public static boolean hideCrosshair() {
         Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player != null && me.mss1r.siegeworks.client.firearm.FirearmClient.aiming(minecraft.player)) return true;
         AbstractSiegeEntity siege = minecraft.player == null ? null : SiegeAimView.findControlledSiege(minecraft.player);
         return minecraft.player != null && siege != null
                 && !SiegeAimController.isFreeLookActive(minecraft.player, siege);

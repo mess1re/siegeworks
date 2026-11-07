@@ -16,6 +16,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /** Lays a braced pole along the shaft line of the bracing pose. */
 @Mixin(ItemInHandLayer.class)
 public abstract class ItemInHandLayerMixin {
+    @Inject(method = "renderArmWithItem", at = @At("HEAD"), cancellable = true)
+    private void siegeworks$firearm(LivingEntity entity, ItemStack stack, ItemDisplayContext context,
+                                    HumanoidArm arm, PoseStack poses, MultiBufferSource buffers, int light, CallbackInfo ci) {
+        if (me.mss1r.siegeworks.gameplay.ladder.LadderCarry.isCarrying(entity)) {
+            ci.cancel(); return;
+        }
+        if (me.mss1r.siegeworks.client.firearm.FirearmAnimation.INSTANCE.renderHeld(entity, arm, poses, buffers,
+                light, me.mss1r.siegeworks.client.firearm.FirearmClient.partialTick())) ci.cancel();
+    }
     @Inject(method = "renderArmWithItem", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))
     private void siegeworks$alignBracedPole(LivingEntity entity, ItemStack stack, ItemDisplayContext context,

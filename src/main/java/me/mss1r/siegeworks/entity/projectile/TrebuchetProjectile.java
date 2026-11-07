@@ -1,13 +1,12 @@
 package me.mss1r.siegeworks.entity.projectile;
 
 import me.mss1r.siegeworks.gameplay.ballistics.IncendiaryFuse;
+import me.mss1r.siegeworks.gameplay.advancement.SiegeAdvancement;
 import me.mss1r.siegeworks.item.PotFilling;
 import me.mss1r.siegeworks.data.profile.PotFillingProfile;
 import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
 import me.mss1r.siegeworks.item.SiegeAmmo;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectilePhysics;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectileBlastResolver;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpactEffects;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpacts;
 import me.mss1r.siegeworks.particle.SiegeParticleEffects;
@@ -15,6 +14,8 @@ import me.mss1r.siegeworks.entity.base.SiegeProjectile;
 import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.registry.SiegeworksBlocks;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -23,23 +24,24 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Set;
 
 /** Onager or trebuchet load: a stone, or a pot once {@link #setFilling} is called. */
 public class TrebuchetProjectile extends SiegeProjectile {
+    private static final TagKey<Block> MASONRY = TagKey.create(Registries.BLOCK,
+            MinecraftVersionCompat.id("siegeworks", "siege_masonry"));
     private static final String TAG_TEXTURE_NAME = "TextureName";
     private static final String TAG_FUSE = "Fuse";
     private static final String TAG_FILLING = "Filling";
@@ -189,7 +191,7 @@ public class TrebuchetProjectile extends SiegeProjectile {
             return super.payloadFire(physics);
         }
         PotFilling.Burst burst = filling.burst();
-        return new ProjectilePhysicsProfile.Fire(burst.fireRadius(), burst.fireChance());
+        return new ProjectilePhysicsProfile.Fire(burst.fireRadius(), burst.fireChance(), burst.burnSeconds());
     }
 
     @Override
@@ -206,18 +208,29 @@ public class TrebuchetProjectile extends SiegeProjectile {
             return;
         }
 
+        BlockPos contact = blockHitResult.getBlockPos();
+        BlockState struck = serverLevel.getBlockState(contact);
         ProjectileImpacts.Drive drive = driveInto(serverLevel, blockHitResult);
         if (drive.passedThrough()) {
+            checkMasonryBreak(serverLevel, contact, struck);
             ProjectileImpactEffects.playPenetrationReport(serverLevel, blockHitResult.getLocation(), 2.0f, 1.1f);
             ProjectileImpactEffects.spawnPenetrationParticles(serverLevel, blockHitResult.getLocation(),
                     getPhysicsProfile().diameterOf(this), getDeltaMovement().normalize().reverse());
             return;
         }
+        BlockState stoppedAt = serverLevel.getBlockState(drive.block());
         arrive(serverLevel, drive.position(), drive.speed());
+        checkMasonryBreak(serverLevel, contact, struck);
+        if (!drive.block().equals(contact)) checkMasonryBreak(serverLevel, drive.block(), stoppedAt);
         playImpactReport(serverLevel, drive.position(), 4.5f, 0.75f);
-        ProjectileBlastResolver.applyShock(serverLevel, drive.position(), this, getPhysicsProfile(), null,
-                drive.speed());
         this.discard();
+    }
+
+    private void checkMasonryBreak(ServerLevel level, BlockPos pos, BlockState before) {
+        if (getType() == SiegeworksEntities.TREBUCHET_PROJECTILE.get()
+                && before.is(MASONRY) && !level.getBlockState(pos).is(before.getBlock())) {
+            SiegeAdvancement.WAR_WOLF.award(creditedShooter(level));
+        }
     }
 
     @Override
@@ -228,28 +241,20 @@ public class TrebuchetProjectile extends SiegeProjectile {
         if (!(this.level() instanceof ServerLevel serverLevel)) {
             return;
         }
-        double speed = getDeltaMovement().length();
+        var result = target == null ? null : impactTarget(hitTarget, entityHitResult.getLocation());
         if (bursts()) {
-            burst(serverLevel, entityHitResult.getLocation(), speed);
+            burst(serverLevel, entityHitResult.getLocation(), result == null ? 0 : result.physics().exitSpeedMps() / 20);
             return;
         }
         if (isPot()) {
-            if (target != null) {
-                damageTarget(hitTarget, ProjectilePhysics.entityDamage(getPhysicsProfile(), (float) getBaseDamage(),
-                        speed, target));
-            }
             shatter(serverLevel, entityHitResult.getLocation());
             return;
         }
 
         if (target != null) {
-            ProjectilePhysicsProfile physics = getPhysicsProfile();
-            float damage = ProjectilePhysics.entityDamage(physics, (float) getBaseDamage(), speed, target);
-            boolean directDamageApplied = damageTarget(hitTarget, damage);
             playImpactReport(serverLevel, entityHitResult.getLocation(), 4.0f, 0.85f);
-            ProjectileBlastResolver.applyShock(serverLevel, entityHitResult.getLocation(), this, physics,
-                    directDamageApplied ? target : null, speed);
-            if (tryKineticEntityPenetration(target, speed)) {
+            if (result != null && result.physics().passedThrough()) {
+                continueThrough(result.physics());
                 return;
             }
         }
@@ -266,23 +271,8 @@ public class TrebuchetProjectile extends SiegeProjectile {
 
     /** Lit pot: spreads fire and sets entities in the splash radius on fire. */
     private void burst(ServerLevel serverLevel, Vec3 impact, double speed) {
-        ProjectilePhysicsProfile physics = getPhysicsProfile();
         PotFilling.Burst payload = (filling != null ? filling : PotFilling.standard()).burst();
         arrive(serverLevel, impact, speed);
-        Set<LivingEntity> burned = new HashSet<>(
-                ProjectileBlastResolver.applyShock(serverLevel, impact, this, physics, null, speed));
-        // Burn every entity within the fire radius that has line of sight, regardless of impact speed.
-        double splash = payload.fireRadius();
-        for (LivingEntity reached : serverLevel.getEntitiesOfClass(LivingEntity.class,
-                new AABB(impact, impact).inflate(splash), LivingEntity::isAlive)) {
-            if (reached.getBoundingBox().distanceToSqr(impact) <= splash * splash
-                    && Explosion.getSeenPercent(impact, reached) > 0.0F) {
-                burned.add(reached);
-            }
-        }
-        for (LivingEntity target : burned) {
-            target.setRemainingFireTicks(Math.max(target.getRemainingFireTicks(), payload.burnSeconds() * 20));
-        }
         playBurstSounds(serverLevel, impact, payload.blastEnergy());
         SiegeParticleEffects.incendiaryImpact(serverLevel, impact, Mth.ceil(payload.fireRadius()));
         this.discard();
@@ -322,16 +312,4 @@ public class TrebuchetProjectile extends SiegeProjectile {
                         : new Vec3(0.0D, 1.0D, 0.0D));
     }
 
-    private boolean tryKineticEntityPenetration(LivingEntity target, double speed) {
-        double nextSpeed = ProjectilePhysics.remainingEntityPenetrationSpeed(this, target, speed);
-        if (nextSpeed <= 0.0D) {
-            return false;
-        }
-
-        Vec3 direction = getDeltaMovement().normalize();
-        setDeltaMovement(direction.scale(nextSpeed));
-        setBaseDamage(Math.max(1.0, getBaseDamage() * (nextSpeed / speed)));
-        setPos(getX() + direction.x * 0.35, getY() + direction.y * 0.35, getZ() + direction.z * 0.35);
-        return true;
-    }
 }

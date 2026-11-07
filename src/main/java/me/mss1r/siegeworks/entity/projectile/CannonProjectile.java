@@ -1,12 +1,9 @@
 package me.mss1r.siegeworks.entity.projectile;
 
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectileBlastResolver;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpactEffects;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpacts;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectilePhysics;
 import me.mss1r.axiomata.ballistics.ProjectileSweep;
 import me.mss1r.siegeworks.entity.base.SiegeProjectile;
-import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -83,7 +80,7 @@ public class CannonProjectile extends SiegeProjectile {
         }
         ProjectileImpacts.Drive drive = driveInto(serverLevel, blockHitResult);
         if (drive.passedThrough()) {
-            ProjectileImpactEffects.playPenetrationReport(serverLevel, blockHitResult.getLocation(), 2.2f, 1.1f);
+            playPenetrationReport(serverLevel, blockHitResult.getLocation());
             ProjectileImpactEffects.spawnPenetrationParticles(serverLevel, blockHitResult.getLocation(),
                     getPhysicsProfile().diameterOf(this), impactOutwardDirection());
             return;
@@ -91,11 +88,14 @@ public class CannonProjectile extends SiegeProjectile {
         stopAt(serverLevel, drive.position(), drive.speed());
     }
 
+    protected void playPenetrationReport(ServerLevel level, Vec3 impact) {
+        ProjectileImpactEffects.playPenetrationReport(level, impact, 2.2F, 1.1F);
+    }
+
     /** The projectile's end where a block stopped it. */
     protected void stopAt(ServerLevel serverLevel, Vec3 impact, double speed) {
         arrive(serverLevel, impact, speed);
         playImpactReport(serverLevel, impact, 5.0f, 0.85f);
-        ProjectileBlastResolver.applyShock(serverLevel, impact, this, getPhysicsProfile(), null, speed);
         this.inGround = false;
         this.shakeTime = 0;
         this.setImpactSound(SoundEvents.ARROW_HIT);
@@ -104,39 +104,21 @@ public class CannonProjectile extends SiegeProjectile {
 
     @Override
     protected void onHitEntity(EntityHitResult entityHitResult) {
-        ProjectilePhysicsProfile physics = getPhysicsProfile();
         Entity hitTarget = entityHitResult.getEntity();
         LivingEntity target = livingTarget(hitTarget);
         rememberHitTarget(hitTarget);
 
         if (this.level() instanceof ServerLevel serverLevel && target != null) {
             Vec3 impact = entityHitResult.getLocation();
-            double speed = getDeltaMovement().length();
-            float damage = ProjectilePhysics.entityDamage(physics, (float) getBaseDamage(), speed, target);
-            boolean directDamageApplied = damageTarget(hitTarget, damage);
+            var result = impactTarget(hitTarget, impact);
             playImpactReport(serverLevel, impact, 4.5f, 0.9f);
-            ProjectileBlastResolver.applyShock(serverLevel, impact, this, physics,
-                    directDamageApplied ? target : null, speed);
-
-            if (tryKineticEntityPenetration(target, speed)) {
+            if (result != null && result.physics().passedThrough()) {
+                continueThrough(result.physics());
                 return;
             }
         }
 
         this.discard();
-    }
-
-    protected boolean tryKineticEntityPenetration(LivingEntity target, double speed) {
-        double nextSpeed = ProjectilePhysics.remainingEntityPenetrationSpeed(this, target, speed);
-        if (nextSpeed <= 0.0D) {
-            return false;
-        }
-
-        Vec3 direction = getDeltaMovement().normalize();
-        setDeltaMovement(direction.scale(nextSpeed));
-        setBaseDamage(Math.max(1.0, getBaseDamage() * (nextSpeed / speed)));
-        setPos(getX() + direction.x * 0.45, getY() + direction.y * 0.45, getZ() + direction.z * 0.45);
-        return true;
     }
 
     protected void playImpactReport(ServerLevel serverLevel, Vec3 impact, float volume, float pitch) {

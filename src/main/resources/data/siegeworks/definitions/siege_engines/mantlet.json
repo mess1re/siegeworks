@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "maxHealth": 300.0,
   "damageConfig": {
     "entityDamageSources": {

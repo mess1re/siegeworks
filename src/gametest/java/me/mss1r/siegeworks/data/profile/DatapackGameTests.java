@@ -43,7 +43,7 @@ public final class DatapackGameTests {
     public static final String NAMESPACE = Siegeworks.MOD_ID + "_datapacks";
     private static final ResourceLocation ID = id("test_bolt");
     private static final ResourceLocation FILE = id("definitions/projectile_physics/test_bolt.json");
-    private static final String NEW = "{\"formatVersion\":2,\"mass\":0.5,\"diameter\":0.03}";
+    private static final String NEW = "{\"formatVersion\":3,\"mass\":0.5,\"diameter\":0.03}";
     private static final String OLD = "{\"mass\":1.5,\"penetration\":1.0,\"entityDamageMultiplier\":1.35}";
 
     private DatapackGameTests() {
@@ -60,7 +60,7 @@ public final class DatapackGameTests {
 
     @GameTest(template = "empty")
     public static void oldFieldsAndTyposAreNotSilentlyDiscarded(GameTestHelper helper) {
-        helper.assertTrue(ProfileFormat.projectile(JsonParser.parseString(OLD)).orElseThrow().contains("beta.5"),
+        helper.assertTrue(ProfileFormat.projectile(JsonParser.parseString(OLD)).orElseThrow().contains("retired"),
                 "Old projectile fields were accepted");
         helper.assertTrue(ProfileFormat.engine(JsonParser.parseString("{\"projectileSpeed\":212}")).isPresent(),
                 "Old engine speed was accepted");
@@ -69,7 +69,7 @@ public final class DatapackGameTests {
             helper.assertTrue(ProfileFormat.projectile(JsonParser.parseString(invalid)).isPresent(),
                     "Accepted " + invalid);
         }
-        helper.assertTrue(ProfileFormat.projectile(JsonParser.parseString(NEW)).isEmpty(), "Rejected format 2");
+        helper.assertTrue(ProfileFormat.projectile(JsonParser.parseString(NEW)).isEmpty(), "Rejected format 3");
         helper.assertTrue(ProfileFormat.projectile(JsonParser.parseString("{\"mass\":0.5}")).isEmpty(),
                 "Unversioned current-format JSON needs no migration");
         helper.succeed();
@@ -180,6 +180,26 @@ public final class DatapackGameTests {
         } finally {
             SiegeworksServerConfig.setStoneFractureEnergy(before);
             BlockMaterialProfiles.CATALOG.publish(materials);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void secondaryMaterialDoesNotRetuneExistingBlockResistance(GameTestHelper helper) {
+        var before = BlockMaterialProfiles.CATALOG.snapshot();
+        try {
+            var pos = helper.absolutePos(new BlockPos(2, 2, 2));
+            var original = ProjectileImpacts.material(helper.getLevel(), pos, Blocks.STONE.defaultBlockState());
+            BlockMaterialProfiles.CATALOG.publish(Map.of(id("physical_stone"), material(
+                    "{\"block\":\"minecraft:stone\",\"impactMaterial\":{\"density\":2600,\"strength\":12000000,"
+                            + "\"drag\":700,\"fractureEnergy\":42000,\"surfaceEnergy\":200,\"fragmentSize\":0.05,\"ejectionFraction\":0.15}}")));
+            var changed = ProjectileImpacts.material(helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 2)),
+                    Blocks.STONE.defaultBlockState());
+            helper.assertTrue(changed.strength() == original.strength() && changed.drag() == original.drag()
+                            && changed.breakEnergy() == original.breakEnergy(),
+                    "Secondary fragment material silently changed the existing block impact balance");
+        } finally {
+            BlockMaterialProfiles.CATALOG.publish(before);
         }
         helper.succeed();
     }

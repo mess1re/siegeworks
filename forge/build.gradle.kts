@@ -91,7 +91,10 @@ configurations {
 repositories {
     maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") { content { includeGroupByRegex("software\\.bernie.*"); includeGroup("com.eliotlash.mclib") } }
     mavenCentral()
-    maven("https://api.modrinth.com/maven") { content { includeGroup("maven.modrinth") } }
+    exclusiveContent {
+        forRepository { maven("https://api.modrinth.com/maven") }
+        filter { includeGroup("maven.modrinth") }
+    }
     exclusiveContent {
         forRepository {
             maven("https://jitpack.io") {
@@ -110,6 +113,10 @@ repositories {
 }
 
 dependencies {
+    providers.gradleProperty("runtime.localJars").orNull?.let { directory ->
+        modRuntimeOnly(fileTree(directory) { include("*.jar") })
+    }
+    modCompileOnly("maven.modrinth:epic-fight:${project.property("deps.epicfight")}") { isTransitive = false }
     implementation("com.eliotlash.mclib:mclib:20")
     "forgeRuntimeLibrary"("com.eliotlash.mclib:mclib:20")
     testImplementation(project(path = commonPath, configuration = "namedElements")) { isTransitive = false }
@@ -146,6 +153,7 @@ dependencies {
 }
 
 java {
+    sourceSets.main { java.srcDir(rootProject.file("src/epicfight/java")) }
     withSourcesJar()
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
@@ -160,6 +168,7 @@ tasks.named<ProcessResources>("processResources") {
         "axiomata_version" to project.property("deps.axiomata_mod"),
         "geckolib_version" to project.property("deps.geckolib"),
         "recruits_range" to project.property("deps.recruits_range"),
+        "epicfight_range" to project.property("deps.epicfight_range"),
         "rts_command_range" to project.property("deps.rts_command_range"),
         "mod_id" to modId,
         "mod_name" to modName,
@@ -278,6 +287,8 @@ testLoom.mods.maybeCreate("main").sourceSet(gametest)
 val gameDirectory = rootProject.file("run/gametest/$minecraft-$loader")
 extra["gameTestDirectory"] = gameDirectory
 testLoom.runConfigs.register("gameTestServer") {
+    property("siegeworks.test.filter", providers.gradleProperty("gameTestFilter").getOrElse(""))
+    property("siegeworks.test.namespaces", providers.gradleProperty("gameTestNamespaces").getOrElse(""))
     server()
     forgeTemplate("gameTestServer")
     source(gametest)
@@ -291,20 +302,6 @@ testLoom.runConfigs.named("client") {
     property("siegeworks.debug.instantFire", "true")
     property("siegeworks.debug.autoDrive", "true")
     property("siegeworks.debug.recruits", providers.gradleProperty("debug.recruits").getOrElse("false"))
-    providers.gradleProperty("test.aimSceneWorld").orNull?.let { world ->
-        source(gametest)
-        runDir(rootProject.file("build/aim-client-$loader").relativeTo(projectDir).path)
-        programArgs("--quickPlaySingleplayer", world)
-        property("siegeworks.test.aimScene", "true")
-        property("siegeworks.test.aimSceneEngine", providers.gradleProperty("test.aimSceneEngine").getOrElse("tower_crossbow"))
-        property("siegeworks.test.aimSceneFloor", providers.gradleProperty("test.aimSceneFloor").getOrElse("full"))
-    }
-    providers.gradleProperty("test.bannerSceneWorld").orNull?.let { world ->
-        source(gametest)
-        runDir(rootProject.file("build/banner-client-$loader").relativeTo(projectDir).path)
-        programArgs("--quickPlaySingleplayer", world)
-        property("siegeworks.test.bannerScene", "true")
-    }
 }
 val resetGameTestWorld = tasks.register<Delete>("resetGameTestWorld") {
     delete(gameDirectory.resolve("world"))
@@ -318,6 +315,3 @@ val prepareStructures = tasks.register<Copy>("prepareGameTestStructures") {
 tasks.named("compileGametestJava") { dependsOn(commonProject.tasks.named("stonecutterGenerateGametest")) }
 tasks.named("processGametestResources") { dependsOn(commonProject.tasks.named("stonecutterGenerateGametest")) }
 tasks.matching { it.name == "runGameTestServer" }.configureEach { dependsOn(prepareStructures) }
-
-
-apply(from = rootProject.file("gradle/client-probes.gradle.kts"))

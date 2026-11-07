@@ -19,23 +19,15 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(Siegeworks.MOD_ID)
-@PrefixGameTestTemplate(false)
+
 public final class ShotFlightGameTests {
     private static final int SCREEN = 12;
 
     private ShotFlightGameTests() {
     }
 
-    @GameTest(template = "empty", templateNamespace = Siegeworks.MOD_ID + "_migrations")
+    @GameTest(template = "siegeworks_migrations:empty")
     public static void singijeonFlightRanges(GameTestHelper helper) {
         double plain = reach(SingijeonProjectile.physics(false));
         double explosive = reach(SingijeonProjectile.physics(true));

@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "axiomata:blueprint"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.root.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.root.description"
+    },
+    "background": "minecraft:textures/block/stone_bricks.png",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

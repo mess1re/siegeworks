@@ -431,7 +431,15 @@ public class SiegeLadderEntity extends AbstractSiegeEntity implements GeoEntity,
         this.entityData.set(LEAN_DEGREES, degrees);
     }
 
+    @Nullable
+    public LadderCarry.Pose renderedCarryPose(float partialTick) {
+        Entity holder = isCarried() ? level().getEntity(carrierId()) : null;
+        return holder == null ? null : LadderCarry.renderedPose(holder, getSections(), getLadderLength(), CARRY_LEVEL_DEGREES, partialTick);
+    }
+
     public float getRenderedLeanAngleDegrees(float partialTick) {
+        var carryPose = renderedCarryPose(partialTick);
+        if (carryPose != null) return (float) carryPose.leanDegrees();
         if (!level().isClientSide || !clientLean.isInitialized()) {
             return getLeanAngleDegrees();
         }

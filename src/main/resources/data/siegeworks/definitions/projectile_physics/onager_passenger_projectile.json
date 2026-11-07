@@ -1,6 +1,16 @@
 {
-  "formatVersion": 2,
-  "mass": 70.0,
-  "dragCoefficient": 1.0,
-  "diameter": 0.6
+  "formatVersion": 3,
+  "mass": 70,
+  "dragCoefficient": 1,
+  "diameter": 0.6,
+  "material": {
+    "density": 7800,
+    "strength": 300000000,
+    "drag": 7800,
+    "fractureEnergy": 5000000,
+    "surfaceEnergy": 20000,
+    "fragmentSize": 0.005,
+    "ejectionFraction": 0.15
+  },
+  "fragmentBlock": "minecraft:iron_block"
 }

@@ -24,14 +24,12 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.phys.shapes.Shapes;
 import org.jetbrains.annotations.Nullable;
 
-public final class StackedProjectileBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
+public class StackedProjectileBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
     public static final IntegerProperty COUNT = IntegerProperty.create("count", 1, 4);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
@@ -106,13 +104,17 @@ public final class StackedProjectileBlock extends HorizontalDirectionalBlock imp
         if (!player.mayBuild() || !level.mayInteract(player, pos)) return InteractionResult.FAIL;
         if (level.isClientSide) return InteractionResult.SUCCESS;
 
-        ItemStack projectile = new ItemStack(asItem());
+        ItemStack projectile = projectileStack(state);
         if (!player.getInventory().add(projectile)) return InteractionResult.FAIL;
         int count = state.getValue(COUNT);
         BlockState remaining = count > 1 ? state.setValue(COUNT, count - 1)
                 : state.getValue(WATERLOGGED) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
         level.setBlock(pos, remaining, Block.UPDATE_ALL);
         return InteractionResult.CONSUME;
+    }
+
+    protected ItemStack projectileStack(BlockState state) {
+        return new ItemStack(asItem());
     }
 
     @Override
@@ -135,23 +137,8 @@ public final class StackedProjectileBlock extends HorizontalDirectionalBlock imp
         return shapesByFacing[facing.get2DDataValue()][state.getValue(COUNT) - 1];
     }
 
-    private static VoxelShape rotateFromNorth(VoxelShape shape, Direction facing) {
-        if (facing == Direction.NORTH) return shape;
-
-        VoxelShape rotated = Shapes.empty();
-        for (AABB box : shape.toAabbs()) {
-            AABB transformed = switch (facing) {
-                case EAST -> new AABB(1.0D - box.maxZ, box.minY, box.minX,
-                        1.0D - box.minZ, box.maxY, box.maxX);
-                case SOUTH -> new AABB(1.0D - box.maxX, box.minY, 1.0D - box.maxZ,
-                        1.0D - box.minX, box.maxY, 1.0D - box.minZ);
-                case WEST -> new AABB(box.minZ, box.minY, 1.0D - box.maxX,
-                        box.maxZ, box.maxY, 1.0D - box.minX);
-                default -> box;
-            };
-            rotated = Shapes.or(rotated, Shapes.create(transformed));
-        }
-        return rotated.optimize();
+    protected static VoxelShape rotateFromNorth(VoxelShape shape, Direction facing) {
+        return BlockShapes.rotateFromNorth(shape, facing);
     }
 
     @Override

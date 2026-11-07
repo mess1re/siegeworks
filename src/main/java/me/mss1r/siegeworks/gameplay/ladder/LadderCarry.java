@@ -79,10 +79,20 @@ public final class LadderCarry {
 
     public static Pose pose(Entity carrier, int sections, double length, double levelDegrees) {
         float yaw = carrier instanceof LivingEntity living ? living.yBodyRot : carrier.getYRot();
+        return pose(carrier.position(), yaw, carrier.isCrouching(), sections, length, levelDegrees);
+    }
+
+    public static Pose renderedPose(Entity carrier, int sections, double length, double levelDegrees, float partialTick) {
+        float yaw = carrier instanceof LivingEntity living
+                ? Mth.rotLerp(partialTick, living.yBodyRotO, living.yBodyRot) : carrier.getViewYRot(partialTick);
+        return pose(carrier.getPosition(partialTick), yaw, carrier.isCrouching(), sections, length, levelDegrees);
+    }
+
+    static Pose pose(Vec3 position, float yaw, boolean crouching, int sections, double length, double levelDegrees) {
         double yawRadians = Math.toRadians(yaw);
         Vec3 forward = new Vec3(-Math.sin(yawRadians), 0.0D, Math.cos(yawRadians));
-        double handsHeight = HANDS_HEIGHT - (carrier.isCrouching() ? CROUCH_DROP : 0.0D);
-        Vec3 hands = carrier.position().add(0.0D, handsHeight, 0.0D).add(forward.scale(HANDS_FORWARD));
+        double handsHeight = HANDS_HEIGHT - (crouching ? CROUCH_DROP : 0.0D);
+        Vec3 hands = gripCenter(position, forward, handsHeight);
         double grip;
         double lean;
         if (sections <= OVERHEAD_SECTIONS) {
@@ -95,6 +105,17 @@ public final class LadderCarry {
         }
         Vec3 foot = hands.subtract(forward.scale(grip * Math.sin(lean))).subtract(0.0D, grip * Math.cos(lean), 0.0D);
         return new Pose(foot, yaw, Math.toDegrees(lean));
+    }
+
+    public static Vec3 renderedGripCenter(LivingEntity carrier, float partialTick) {
+        float yaw = Mth.rotLerp(partialTick, carrier.yBodyRotO, carrier.yBodyRot);
+        Vec3 forward = Vec3.directionFromRotation(0, yaw);
+        double height = HANDS_HEIGHT - (carrier.isCrouching() ? CROUCH_DROP : 0.0D);
+        return gripCenter(carrier.getPosition(partialTick), forward, height);
+    }
+
+    private static Vec3 gripCenter(Vec3 position, Vec3 forward, double height) {
+        return position.add(0.0D, height, 0.0D).add(forward.scale(HANDS_FORWARD));
     }
 
     /** Picks the ladder up if the player can reach some part of it and is not already carrying one. */
@@ -118,6 +139,7 @@ public final class LadderCarry {
     }
 
     private static void take(Player player, SiegeLadderEntity ladder) {
+        player.stopUsingItem();
         ladder.beginCarry(player);
         CARRIED.put(player.getUUID(), ladder);
         slow(player, ladder.getSections());

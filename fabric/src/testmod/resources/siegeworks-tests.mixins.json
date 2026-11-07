@@ -8,11 +8,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "client": [
-    "ProbeFrameMixin",
-    "ProbeLivingRenderMixin",
-    "ProbeGeoRenderMixin",
-    "ProbeVehicleHealthMixin"
-  ]
+  }
 }

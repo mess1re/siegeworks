@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:root",
+  "display": {
+    "icon": {
+      "item": "siegeworks:casting_table"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.cast_to_size.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.cast_to_size.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

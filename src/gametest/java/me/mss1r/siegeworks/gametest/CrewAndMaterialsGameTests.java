@@ -153,7 +153,7 @@ public final class CrewAndMaterialsGameTests {
     @GameTest(template = "empty")
     public static void ramImpactProfileIsIndependentOfEntityDamage(GameTestHelper helper) {
         var json = JsonParser.parseString(
-                "{\"baseDamage\":1,\"ramImpact\":{\"mass\":1000,\"width\":5,\"height\":5,\"spread\":1}}");
+                "{\"ramImpact\":{\"mass\":1000,\"width\":5,\"height\":5,\"spread\":1}}");
         helper.assertTrue(ProfileFormat.engine(json).isEmpty(), "Format check rejected ramImpact");
         var profile = SiegeEngineProfile.CODEC.parse(JsonOps.INSTANCE, json)
                 .result().orElseThrow();

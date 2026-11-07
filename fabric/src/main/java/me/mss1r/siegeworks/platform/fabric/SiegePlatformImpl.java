@@ -10,6 +10,10 @@ import net.minecraft.world.item.Item;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 
 public final class SiegePlatformImpl {
+    public static me.mss1r.siegeworks.item.FirearmItem firearm(String name, boolean matchlock) {
+        return new me.mss1r.siegeworks.item.FirearmItem(name, matchlock, new Item.Properties().stacksTo(1));
+    }
+
     public static me.mss1r.siegeworks.block.IncendiaryPotBlock incendiaryPot(net.minecraft.world.level.block.state.BlockBehaviour.Properties properties) {
         return new me.mss1r.siegeworks.block.IncendiaryPotBlock(properties) {
             { registerDefaultState(defaultBlockState().setValue(me.mss1r.siegeworks.fabric.FabricPotState.HAS_FUEL, false)); }

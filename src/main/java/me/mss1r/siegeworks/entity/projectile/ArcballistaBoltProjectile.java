@@ -20,8 +20,4 @@ public class ArcballistaBoltProjectile extends AbstractBoltProjectile {
         return SiegeworksItems.ARCBALLISTA_BOLT.get();
     }
 
-    @Override
-    protected int getMaxEntityPierces() {
-        return 2;
-    }
 }

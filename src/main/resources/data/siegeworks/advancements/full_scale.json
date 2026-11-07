@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:root",
+  "display": {
+    "icon": {
+      "item": "axiomata:construction_hammer"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.full_scale.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.full_scale.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

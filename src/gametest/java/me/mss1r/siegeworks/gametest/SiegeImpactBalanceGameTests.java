@@ -20,13 +20,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,8 +36,6 @@ import java.util.function.Predicate;
  * Regression limits for crater size, material resistance and repeated-shot wall breaches.
  * Writes layer-by-layer crater maps to {@value #MAPS} for inspection.
  */
-@GameTestHolder(Siegeworks.MOD_ID)
-@PrefixGameTestTemplate(false)
 public final class SiegeImpactBalanceGameTests {
     private static final ResourceLocation CANNON_BALL =
             MinecraftVersionCompat.id(Siegeworks.MOD_ID, "cannon_ball");

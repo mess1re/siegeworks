@@ -1,15 +1,14 @@
 {
-  "formatVersion": 2,
-  "maxHealth": 200.0,
-  "baseDamage": 88.0,
-  "muzzleVelocity": 43.0,
+  "formatVersion": 3,
+  "maxHealth": 200,
+  "muzzleVelocity": 43,
   "accuracyMultiplier": 0.25,
   "scattershot": {
     "capacity": 1,
     "minPellets": 48,
     "maxPellets": 64,
-    "spreadDegrees": 8.0,
-    "baseDamagePerPellet": 20.75
+    "spreadDegrees": 8,
+    "baseDamagePerPellet": 12
   },
   "damageConfig": {
     "entityDamageSources": {
@@ -33,5 +32,6 @@
       "explosion": true,
       "*": false
     }
-  }
+  },
+  "baseDamage": 180
 }

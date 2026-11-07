@@ -1,7 +1,6 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "maxHealth": 150.0,
-  "baseDamage": 16.0,
   "ramImpact": {
     "mass": 3500.0,
     "width": 0.625,
@@ -30,5 +29,6 @@
       "explosion": true,
       "*": false
     }
-  }
+  },
+  "baseDamage": 16.0
 }

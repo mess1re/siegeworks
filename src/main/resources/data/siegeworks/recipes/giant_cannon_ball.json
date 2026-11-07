@@ -1,18 +1,8 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "pattern": [
-    "###",
-    "###",
-    "###"
-  ],
-  "key": {
-    "#": {
-      "item": "minecraft:iron_ingot"
-    }
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "minecraft:stone"
   },
-  "result": {
-    "item": "siegeworks:giant_cannon_ball",
-    "count": 1
-  }
+  "result": "siegeworks:giant_cannon_ball",
+  "count": 1
 }

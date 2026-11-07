@@ -31,6 +31,10 @@ public class SiegeBannerRack {
         return banners.size();
     }
 
+    public boolean isFull() {
+        return banners.stream().noneMatch(ItemStack::isEmpty);
+    }
+
     public ItemStack get(int slot) {
         if (slot < 0 || slot >= banners.size()) {
             return ItemStack.EMPTY;

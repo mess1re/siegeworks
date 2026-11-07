@@ -42,6 +42,15 @@ public final class LadderPlayerClimbGameTests {
         climb(helper, 4, 1, 6.5D, LadderPlayerClimbGameTests::getsOnTheWall);
     }
 
+    @GameTest(template = "empty", timeoutTicks = SETTLE_TICKS + CLIMB_TICKS + 20)
+    public static void aPlayerCanStepOffAnOverhangingLadder(GameTestHelper helper) {
+        climb(helper, 7, 3, 6.5D, (player, wallTop, wallFace, best, fell) -> {
+            helper.assertTrue(best > wallTop + 3, "The ladder did not extend far enough above the wall");
+            helper.assertTrue(fell >= 0 && player.getY() < best - 2,
+                    "The player stayed attached to the upper end instead of falling");
+        });
+    }
+
     /** The ladder's top rests on the face of a wall taller than it: the player stays on its upper rungs. */
     @GameTest(template = "empty", timeoutTicks = SETTLE_TICKS + CLIMB_TICKS + 20)
     public static void aPlayerHoldsOnWhereTheLadderTouchesATallerWall(GameTestHelper helper) {
@@ -121,7 +130,7 @@ public final class LadderPlayerClimbGameTests {
             helper.runAfterDelay(SETTLE_TICKS + tick, () -> {
                 Player p = player[0];
                 // Holding forward, toward the wall, until standing on it
-                boolean onWall = p.getY() >= wallTop - 0.01D && p.getZ() > wallFace + 0.5D;
+                boolean onWall = Math.abs(p.getY() - wallTop) < 0.01D && p.getZ() > wallFace + 0.5D;
                 p.xo = p.getX();
                 p.yo = p.getY();
                 p.zo = p.getZ();

@@ -389,7 +389,7 @@ public final class IncendiaryFuseGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 20)
     public static void brokenPotFillingNamesTheFieldAtFault(GameTestHelper helper) {
-        String good = "{\"formatVersion\": 2, \"base\": {\"minecraft:charcoal\": 1}, \"baseBurst\": {\"fireRadius\": 5}}";
+        String good = "{\"formatVersion\": 3, \"base\": {\"minecraft:charcoal\": 1}, \"baseBurst\": {\"fireRadius\": 5}}";
         helper.assertTrue(ProfileFormat.potFilling(JsonParser.parseString(good)).isEmpty(),
                 "A valid pot filling was rejected");
         assertFormatError(helper, good.replace("\"baseBurst\"", "\"basBurst\""), "unknown field basBurst");

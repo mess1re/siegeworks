@@ -25,6 +25,13 @@ ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
+modId="epicfight"
+type="optional"
+versionRange="${epicfight_range}"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.${mod_id}]]
 modId="recruits"
 type="optional"
 versionRange="${recruits_range}"

@@ -557,6 +557,7 @@ public abstract class AbstractBoltThrowerEntity extends AbstractSiegeEntity impl
         projectile.alignRenderToDirection(direction);
         projectile.setBaseDamage(getBaseDamage());
         projectile.setOwner(this);
+        projectile.creditShotTo(operator);
 
         serverLevel.addFreshEntity(projectile);
         spawnLaunchParticles(serverLevel, mouthPos, direction);

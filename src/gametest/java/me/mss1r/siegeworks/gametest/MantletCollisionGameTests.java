@@ -84,7 +84,6 @@ public final class MantletCollisionGameTests {
 
         bolt.setPos(start.x, start.y, start.z);
         bolt.setDeltaMovement(mantlet.collisionTransform().directionToWorld(new Vec3(0.0D, 0.0D, 6.0D)));
-        bolt.setBaseDamage(12.0D);
         helper.assertTrue(level.addFreshEntity(bolt), "Failed to add moving bolt");
         float mantletHealth = mantlet.getHealth();
         float targetHealth = target.getHealth();

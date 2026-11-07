@@ -1,6 +1,7 @@
 package me.mss1r.siegeworks.client.maintenance;
 
 import me.mss1r.siegeworks.Siegeworks;
+import me.mss1r.siegeworks.client.gui.GuiPalette;
 import me.mss1r.siegeworks.gameplay.upgrade.EngineFinishController;
 import me.mss1r.siegeworks.network.MaintenanceActionC2SPayload;
 import me.mss1r.siegeworks.network.OpenMaintenanceS2CPayload;
@@ -16,8 +17,6 @@ import me.mss1r.siegeworks.network.SiegeworksNetworking;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
 
 public class SiegeMaintenanceScreen extends Screen {
@@ -73,27 +72,10 @@ public class SiegeMaintenanceScreen extends Screen {
     }
 
     private void loadTextColors() {
-        // Optional RP palette; preserve the native grey panel without a skin.
-        textColor = TEXT_COLOR;
-        headingColor = HEADING_COLOR;
-        progressColor = PROGRESS_COLOR;
-        var resource = minecraft.getResourceManager().getResource(TEXT_COLORS);
-        if (resource.isEmpty()) return;
-        Properties colors = new Properties();
-        try (var stream = resource.get().open()) {
-            colors.load(stream);
-            textColor = readColor(colors, "text", TEXT_COLOR);
-            headingColor = readColor(colors, "heading", HEADING_COLOR);
-            progressColor = readColor(colors, "progress", PROGRESS_COLOR);
-        } catch (IOException | IllegalArgumentException ignored) {
-            // A malformed optional skin must not prevent opening the screen.
-        }
-    }
-
-    private static int readColor(Properties colors, String key, int fallback) {
-        String value = colors.getProperty(key, "").trim();
-        if (value.startsWith("#")) value = value.substring(1);
-        return value.matches("[0-9a-fA-F]{6}") ? Integer.parseInt(value, 16) : fallback;
+        GuiPalette palette = GuiPalette.load(minecraft.getResourceManager(), TEXT_COLORS);
+        textColor = palette.color("text", TEXT_COLOR);
+        headingColor = palette.color("heading", HEADING_COLOR);
+        progressColor = palette.color("progress", PROGRESS_COLOR);
     }
 
     @Override

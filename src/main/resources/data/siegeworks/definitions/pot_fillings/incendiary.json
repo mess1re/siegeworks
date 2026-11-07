@@ -1,12 +1,27 @@
 {
-  "formatVersion": 2,
-  "base": { "minecraft:charcoal": 1, "minecraft:honeycomb": 1 },
-  "baseBurst": { "fireRadius": 5.0, "fireChance": 0.7, "burnSeconds": 8 },
+  "formatVersion": 3,
+  "base": {
+    "minecraft:charcoal": 1,
+    "minecraft:honeycomb": 1
+  },
+  "baseBurst": {
+    "fireRadius": 5.0,
+    "fireChance": 0.7,
+    "burnSeconds": 8
+  },
   "additives": {
-    "minecraft:charcoal": { "fireRadius": 1.5 },
-    "minecraft:honeycomb": { "burnSeconds": 2 },
-    "minecraft:blaze_powder": { "fireChance": 0.075 },
-    "minecraft:gunpowder": { "blastEnergy": 20000 }
+    "minecraft:charcoal": {
+      "fireRadius": 1.5
+    },
+    "minecraft:honeycomb": {
+      "burnSeconds": 2
+    },
+    "minecraft:blaze_powder": {
+      "fireChance": 0.075
+    },
+    "minecraft:gunpowder": {
+      "blastEnergy": 20000
+    }
   },
   "additiveSlots": 6,
   "maxOfAKind": 3,

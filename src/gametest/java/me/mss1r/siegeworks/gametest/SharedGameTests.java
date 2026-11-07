@@ -13,6 +13,18 @@ import java.util.function.UnaryOperator;
 public final class SharedGameTests {
     private record Suite(Class<?> type, String namespace) {}
     private static final List<Suite> SUITES = List.of(
+            new Suite(ManualRecipeGameTests.class, "siegeworks_recipes"),
+            new Suite(SiegeAdvancementGameTests.class, "siegeworks_advancements"),
+            new Suite(FirearmGameTests.class, "siegeworks_firearms"),
+            new Suite(CastingGameTests.class, "siegeworks_stone_ammunition"),
+            new Suite(StoneAmmunitionGameTests.class, "siegeworks_stone_ammunition"),
+            new Suite(SiegeImpactBalanceGameTests.class, "siegeworks_impact_balance"),
+            new Suite(BoltBalanceGameTests.class, BoltBalanceGameTests.NAMESPACE),
+            new Suite(ShotFlightGameTests.class, "siegeworks"),
+            new Suite(PhysicalImpactGameTests.class, PhysicalImpactGameTests.NAMESPACE),
+            new Suite(FragmentCalibrationGameTests.class, PhysicalImpactGameTests.NAMESPACE),
+            new Suite(StructureDamageGameTests.class, PhysicalImpactGameTests.NAMESPACE),
+            new Suite(ProjectileCalibrationGameTests.class, PhysicalImpactGameTests.NAMESPACE),
             new Suite(ConfigMigrationGameTests.class, "siegeworks_config"),
             new Suite(AimRegressionGameTests.class, "siegeworks_aim_regression"),
             new Suite(BannerGameTests.class, "siegeworks_banners"),

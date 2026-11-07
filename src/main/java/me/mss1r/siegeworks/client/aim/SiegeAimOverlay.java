@@ -19,6 +19,18 @@ public final class SiegeAimOverlay {
         if (minecraft.player == null || minecraft.screen != null || minecraft.options.hideGui) {
             return;
         }
+        if (me.mss1r.siegeworks.client.firearm.FirearmClient.aiming(minecraft.player)) {
+            if (minecraft.options.getCameraType() == net.minecraft.client.CameraType.THIRD_PERSON_FRONT) return;
+            int x=screenWidth/2, y=screenHeight/2;
+            graphics.pose().pushPose();graphics.pose().translate(x,y,0);
+            drawReticle(graphics,1,1,SHADOW_COLOR);drawReticle(graphics,0,0,RETICLE_COLOR);
+            graphics.pose().popPose();
+            float elevation=-minecraft.player.getViewXRot(partialTick);
+            if(Math.abs(elevation)<.05F)elevation=0;
+            String angle=String.format(Locale.ROOT,"%+.1f°",elevation);
+            graphics.drawString(minecraft.font,angle,x+10,y-minecraft.font.lineHeight/2,RETICLE_COLOR,true);
+            return;
+        }
 
         AbstractSiegeEntity siege = SiegeAimView.findControlledSiege(minecraft.player);
         if (siege == null || SiegeAimController.isFreeLookActive(minecraft.player, siege)) {

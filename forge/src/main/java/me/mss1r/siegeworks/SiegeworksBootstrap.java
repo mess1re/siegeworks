@@ -26,6 +26,9 @@ public final class SiegeworksBootstrap {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, new MigratingServerConfigSpec(SiegeworksServerConfig.SPEC.unwrap()));
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SiegeworksEngineConfig.SPEC.unwrap(), SiegeworksEngineConfig.FILE_NAME);
         initialize(modBus, MinecraftForge.EVENT_BUS);
+        if (Platform.isModLoaded("epicfight")) {
+            me.mss1r.siegeworks.integration.epicfight.NativeEpicFightCompat.register(modBus);
+        }
         if (Platform.isModLoaded("recruits")) {
             NativeRecruitsEvents.register(modBus);
         }

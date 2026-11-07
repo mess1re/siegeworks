@@ -1,5 +1,6 @@
 package me.mss1r.siegeworks.entity.siege;
 
+import me.mss1r.siegeworks.gameplay.advancement.SiegeAdvancement;
 import me.mss1r.siegeworks.gameplay.towing.TowingProfile;
 import me.mss1r.siegeworks.api.SiegeActionResult;
 import me.mss1r.siegeworks.api.MountedSiegeItemControl;
@@ -360,7 +361,7 @@ public class MonsMegEntity extends AbstractSiegeEntity implements GeoEntity, Sie
             return SiegeActionResult.LOADED;
         }
         if (stageItem == Items.FLINT_AND_STEEL) {
-            fireMonsMeg(serverLevel);
+            fireMonsMeg(serverLevel, operator);
             setOperator(operator);
             return SiegeActionResult.FIRED;
         }
@@ -427,7 +428,7 @@ public class MonsMegEntity extends AbstractSiegeEntity implements GeoEntity, Sie
         if (!consumeLoadingRequirement(player, hand, required)) return;
 
         if (required.item() == Items.FLINT_AND_STEEL) {
-            fireMonsMeg(serverLevel);
+            fireMonsMeg(serverLevel, player);
             setOperator(player);
             setLoadStage(0);
             return;
@@ -436,7 +437,7 @@ public class MonsMegEntity extends AbstractSiegeEntity implements GeoEntity, Sie
         setLoadStage(stage + 1);
     }
 
-    private void fireMonsMeg(ServerLevel serverLevel) {
+    private void fireMonsMeg(ServerLevel serverLevel, LivingEntity operator) {
         float firingPitch = getTrackedPitch();
         setShootAnimationTick(0);
         triggerAnimation("shoot");
@@ -462,7 +463,9 @@ public class MonsMegEntity extends AbstractSiegeEntity implements GeoEntity, Sie
             projectile.lockRenderRotation(getVisualRotationYInDegrees(), firingPitch);
             projectile.setBaseDamage(getBaseDamage());
             projectile.setOwner(this);
-            serverLevel.addFreshEntity(projectile);
+            if (serverLevel.addFreshEntity(projectile) && AMMO_GIANT_CANNON_BALL.equals(getAmmoLoaded())) {
+                SiegeAdvancement.GIFT_FOR_A_KING.award(operator);
+            }
         }
 
         SiegeParticleEffects.muzzleBlast(serverLevel, mouthPos, direction,
@@ -530,7 +533,7 @@ public class MonsMegEntity extends AbstractSiegeEntity implements GeoEntity, Sie
     protected boolean debugInstantFire(ServerLevel serverLevel, Player operator) {
         setScattershotCount(0);
         setAmmoLoaded(AMMO_GIANT_CANNON_BALL);
-        fireMonsMeg(serverLevel);
+        fireMonsMeg(serverLevel, operator);
         setOperator(operator);
         return true;
     }

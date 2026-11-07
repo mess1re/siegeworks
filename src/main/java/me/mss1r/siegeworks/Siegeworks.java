@@ -1,6 +1,8 @@
 package me.mss1r.siegeworks;
 
+import me.mss1r.siegeworks.gameplay.advancement.SiegeAdvancement;
 import me.mss1r.siegeworks.gameplay.ladder.LadderCarry;
+import me.mss1r.siegeworks.gameplay.firearm.FirearmActions;
 import me.mss1r.siegeworks.registry.SiegeworksBlockEntities;
 import me.mss1r.siegeworks.registry.SiegeworksBlocks;
 import me.mss1r.siegeworks.client.SiegeworksClient;
@@ -49,15 +51,18 @@ public final class Siegeworks {
       SiegeworksItemGroups.register();
       SiegeworksSounds.register();
       SiegeworksRecipes.register();
+      me.mss1r.siegeworks.registry.SiegeworksMenus.register();
       SiegeworksParticles.register();
       SiegeBallisticsEnvironment.initialize();
       SiegeworksNetworking.register();
       LadderCarry.register();
+      FirearmActions.register();
       me.mss1r.siegeworks.gameplay.ladder.LadderPush.register();
       CommandRegistrationEvent.EVENT.register(SiegeworksCommands::register);
       LifecycleEvent.SERVER_BEFORE_START.register(server -> SiegeworksDebug.reset());
       SiegeDeploymentLimitEvents.register();
       SiegeOwnershipEvents.register();
+      SiegeAdvancement.register();
       EntityAttributesHandler.register();
       SiegeProfileReloads.register();
       ProfileSync.register();

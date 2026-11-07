@@ -1,12 +1,37 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "mass": 0.12,
   "dragCoefficient": 1.5,
   "diameter": 0.03,
-  "hardness": 1.0,
-  "motor": { "thrust": 5.6, "burnTime": 1.35 },
-  "entity": { "damage": 1.1, "armorPiercing": 0.35, "structure": 0.1 },
-  "shock": { "radius": 3.2, "damage": 0.78 },
-  "blast": { "energy": 30000.0 },
-  "fire": { "radius": 1.5, "chance": 0.35 }
+  "hardness": 1,
+  "motor": {
+    "thrust": 5.6,
+    "burnTime": 1.35
+  },
+  "blast": {
+    "energy": 30000,
+    "radius": 3.2,
+    "damage": 35.1
+  },
+  "fire": {
+    "radius": 1.5,
+    "chance": 0.35,
+    "burnSeconds": 5
+  },
+  "material": {
+    "density": 7800,
+    "strength": 300000000,
+    "drag": 7800,
+    "fractureEnergy": 5000000,
+    "surfaceEnergy": 20000,
+    "fragmentSize": 0.005,
+    "ejectionFraction": 0.15
+  },
+  "fragmentBlock": "minecraft:iron_block",
+  "casingMass": 0.03,
+  "directHit": {
+    "armorPiercing": 0.35,
+    "damageType": "axiomata:light_projectile",
+    "referenceSpeed": 40
+  }
 }

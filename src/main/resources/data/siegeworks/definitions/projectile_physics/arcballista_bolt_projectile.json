@@ -1,8 +1,21 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "mass": 0.2,
   "dragCoefficient": 1.5,
   "diameter": 0.02,
-  "hardness": 1.0,
-  "entity": { "damage": 1.1, "armorPiercing": 0.55, "structure": 0.56 }
+  "hardness": 1,
+  "material": {
+    "density": 7800,
+    "strength": 300000000,
+    "drag": 7800,
+    "fractureEnergy": 5000000,
+    "surfaceEnergy": 20000,
+    "fragmentSize": 0.005,
+    "ejectionFraction": 0.15
+  },
+  "fragmentBlock": "minecraft:iron_block",
+  "directHit": {
+    "armorPiercing": 0.55,
+    "damageType": "axiomata:bolt"
+  }
 }

@@ -475,6 +475,7 @@ public class TrebuchetEntity extends AbstractSiegeEntity implements GeoEntity, S
 
         projectile.setBaseDamage(getBaseDamage());
         projectile.setOwner(this);
+        projectile.creditShotTo(getOperator());
 
         String ammo = getAmmoLoaded();
         if (SiegeAmmo.isStoneAmmoKey(ammo)) {

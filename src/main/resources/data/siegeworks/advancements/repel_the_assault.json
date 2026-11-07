@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:full_scale",
+  "display": {
+    "icon": {
+      "item": "siegeworks:forked_pole"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.repel_the_assault.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.repel_the_assault.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

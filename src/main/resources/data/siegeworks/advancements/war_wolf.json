@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:full_scale",
+  "display": {
+    "icon": {
+      "item": "siegeworks:trebuchet_spawner"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.war_wolf.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.war_wolf.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

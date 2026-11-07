@@ -75,8 +75,24 @@ import java.util.List;
 
 public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
         implements GeoEntity, SiegeArtilleryControl, MountedSiegeItemControl {
+    public static final int ROUND_SHOT_CALIBER_MM = 120;
     private static final float OPERATOR_YAW_OFFSET = 45.0F;
     private static final String AMMO_CANNON_BALL = "siegeworks:cannon_ball";
+    private static final String AMMO_STONE_CANNON_BALL = "siegeworks:stone_cannon_ball";
+
+    private static boolean isSolidShot(Item item) {
+        return item == SiegeworksItems.CANNON_BALL.get() || item == SiegeworksItems.STONE_CANNON_BALL.get();
+    }
+
+    private EntityType<CannonProjectile> loadedProjectileType() {
+        return AMMO_STONE_CANNON_BALL.equals(getAmmoLoaded())
+                ? SiegeworksEntities.STONE_CANNON_BALL.get() : SiegeworksEntities.CANNON_BALL.get();
+    }
+
+    private void setLoadedSolidShot(Item item) {
+        setAmmoLoaded(item == SiegeworksItems.STONE_CANNON_BALL.get()
+                ? AMMO_STONE_CANNON_BALL : AMMO_CANNON_BALL);
+    }
     private static final RawAnimation SHOOT_ANIMATION =
             RawAnimation.begin().then("shoot", Animation.LoopType.PLAY_ONCE);
 
@@ -221,6 +237,13 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
         }
 
         LoadingRequirement stage = stages[stageIndex];
+        if (stageIndex == 2 && isSolidShot(stack.getItem())
+                && me.mss1r.siegeworks.item.RoundShotItem.caliber(stack) == ROUND_SHOT_CALIBER_MM) {
+            stage = LoadingRequirement.consume(stack.getItem());
+        } else if (stageIndex == 2 && stack.getItem() instanceof me.mss1r.siegeworks.item.RoundShotItem) {
+            player.displayClientMessage(Component.translatable("siege.loading.caliber_required", ROUND_SHOT_CALIBER_MM), true);
+            return InteractionResult.SUCCESS;
+        }
         if (!canBeginLoadingRequirement(player, hand, stage)) return InteractionResult.SUCCESS;
         return beginLoadingAction(player, hand, serverLevel, stageIndex, stage);
     }
@@ -237,7 +260,7 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
             if (getScattershotCount() > 0) {
                 return stack.is(Items.IRON_NUGGET) || stack.is(SiegeworksItems.RAMROD.get());
             }
-            return stack.is(SiegeworksItems.CANNON_BALL.get()) || stack.is(Items.IRON_NUGGET);
+            return stack.getItem() instanceof me.mss1r.siegeworks.item.RoundShotItem || stack.is(Items.IRON_NUGGET);
         }
         return stages[stageIndex].matches(stack.getItem());
     }
@@ -249,6 +272,7 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
 
     @Override
     public SiegeActionResult advancePrimaryAction(LivingEntity operator, Container inventory) {
+        inventory = new me.mss1r.siegeworks.gameplay.loading.CaliberInventory(inventory, ROUND_SHOT_CALIBER_MM);
         if (!(level() instanceof ServerLevel serverLevel) || !isOperator(operator)) {
             automatedLoading.reset();
             return SiegeActionResult.DENIED;
@@ -267,8 +291,10 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
 
         LoadingRequirement stage = stages[stageIndex];
         if (stageIndex == 2) {
-            boolean standardAvailable = AutomatedLoadingSession.hasRequiredItem(
-                    inventory, stage, stage.item());
+            Item solidShot = AutomatedLoadingSession.firstAvailable(inventory,
+                    SiegeworksItems.CANNON_BALL.get(), SiegeworksItems.STONE_CANNON_BALL.get());
+            boolean standardAvailable = solidShot != null;
+            if (standardAvailable) stage = LoadingRequirement.consume(solidShot);
             boolean useScattershot = pendingAutomatedScattershotCount > 0
                     || getScattershotCount() > 0
                     || !standardAvailable;
@@ -326,7 +352,7 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
             }
 
             setScattershotCount(0);
-            setAmmoLoaded(AMMO_CANNON_BALL);
+            setLoadedSolidShot(stageItem);
             setLoadStage(stageIndex + 1);
             return SiegeActionResult.LOADED;
         }
@@ -361,10 +387,15 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
 
     @Override
     protected void completeLoadingAction(ServerLevel serverLevel, Player player, InteractionHand hand, int stageIndex) {
+        if (stageIndex == 2 && isSolidShot(getActiveLoadingItem())
+                && me.mss1r.siegeworks.item.RoundShotItem.caliber(player.getItemInHand(hand)) != ROUND_SHOT_CALIBER_MM) return;
         LoadingRequirement[] stages = getLoadStages();
         if (stageIndex < 0 || stageIndex >= stages.length) return;
 
         LoadingRequirement stage = stages[stageIndex];
+        if (stageIndex == 2 && isSolidShot(getActiveLoadingItem())) {
+            stage = LoadingRequirement.consume(getActiveLoadingItem());
+        }
         if (stageIndex == 2 && getActiveLoadingItem() == Items.IRON_NUGGET) {
             int amount = Math.min(pendingManualScattershotCount,
                     getScattershotCapacity() - getScattershotCount());
@@ -388,7 +419,7 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
                 }
             } else {
                 setScattershotCount(0);
-                setAmmoLoaded(AMMO_CANNON_BALL);
+                setLoadedSolidShot(stage.item());
             }
             setLoadStage(stageIndex + 1);
             return;
@@ -419,7 +450,7 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
                     pelletCount, getScattershotProfile().spreadDegrees(),
                     getScattershotProfile().baseDamagePerPellet(), false);
         } else {
-            CannonProjectile projectile = new CannonProjectile(SiegeworksEntities.CANNON_BALL.get(), this, serverLevel);
+            CannonProjectile projectile = new CannonProjectile(loadedProjectileType(), this, serverLevel);
             projectile.setPos(muzzle.x, muzzle.y, muzzle.z);
             projectile.setDeltaMovement(velocity);
             projectile.setBaseDamage(getBaseDamage());
@@ -523,7 +554,7 @@ public abstract class AbstractFieldGunEntity extends AbstractSiegeEntity
     @Override
     public float calculateAutomatedAimPitch(Vec3 target) {
         return SiegeBallistics.calculateLowAnglePitch(getAutomatedAimOrigin(), target,
-                getLaunchSpeed(), ballisticFlight(SiegeworksEntities.CANNON_BALL.get()));
+                getLaunchSpeed(), ballisticFlight(loadedProjectileType()));
     }
 
     private void playReport(ServerLevel serverLevel, Vec3 position) {

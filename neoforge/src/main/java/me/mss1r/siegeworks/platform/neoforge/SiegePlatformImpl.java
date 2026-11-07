@@ -13,6 +13,20 @@ import net.neoforged.fml.loading.FMLConfig;
 import net.neoforged.fml.loading.FMLPaths;
 
 public final class SiegePlatformImpl {
+    public static me.mss1r.siegeworks.item.FirearmItem firearm(String name, boolean matchlock) {
+        return new me.mss1r.siegeworks.item.FirearmItem(name, matchlock, new Item.Properties().stacksTo(1)) {
+            @Override public void initializeClient(java.util.function.Consumer<IClientItemExtensions> consumer) {
+                consumer.accept(new IClientItemExtensions() {
+                    private me.mss1r.siegeworks.client.firearm.FirearmItemRenderer renderer;
+                    @Override public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                        if (renderer == null) renderer = new me.mss1r.siegeworks.client.firearm.FirearmItemRenderer();
+                        return renderer;
+                    }
+                });
+            }
+        };
+    }
+
     public static me.mss1r.siegeworks.block.IncendiaryPotBlock incendiaryPot(net.minecraft.world.level.block.state.BlockBehaviour.Properties properties) {
         return new me.mss1r.siegeworks.block.IncendiaryPotBlock(properties) {
             @Override public void onBlockExploded(net.minecraft.world.level.block.state.BlockState state,

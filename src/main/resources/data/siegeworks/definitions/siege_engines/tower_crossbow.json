@@ -1,9 +1,8 @@
 {
-  "formatVersion": 2,
-  "maxHealth": 90.0,
+  "formatVersion": 3,
+  "maxHealth": 90,
   "waxHoneycomb": 6,
-  "baseDamage": 60.0,
-  "muzzleVelocity": 120.0,
+  "muzzleVelocity": 120,
   "accuracyMultiplier": 0.08,
   "damageConfig": {
     "entityDamageSources": {
@@ -27,5 +26,6 @@
       "explosion": true,
       "*": false
     }
-  }
+  },
+  "baseDamage": 140
 }

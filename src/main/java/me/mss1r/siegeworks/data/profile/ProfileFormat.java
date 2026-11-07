@@ -10,24 +10,24 @@ import java.util.Set;
 
 /** Checks the JSON before codecs can discard old or misspelled fields. */
 public final class ProfileFormat {
-    public static final int VERSION = 2;
+    public static final int VERSION = 3;
     private static final Set<String> OLD_PROJECTILE_FIELDS = Set.of(
             "penetration", "drag", "impactFuse", "blockCostMultiplier", "blockDamageMultiplier",
             "energyLossMultiplier", "armorPiercing", "entityDamageMultiplier", "shockRadius",
             "shockDamageMultiplier", "baseExplosionPower", "speedExplosionScale", "shrapnelFragments",
-            "shrapnelRadius", "shrapnelDamage");
+            "shrapnelRadius", "shrapnelDamage", "entity", "shock");
     private static final Set<String> ENGINE_FIELDS = Set.of(
             "formatVersion", "maxHealth", "baseDamage", "muzzleVelocity", "accuracyMultiplier",
-            "damageConfig", "scattershot", "ramImpact", "burnRate", "waxHoneycomb", "bronzeCopper");
+            "damageConfig", "scattershot", "ramImpact", "burnRate", "waxHoneycomb", "bronzeCopper", "impactMaterial");
     private static final Set<String> PROJECTILE_FIELDS = Set.of(
-            "formatVersion", "mass", "dragCoefficient", "diameter", "hardness", "motor", "entity",
-            "shock", "blast", "fire");
+            "formatVersion", "mass", "dragCoefficient", "diameter", "hardness", "motor", "material", "fragmentBlock", "casingMass",
+            "blast", "fire", "directHit");
     private static final Map<String, Set<String>> PROJECTILE_PARTS = Map.of(
             "motor", Set.of("thrust", "burnTime"),
-            "entity", Set.of("damage", "armorPiercing", "structure"),
-            "shock", Set.of("radius", "damage"),
-            "blast", Set.of("energy"),
-            "fire", Set.of("radius", "chance"));
+            "directHit", Set.of("damage", "armorPiercing", "damageType", "referenceSpeed"),
+            "material", Set.of("density", "strength", "drag", "fractureEnergy", "surfaceEnergy", "fragmentSize", "ejectionFraction"),
+            "blast", Set.of("energy", "radius", "damage"),
+            "fire", Set.of("radius", "chance", "burnSeconds"));
     private static final Set<String> EFFECT_FIELDS = Set.of("fireRadius", "fireChance", "burnSeconds", "blastEnergy");
 
     private ProfileFormat() {
@@ -35,11 +35,11 @@ public final class ProfileFormat {
 
     public static Optional<String> engine(JsonElement json) {
         return check(json, ENGINE_FIELDS, Set.of("projectileSpeed"), Map.of(
-                "damageConfig", Set.of("entityDamageSources", "itemDamageSources", "damageTypeSources",
-                        "entityDamageMultipliers"),
+                "damageConfig", Set.of("entityDamageSources", "itemDamageSources", "damageTypeSources"),
                 "scattershot", Set.of("capacity", "minPellets", "maxPellets", "pelletsPerLoadedItemMin",
                         "pelletsPerLoadedItemMax", "spreadDegrees", "baseDamagePerPellet"),
-                "ramImpact", Set.of("mass", "width", "height", "spread")));
+                "ramImpact", Set.of("mass", "width", "height", "spread"),
+                "impactMaterial", Set.of("density", "strength", "drag", "fractureEnergy", "surfaceEnergy", "fragmentSize", "ejectionFraction")));
     }
 
     public static Optional<String> projectile(JsonElement json) {
@@ -48,7 +48,8 @@ public final class ProfileFormat {
 
     public static Optional<String> blockMaterial(JsonElement json) {
         Optional<String> error = check(json, Set.of("formatVersion", "block", "tag", "priority",
-                "strength", "drag", "fractureEnergy", "projectileResistance"), Set.of(), Map.of());
+                "strength", "drag", "fractureEnergy", "projectileResistance", "impactMaterial"), Set.of(),
+                Map.of("impactMaterial", Set.of("density", "strength", "drag", "fractureEnergy", "surfaceEnergy", "fragmentSize", "ejectionFraction")));
         if (error.isEmpty() && json.getAsJsonObject().has("tag") && !json.getAsJsonObject().has("priority")) {
             return Optional.of("tag materials need an explicit priority");
         }
@@ -145,9 +146,7 @@ public final class ProfileFormat {
         JsonObject object = json.getAsJsonObject();
         var old = object.keySet().stream().filter(oldFields::contains).sorted().toList();
         if (!old.isEmpty()) {
-            return Optional.of("beta.5 profile fields " + old
-                    + " are not supported by format 2; see "
-                    + "https://github.com/mess1re/siegeworks/wiki/Data-Pack-Reference");
+            return Optional.of("retired profile fields " + old + " are not supported by format " + VERSION);
         }
         Optional<String> error = version(object).or(() -> unknown(object, fields, ""));
         if (error.isPresent()) {
@@ -156,7 +155,7 @@ public final class ProfileFormat {
         for (String key : object.keySet()) {
             if (key.equals("formatVersion") || parts.containsKey(key)) continue;
             JsonElement value = object.get(key);
-            boolean id = key.equals("block") || key.equals("tag");
+            boolean id = key.equals("block") || key.equals("tag") || key.equals("fragmentBlock");
             if (!value.isJsonPrimitive() || (id ? !value.getAsJsonPrimitive().isString()
                     : !value.getAsJsonPrimitive().isNumber())) {
                 return Optional.of(key + " must be " + (id ? "a resource ID" : "a number"));
@@ -176,9 +175,11 @@ public final class ProfileFormat {
                 }
                 if (!part.getKey().equals("damageConfig")) {
                     for (var field : object.getAsJsonObject(part.getKey()).entrySet()) {
-                        if (!field.getValue().isJsonPrimitive() || !field.getValue().getAsJsonPrimitive().isNumber()) {
+                        boolean resourceId = field.getKey().equals("damageType");
+                        if (!field.getValue().isJsonPrimitive() || (resourceId ? !field.getValue().getAsJsonPrimitive().isString() : !field.getValue().getAsJsonPrimitive().isNumber())) {
                             return Optional.of(part.getKey() + "." + field.getKey() + " must be a number");
                         }
+                        if (field.getKey().equals("burnSeconds") && !isInteger(field.getValue())) return Optional.of("fire.burnSeconds must be an integer");
                     }
                 }
             }

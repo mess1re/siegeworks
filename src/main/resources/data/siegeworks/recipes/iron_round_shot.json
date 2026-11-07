@@ -1,0 +1,10 @@
+{
+  "type": "siegeworks:casting",
+  "ingredient": {
+    "tag": "siegeworks:iron_ingots"
+  },
+  "result": "siegeworks:cannon_ball",
+  "reference_caliber": 120,
+  "reference_cost": 1,
+  "max_batch": 16
+}

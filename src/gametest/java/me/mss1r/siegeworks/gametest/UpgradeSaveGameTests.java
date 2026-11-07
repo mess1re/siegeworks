@@ -151,7 +151,7 @@ public final class UpgradeSaveGameTests {
     }
 
     @GameTest(template = "empty")
-    public static void beta5EmbeddedBoltStillHasItsDamageAndEmbeddedState(GameTestHelper helper) {
+    public static void oldEmbeddedBoltKeepsItsStateAndStoredDamage(GameTestHelper helper) {
         var bolt = SiegeworksEntities.TOWER_CROSSBOW_BOLT_PROJECTILE.get().create(helper.getLevel());
         helper.assertTrue(bolt != null, "No bolt for the upgrade test");
         CompoundTag old = new CompoundTag();
@@ -163,7 +163,7 @@ public final class UpgradeSaveGameTests {
         CompoundTag saved = new CompoundTag();
         bolt.addAdditionalSaveData(saved);
         helper.assertTrue(saved.getDouble("BaseDamage") == 36.0D && saved.getBoolean("InGround"),
-                "The old bolt's state was reset while loading");
+                "The old bolt lost its embedded state or damage calibration");
         helper.succeed();
     }
 }

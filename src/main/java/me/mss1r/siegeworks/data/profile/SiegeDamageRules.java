@@ -1,17 +1,13 @@
 package me.mss1r.siegeworks.data.profile;
 
-import me.mss1r.axiomata.data.profile.ProfileValidation;
-
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Map;
-import java.util.Optional;
 
 public record SiegeDamageRules(Map<String, Boolean> entities,
                                Map<String, Boolean> items,
-                               Map<String, Boolean> damageTypes,
-                               Map<String, Double> entityMultipliers) {
+                               Map<String, Boolean> damageTypes) {
     public static final SiegeDamageRules DEFAULT = new SiegeDamageRules(
             Map.of(
                     "minecraft:player", false,
@@ -31,8 +27,7 @@ public record SiegeDamageRules(Map<String, Boolean> entities,
                     "projectile", false,
                     "explosion", true,
                     "*", false
-            ),
-            Map.of("*", 1.0D)
+            )
     );
 
     public static final Codec<SiegeDamageRules> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -44,17 +39,13 @@ public record SiegeDamageRules(Map<String, Boolean> entities,
                     .forGetter(SiegeDamageRules::items),
             Codec.unboundedMap(Codec.STRING, Codec.BOOL)
                     .optionalFieldOf("damageTypeSources", Map.of())
-                    .forGetter(SiegeDamageRules::damageTypes),
-            Codec.unboundedMap(Codec.STRING, Codec.DOUBLE)
-                    .optionalFieldOf("entityDamageMultipliers", DEFAULT.entityMultipliers())
-                    .forGetter(SiegeDamageRules::entityMultipliers)
+                    .forGetter(SiegeDamageRules::damageTypes)
     ).apply(instance, SiegeDamageRules::new));
 
     public SiegeDamageRules {
         entities = Map.copyOf(entities);
         items = Map.copyOf(items);
         damageTypes = Map.copyOf(damageTypes);
-        entityMultipliers = Map.copyOf(entityMultipliers);
     }
 
     public boolean allowsEntity(String entityId) {
@@ -67,14 +58,6 @@ public record SiegeDamageRules(Map<String, Boolean> entities,
 
     public boolean allowsDamageType(String damageType) {
         return resolveRule(damageTypes, damageType);
-    }
-
-    public double multiplierForEntity(String entityId) {
-        return entityMultipliers.getOrDefault(entityId, entityMultipliers.getOrDefault("*", 1.0D));
-    }
-
-    Optional<String> validationError() {
-        return ProfileValidation.nonNegativeValues("entityDamageMultipliers", entityMultipliers);
     }
 
     private static boolean resolveRule(Map<String, Boolean> rules, String key) {

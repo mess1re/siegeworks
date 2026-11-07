@@ -1,6 +1,7 @@
 package me.mss1r.siegeworks.data.profile;
 
 import me.mss1r.axiomata.data.profile.ProfileValidation;
+import me.mss1r.axiomata.ballistics.profile.ImpactMaterialProfile;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,14 +19,14 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
                                  float accuracyMultiplier,
                                  SiegeDamageRules damageRules, ScattershotProfile scattershot,
                                  RamImpactProfile ramImpact, double burnRate, int waxHoneycomb,
-                                 int bronzeCopper) {
+                                 int bronzeCopper, ImpactMaterialProfile impactMaterial) {
     /** A wooden engine left burning is gone in a little over a minute. */
     public static final double DEFAULT_BURN_RATE = 0.015D;
 
     public SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, double muzzleVelocity,
                               float accuracyMultiplier, SiegeDamageRules damageRules, ScattershotProfile scattershot) {
         this(maxHealth, baseDamage, muzzleVelocity, accuracyMultiplier, damageRules, scattershot,
-                RamImpactProfile.DEFAULT, DEFAULT_BURN_RATE, 0, 0);
+                RamImpactProfile.DEFAULT, DEFAULT_BURN_RATE, 0, 0, ImpactMaterialProfile.WOOD);
     }
     private static final double DEFAULT_MUZZLE_VELOCITY = 60.0D;
     public static final SiegeEngineProfile DEFAULT = new SiegeEngineProfile(
@@ -47,7 +48,8 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
                     .forGetter(SiegeEngineProfile::ramImpact),
             Codec.DOUBLE.optionalFieldOf("burnRate", DEFAULT_BURN_RATE).forGetter(SiegeEngineProfile::burnRate),
             Codec.INT.optionalFieldOf("waxHoneycomb", 0).forGetter(SiegeEngineProfile::waxHoneycomb),
-            Codec.INT.optionalFieldOf("bronzeCopper", 0).forGetter(SiegeEngineProfile::bronzeCopper)
+            Codec.INT.optionalFieldOf("bronzeCopper", 0).forGetter(SiegeEngineProfile::bronzeCopper),
+            ImpactMaterialProfile.CODEC.optionalFieldOf("impactMaterial", ImpactMaterialProfile.WOOD).forGetter(SiegeEngineProfile::impactMaterial)
     ).apply(instance, SiegeEngineProfile::new));
 
     public Optional<String> validationError() {
@@ -65,8 +67,6 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
         if (error.isPresent()) {
             return error;
         }
-        error = damageRules.validationError();
-        if (error.isPresent()) return error;
         error = scattershot.validationError();
         if (error.isPresent()) return error;
         if (!(burnRate >= 0.0D && burnRate <= 1.0D)) {
@@ -75,6 +75,7 @@ public record SiegeEngineProfile(Optional<Double> maxHealth, double baseDamage, 
         if (waxHoneycomb < 0 || bronzeCopper < 0) {
             return Optional.of("waxHoneycomb and bronzeCopper must not be negative");
         }
-        return ramImpact.validationError();
+        var materialError = impactMaterial.validationError();
+        return materialError.isPresent() ? materialError : ramImpact.validationError();
     }
 }

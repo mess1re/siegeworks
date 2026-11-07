@@ -93,11 +93,10 @@ public final class IncendiaryFuse {
      * goes to the owning engine, otherwise {@code responsible}.
      */
     public static void burst(ServerLevel level, Vec3 at, PotFilling filling, int delayTicks,
-                             EntityType<TrebuchetProjectile> type, ResourceLocation profile, double baseDamage,
+                             EntityType<TrebuchetProjectile> type, ResourceLocation profile,
                              @Nullable Entity owner, @Nullable UUID responsible) {
         TrebuchetProjectile pot = new TrebuchetProjectile(type, level);
         pot.setPhysicsProfile(profile);
-        pot.setBaseDamage(baseDamage);
         pot.setFilling(filling);
         if (owner != null) {
             pot.setOwner(owner);
@@ -118,8 +117,7 @@ public final class IncendiaryFuse {
     public static void burstPlaced(ServerLevel level, Vec3 at, PotFilling filling, int delayTicks,
                                    @Nullable UUID responsible) {
         burst(level, at, filling, delayTicks, SiegeworksEntities.ONAGER_PROJECTILE.get(),
-                ProjectileVariants.ONAGER_FIRE_PROJECTILE,
-                SiegeProfileCatalogs.ENGINES.forEntity(SiegeworksEntities.ONAGER_ENTITY.get()).baseDamage(), null,
+                ProjectileVariants.ONAGER_FIRE_PROJECTILE, null,
                 responsible);
     }
 }

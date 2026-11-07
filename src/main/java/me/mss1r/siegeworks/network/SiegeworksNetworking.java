@@ -20,6 +20,7 @@ import java.util.function.Function;
 public final class SiegeworksNetworking {
     private static final ResourceLocation SIEGE_YAW = id("siege_yaw");
     private static final ResourceLocation SIEGE_MOVEMENT = id("siege_movement");
+    private static final ResourceLocation FIREARM_FIRE = id("firearm_fire");
     private static final ResourceLocation BOLT_THROWER_FIRE = id("bolt_thrower_fire");
     private static final ResourceLocation ONAGER_FIRE = id("onager_fire");
     private static final ResourceLocation MANTLET_ACTION = id("mantlet_action");
@@ -38,6 +39,7 @@ public final class SiegeworksNetworking {
         /*register(NetworkManager.c2s(), SIEGE_YAW, SiegeYawC2SPayload::decode, SiegeYawC2SPayload::handle);
         register(NetworkManager.c2s(), SIEGE_MOVEMENT,
                 SiegeMovementC2SPayload::decode, SiegeMovementC2SPayload::handle);
+        register(NetworkManager.c2s(), FIREARM_FIRE, FirearmFireC2SPayload::decode, FirearmFireC2SPayload::handle);
         register(NetworkManager.c2s(), BOLT_THROWER_FIRE,
                 BoltThrowerFireC2SPayload::decode, BoltThrowerFireC2SPayload::handle);
         register(NetworkManager.c2s(), ONAGER_FIRE,
@@ -53,6 +55,7 @@ public final class SiegeworksNetworking {
                 SiegeYawC2SPayload.STREAM_CODEC, SiegeYawC2SPayload::handle);
         NetworkManager.registerReceiver(NetworkManager.c2s(), SiegeMovementC2SPayload.TYPE,
                 SiegeMovementC2SPayload.STREAM_CODEC, SiegeMovementC2SPayload::handle);
+        NetworkManager.registerReceiver(NetworkManager.c2s(), FirearmFireC2SPayload.TYPE, FirearmFireC2SPayload.STREAM_CODEC, FirearmFireC2SPayload::handle);
         NetworkManager.registerReceiver(NetworkManager.c2s(), BoltThrowerFireC2SPayload.TYPE,
                 BoltThrowerFireC2SPayload.STREAM_CODEC, BoltThrowerFireC2SPayload::handle);
         NetworkManager.registerReceiver(NetworkManager.c2s(), OnagerFireC2SPayload.TYPE,
@@ -114,6 +117,9 @@ public final class SiegeworksNetworking {
         } else if (packet instanceof SiegeMovementC2SPayload value) {
             SiegeMovementC2SPayload.encode(value, buffer);
             id = SIEGE_MOVEMENT;
+        } else if (packet instanceof FirearmFireC2SPayload value) {
+            FirearmFireC2SPayload.encode(value, buffer);
+            id = FIREARM_FIRE;
         } else if (packet instanceof BoltThrowerFireC2SPayload value) {
             BoltThrowerFireC2SPayload.encode(value, buffer);
             id = BOLT_THROWER_FIRE;

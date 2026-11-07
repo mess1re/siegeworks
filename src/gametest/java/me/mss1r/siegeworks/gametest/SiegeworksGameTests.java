@@ -139,7 +139,9 @@ public final class SiegeworksGameTests {
         SiegeEngineProfile culverin = SiegeProfileCatalogs.ENGINES.forEntity(
                 SiegeworksEntities.CULVERIN_ENTITY.get());
         helper.assertTrue(Math.abs(culverin.baseDamage() - 78.0D) < 1.0E-6D,
-                "Culverin did not receive its data-pack damage profile");
+                "Culverin did not receive its literal HP profile");
+        helper.assertTrue(Math.abs(culverin.muzzleVelocity() - 300.0D) < 1.0E-6D,
+                "Culverin did not receive its data-pack launch profile");
         helper.assertTrue(culverin.scattershot().capacity() == 12,
                 "Culverin did not receive its data-pack scattershot profile");
 
@@ -1312,7 +1314,7 @@ public final class SiegeworksGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 40)
-    public static void lethalBoltHitsContinueAndSurvivorsKeepTheBolt(GameTestHelper helper) {
+    public static void penetratingHitsContinueAndStoppedHitsAttach(GameTestHelper helper) {
         buildFloor(helper);
         ServerLevel level = helper.getLevel();
         TowerCrossbowEntity towerCrossbow = SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(level);
@@ -1343,7 +1345,7 @@ public final class SiegeworksGameTests {
         TestTowerCrossbowBoltProjectile attachingBolt = new TestTowerCrossbowBoltProjectile(
                 SiegeworksEntities.TOWER_CROSSBOW_BOLT_PROJECTILE.get(), towerCrossbow, level);
         attachingBolt.setBaseDamage(1.0D);
-        attachingBolt.setDeltaMovement(0.0D, 0.0D, 5.0D);
+        attachingBolt.setDeltaMovement(0.0D, 0.0D, 0.5D);
         attachingBolt.hitTarget(survivingTarget);
         helper.assertTrue(survivingTarget.isAlive(), "The attachment test target was killed");
         helper.assertTrue(!attachingBolt.isRemoved() && attachingBolt.isEmbedded(),
@@ -3046,8 +3048,10 @@ public final class SiegeworksGameTests {
                 SiegeworksEntities.CANNON_BALL.get(), cannon, level);
         Vec3 start = new Vec3(tower.getX(), tower.getY() + 1.0D, tower.getZ() - 7.0D);
         projectile.setPos(start.x, start.y, start.z);
-        projectile.setDeltaMovement(0.0D, 0.0D, 7.5D);
+        double speed = me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs.ENGINES
+                .forEntity(cannon.getType()).muzzleVelocity() / 20;
         projectile.setBaseDamage(cannon.getBaseDamage());
+        projectile.setDeltaMovement(0.0D, 0.0D, speed);
         projectile.setOwner(cannon);
         level.addFreshEntity(projectile);
     }
@@ -3385,7 +3389,24 @@ public final class SiegeworksGameTests {
         }
 
         private void hitTarget(Entity target) {
-            onHitEntity(new EntityHitResult(target));
+            Vec3 direction = getDeltaMovement().normalize();
+            Vec3 aim = target.getBoundingBox().getCenter();
+            if (target instanceof me.mss1r.axiomata.collision.CollidableStructure structure) {
+                for (var group : structure.collisionGroups()) {
+                    if (!group.parts().isEmpty()) {
+                        var part = group.parts().get(0);
+                        aim = structure.collisionTransform().toWorld(group.fromPart(part, part.box().getCenter()));
+                        break;
+                    }
+                }
+            }
+            double reach = target.getBoundingBox().getSize() + 2;
+            Vec3 start = aim.subtract(direction.scale(reach));
+            Vec3 end = aim.add(direction.scale(reach));
+            var contact = target instanceof me.mss1r.axiomata.collision.CollidableStructure structure
+                    ? me.mss1r.axiomata.collision.StructureCollisionResolver.clipSegment(structure, start, end)
+                    : target.getBoundingBox().clip(start, end);
+            onHitEntity(new EntityHitResult(target, contact.orElse(aim)));
         }
     }
 

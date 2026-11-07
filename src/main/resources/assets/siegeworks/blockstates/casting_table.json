@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "siegeworks:block/casting_table"
+    },
+    "facing=east": {
+      "model": "siegeworks:block/casting_table",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "siegeworks:block/casting_table",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "siegeworks:block/casting_table",
+      "y": 270
+    }
+  }
+}

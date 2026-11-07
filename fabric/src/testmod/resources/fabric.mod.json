@@ -5,13 +5,12 @@
   "name": "Siegeworks Fabric integration tests",
   "environment": "*",
   "entrypoints": {
-    "main": ["me.mss1r.siegeworks.gametest.FabricLifecycleProbe"],
+    "main": [
+      "me.mss1r.siegeworks.gametest.FabricLifecycleProbe"
+    ],
     "fabric-gametest": [
       "me.mss1r.siegeworks.gametest.FabricGameTestBridge",
       "me.mss1r.siegeworks.gametest.FabricPortGameTests"
-    ],
-    "client": [
-      "me.mss1r.siegeworks.gametest.FabricClientProbe"
     ]
   },
   "depends": {

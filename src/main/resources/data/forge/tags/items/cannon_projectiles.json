@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "siegeworks:cannon_ball"
+    "siegeworks:cannon_ball",
+    "siegeworks:stone_cannon_ball"
   ]
 }

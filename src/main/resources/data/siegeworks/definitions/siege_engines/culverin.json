@@ -1,11 +1,10 @@
 {
-  "formatVersion": 2,
-  "maxHealth": 70.0,
+  "formatVersion": 3,
+  "maxHealth": 70,
   "burnRate": 0.0075,
   "waxHoneycomb": 6,
   "bronzeCopper": 12,
-  "baseDamage": 78.0,
-  "muzzleVelocity": 300.0,
+  "muzzleVelocity": 300,
   "accuracyMultiplier": 0.07,
   "scattershot": {
     "capacity": 12,
@@ -14,7 +13,7 @@
     "pelletsPerLoadedItemMin": 2,
     "pelletsPerLoadedItemMax": 3,
     "spreadDegrees": 5.5,
-    "baseDamagePerPellet": 47.3
+    "baseDamagePerPellet": 20
   },
   "damageConfig": {
     "entityDamageSources": {
@@ -38,5 +37,6 @@
       "explosion": true,
       "*": false
     }
-  }
+  },
+  "baseDamage": 220
 }

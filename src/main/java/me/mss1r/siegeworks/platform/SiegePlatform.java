@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 
 public final class SiegePlatform {
     private SiegePlatform() {}
+    @ExpectPlatform public static me.mss1r.siegeworks.item.FirearmItem firearm(String name, boolean matchlock) { throw new AssertionError(); }
     @ExpectPlatform public static net.minecraft.nbt.CompoundTag persistentData(net.minecraft.world.entity.Entity entity) { throw new AssertionError(); }
     public static double entityReach(Player player) { return me.mss1r.axiomata.platform.AxiomataPlatform.entityReach(player); }
     public static double blockReach(Player player) { return me.mss1r.axiomata.platform.AxiomataPlatform.blockReach(player); }

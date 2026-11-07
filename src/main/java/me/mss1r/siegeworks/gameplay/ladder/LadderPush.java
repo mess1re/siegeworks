@@ -1,5 +1,6 @@
 package me.mss1r.siegeworks.gameplay.ladder;
 
+import me.mss1r.siegeworks.gameplay.advancement.SiegeAdvancement;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import me.mss1r.axiomata.collision.StructureCollisionResolver;
@@ -224,7 +225,11 @@ public final class LadderPush {
         if (progress >= 1) {
             braces.clear();
             ladder.pushOffWall();
-            MinecraftVersionCompat.damageHeldItem(player.getItemInHand(hand), 1, player, hand);
+            ItemStack held = player.getItemInHand(hand);
+            if (held.is(me.mss1r.siegeworks.registry.SiegeworksItems.FORKED_POLE.get())) {
+                SiegeAdvancement.REPEL_THE_ASSAULT.award(player);
+            }
+            MinecraftVersionCompat.damageHeldItem(held, 1, player, hand);
             ladder.level().playSound(null, ladder.topPoint().x, ladder.topPoint().y, ladder.topPoint().z,
                     SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1.0F, 0.7F);
             player.displayClientMessage(Component.translatable("message.siegeworks.ladder.pushed"), true);

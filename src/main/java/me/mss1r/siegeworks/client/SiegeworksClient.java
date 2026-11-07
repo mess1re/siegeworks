@@ -3,6 +3,7 @@ package me.mss1r.siegeworks.client;
 import me.mss1r.siegeworks.client.ladder.LadderCarryClient;
 import me.mss1r.siegeworks.gameplay.ladder.LadderPush;
 import dev.architectury.event.events.client.ClientPlayerEvent;
+import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
@@ -22,6 +23,7 @@ import me.mss1r.siegeworks.client.entity.siegetower.SiegeTowerRenderer;
 import me.mss1r.siegeworks.client.entity.towercrossbow.TowerCrossbowRenderer;
 import me.mss1r.siegeworks.client.entity.trebuchet.TrebuchetRenderer;
 import me.mss1r.siegeworks.client.projectile.CannonBallRenderer;
+import me.mss1r.siegeworks.client.projectile.StoneCannonBallRenderer;
 import me.mss1r.siegeworks.client.projectile.CrossbowBoltRenderer;
 import me.mss1r.siegeworks.client.projectile.FireArrowRenderer;
 import me.mss1r.siegeworks.client.projectile.GiantCannonBallRenderer;
@@ -44,6 +46,25 @@ public final class SiegeworksClient {
         }
         initialized = true;
 
+        ClientLifecycleEvent.CLIENT_SETUP.register(client -> {
+            dev.architectury.registry.item.ItemPropertiesRegistry.register(me.mss1r.siegeworks.registry.SiegeworksItems.CANNON_BALL.get(),
+                    me.mss1r.siegeworks.platform.MinecraftVersionCompat.id("siegeworks", "caliber"),
+                    (stack, level, entity, seed) -> me.mss1r.siegeworks.item.RoundShotItem.caliber(stack) / 490.0F);
+
+            dev.architectury.registry.client.rendering.RenderTypeRegistry.register(
+                    net.minecraft.client.renderer.RenderType.cutout(),
+                    me.mss1r.siegeworks.registry.SiegeworksBlocks.CANNON_BALL.get(),
+                    me.mss1r.siegeworks.registry.SiegeworksBlocks.STONE_CANNON_BALL.get(),
+                    me.mss1r.siegeworks.registry.SiegeworksBlocks.GIANT_CANNON_BALL.get());
+        });
+
+        dev.architectury.registry.ReloadListenerRegistry.register(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+                me.mss1r.siegeworks.client.firearm.FirearmMesh.INSTANCE,
+                me.mss1r.siegeworks.platform.MinecraftVersionCompat.id("siegeworks", "firearm_models"));
+        ClientTickEvent.CLIENT_POST.register(me.mss1r.siegeworks.client.firearm.FirearmClient::tick);
+        dev.architectury.registry.ReloadListenerRegistry.register(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+                me.mss1r.siegeworks.client.firearm.FirearmAnimation.INSTANCE,
+                me.mss1r.siegeworks.platform.MinecraftVersionCompat.id("siegeworks", "firearm_animations"));
         registerEntityRenderers();
         KeyMappingRegistry.register(SiegeworksKeyMappings.FREE_LOOK);
         KeyMappingRegistry.register(SiegeworksKeyMappings.BARREL_SIGHT);
@@ -58,7 +79,9 @@ public final class SiegeworksClient {
     }
 
     private static void registerEntityRenderers() {
+        register(SiegeworksEntities.FIREARM_BALL, InvisibleEntityRenderer::new);
         register(SiegeworksEntities.CANNON_BALL, CannonBallRenderer::new);
+        register(SiegeworksEntities.STONE_CANNON_BALL, StoneCannonBallRenderer::new);
         register(SiegeworksEntities.SCATTERSHOT_PROJECTILE, ScattershotProjectileRenderer::new);
         register(SiegeworksEntities.GIANT_CANNON_BALL_PROJECTILE, GiantCannonBallRenderer::new);
         register(SiegeworksEntities.SERPENTINE_ENTITY,

@@ -26,6 +26,8 @@ public final class SiegeworksSounds {
     public static final RegistrySupplier<SoundEvent> TOWER_CROSSBOW_RELOAD = register("tower_crossbow_reload");
     public static final RegistrySupplier<SoundEvent> BALLISTA_LOCK = register("ballista_lock");
     public static final RegistrySupplier<SoundEvent> CANNON_FIRE = registerFixed("cannon_fire", 256.0F);
+    public static final RegistrySupplier<SoundEvent> FIREARM_FIRE = register("firearm_fire");
+    public static final RegistrySupplier<SoundEvent> FIREARM_POWDER = register("firearm_powder");
     public static final RegistrySupplier<SoundEvent> BOLT_IMPACT = register("bolt_impact");
     public static final RegistrySupplier<SoundEvent> PROJECTILE_IMPACT = register("projectile_impact");
     public static final RegistrySupplier<SoundEvent> PROJECTILE_FLIGHT = registerFixed("projectile_flight", 64.0F);

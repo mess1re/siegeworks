@@ -82,7 +82,8 @@ import me.mss1r.siegeworks.registry.SiegeworksSounds;
 import java.util.*;
 
 public abstract class AbstractSiegeEntity extends LivingEntity
-        implements SiegeEngineControl, CollidableStructure, UnderConstruction {
+        implements SiegeEngineControl, CollidableStructure, UnderConstruction,
+        me.mss1r.axiomata.ballistics.StructuralImpactTarget {
     private static final String TAG_DISMANTLING = "Dismantling";
     private static final float WRECKAGE_SHARE = 0.25F;
     private static final String TAG_DISMANTLE_PROGRESS = "DismantleProgress";
@@ -1501,7 +1502,7 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     private boolean applySiegeDamage(DamageSource source, float amount, @Nullable ServerLevel serverLevel) {
-        boolean damaged = super.hurt(source, amount);
+        boolean damaged = super.hurt(source, me.mss1r.axiomata.ballistics.damage.StructureDamage.amount(this, source, amount));
         clearVanillaHurtVisuals();
         if (damaged && serverLevel != null) {
             playSiegeDamageSound(serverLevel, isDeadOrDying() || getHealth() <= 0.0F);
@@ -1819,7 +1820,22 @@ public abstract class AbstractSiegeEntity extends LivingEntity
     }
 
     public double getBaseDamage() {
-        return SiegeProfileCatalogs.ENGINES.forEntity(this.getType()).baseDamage();
+        return SiegeProfileCatalogs.ENGINES.forEntity(getType()).baseDamage();
+    }
+
+    @Override
+    public me.mss1r.axiomata.ballistics.profile.ImpactMaterialProfile impactMaterial(Vec3 contact) {
+        return SiegeProfileCatalogs.ENGINES.forEntity(getType()).impactMaterial();
+    }
+
+    @Override
+    public double impactSolidVolumeM3() {
+        double volume = 0;
+        for (var group : solidCollisionGroups()) for (var part : group.parts()) {
+            var box = part.box();
+            volume += box.getXsize() * box.getYsize() * box.getZsize();
+        }
+        return Math.max(1e-6, volume);
     }
 
     public ScattershotProfile getScattershotProfile() {

@@ -46,6 +46,16 @@ The battering ram sounds use the following recordings:
 The distant artillery layer uses `Background Cannon Shot` by DRFX:
 https://freesound.org/s/404166/
 
+The handheld firearm sounds use these CC0 recordings:
+
+- `Musket Shot.wav` by mlsulli, trimmed and compressed for the shot:
+  https://freesound.org/people/mlsulli/sounds/234869/
+- `SAND POUR.wav` by nicoproson, excerpted and faded for pouring powder:
+  https://freesound.org/people/nicoproson/sounds/627070/
+
+These edits use the publicly available high-quality MP3 previews, converted to
+mono Ogg Vorbis.
+
 These recordings were released under CC0 1.0:
 https://creativecommons.org/publicdomain/zero/1.0/
 

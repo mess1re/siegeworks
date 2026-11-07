@@ -1,0 +1,8 @@
+{
+  "multipliers": {
+    "bolt": 0.3,
+    "solid_projectile": 1,
+    "light_projectile": 0.1,
+    "fragment": 0.05
+  }
+}

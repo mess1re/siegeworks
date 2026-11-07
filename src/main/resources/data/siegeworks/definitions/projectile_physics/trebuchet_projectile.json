@@ -1,8 +1,20 @@
 {
-  "formatVersion": 2,
-  "mass": 136.0,
+  "formatVersion": 3,
+  "mass": 136,
   "diameter": 0.46,
-  "hardness": 6.0,
-  "entity": { "damage": 1.5, "armorPiercing": 0.55, "structure": 0.7 },
-  "shock": { "radius": 5.7, "damage": 0.39 }
+  "hardness": 6,
+  "material": {
+    "density": 2600,
+    "strength": 16700000,
+    "drag": 625,
+    "fractureEnergy": 50000,
+    "surfaceEnergy": 200,
+    "fragmentSize": 0.05,
+    "ejectionFraction": 0.15
+  },
+  "fragmentBlock": "minecraft:stone",
+  "directHit": {
+    "armorPiercing": 0.55,
+    "damageType": "axiomata:solid_projectile"
+  }
 }

@@ -6,7 +6,8 @@ import me.mss1r.siegeworks.config.SiegeworksServerConfig;
 import me.mss1r.axiomata.ballistics.profile.ProjectilePhysicsProfile;
 import me.mss1r.siegeworks.data.profile.SiegeProfileCatalogs;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpacts;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectilePhysics;
+import me.mss1r.axiomata.ballistics.ProjectilePhysics;
+import me.mss1r.axiomata.ballistics.impact.LayeredImpact;
 import me.mss1r.axiomata.ballistics.damage.StructuralDamageSystem;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import net.minecraft.core.BlockPos;
@@ -15,16 +16,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-//? if <1.21 {
-/*import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
-*///?} else {
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-//?}
 
-@GameTestHolder(BoltBalanceGameTests.NAMESPACE)
-@PrefixGameTestTemplate(false)
+
 public final class BoltBalanceGameTests {
     public static final String NAMESPACE = Siegeworks.MOD_ID + "_bolt_balance";
 
@@ -66,17 +59,18 @@ public final class BoltBalanceGameTests {
     }
 
     @GameTest(template = "empty")
-    public static void lighterMassDoesNotChangeDirectDamageAtTheSameImpactSpeed(GameTestHelper helper) {
+    public static void projectileMassChangesResistanceWorkAndRetainedSpeed(GameTestHelper helper) {
         ProjectilePhysicsProfile bolt = bolt();
-        ProjectilePhysicsProfile heavy = new ProjectilePhysicsProfile(1.5D, bolt.dragCoefficient(), bolt.diameter(),
-                bolt.hardness(), bolt.motor(), bolt.entity(), bolt.shock(), bolt.blast(), bolt.fire());
         var target = EntityType.SHEEP.create(helper.getLevel());
         helper.assertTrue(target != null, "Failed to create a damage-test target");
         for (double speed : new double[]{6.0D, 5.0D, 2.0D}) {
-            float current = ProjectilePhysics.entityDamage(bolt, 10.0F, speed, target);
-            float previous = ProjectilePhysics.entityDamage(heavy, 10.0F, speed, target);
-            helper.assertTrue(Math.abs(current - previous) < 1.0E-5F,
-                    "Changing only mass changed direct damage at " + speed + " blocks/tick");
+            Vec3 contact = target.position().add(0, target.getBbHeight() / 2, -target.getBbWidth() / 2);
+            var light = ProjectilePhysics.resolve(LayeredImpact.Shot.circular(bolt.mass(), bolt.diameter().orElseThrow()),
+                    new Vec3(0, 0, speed * 20), contact, target);
+            var heavy = ProjectilePhysics.resolve(LayeredImpact.Shot.circular(1.5, bolt.diameter().orElseThrow()),
+                    new Vec3(0, 0, speed * 20), contact, target);
+            helper.assertTrue(heavy.workJ() > light.workJ() && heavy.exitSpeedMps() > light.exitSpeedMps(),
+                    "Greater mass did not affect penetration at " + speed + " blocks/tick");
         }
         helper.succeed();
     }

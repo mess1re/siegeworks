@@ -1,0 +1,16 @@
+{
+  "formatVersion": 3,
+  "result": {
+    "item": "siegeworks:hand_cannon"
+  },
+  "stages": [
+    {
+      "section": "assembly",
+      "materials": {
+        "siegeworks:barrel": 1,
+        "#minecraft:planks": 2,
+        "minecraft:iron_nugget": 4
+      }
+    }
+  ]
+}

@@ -30,8 +30,6 @@ public final class LadderClimberSupport {
     private static final double STEP_ON_HEIGHT = 0.6D;
     /** Getting on by walking happens within this much of either end. */
     private static final double ENTRY_ZONE = 1.5D;
-    /** A landing within vanilla's safe drop distance also permits leaving an overhanging top rung. */
-    private static final double LANDING_DEPTH = 3.0D;
     /** Movement along the ladder, per tick, that counts as walking onto it. */
     private static final double ENTRY_SPEED = 0.01D;
     private static final double SERVER_RUNG_CONTACT_TOLERANCE = 0.1D;
@@ -122,10 +120,12 @@ public final class LadderClimberSupport {
                 : 0.0D;
         double halfWidth = LADDER_HALF_WIDTH + entity.getBbWidth() * 0.5D;
         double localY = (local.forward() + forwardOffset) / sin;
-        if (onLadder && localY > host.ladderLength() && !landingAhead(entity, angle)) {
-            // Past the top with nothing to step onto, as where the ladder rests against a wall taller than it: the
-            // climber stays on its top rung rather than being let go into the drop.
-            localY = host.ladderLength();
+        if (onLadder && localY > host.ladderLength()) {
+            Vec3 step = host.forwardVector().scale(uphillDirection(angle) * entity.getBbWidth() * 0.5D);
+            if (!LadderTraversalCollision.passage(entity, entity.position(), entity.position().add(step))) {
+                // A wall can block the top even when the feet project past the last rung.
+                localY = host.ladderLength();
+            }
         }
         double end = host.ladderLength() + WALK_EXTENSION + entity.getBbWidth() * 0.5D;
         if (Math.abs(local.side()) > halfWidth || localY < 0.0D || localY > end) {
@@ -168,15 +168,6 @@ public final class LadderClimberSupport {
                     entity, host.ladder(), (float) angle, host.uphillYawDegrees(angle));
         }
         playStepSound(entity, climbStep.climbedLocalY());
-    }
-
-    /** Whether the climber's next step is free and has something under it to take them off the ladder's top, like the top of a wall. */
-    private boolean landingAhead(Entity entity, double angle) {
-        Vec3 step = host.forwardVector().scale(uphillDirection(angle) * entity.getBbWidth() * 0.5D);
-        AABB feet = entity.getBoundingBox().move(step);
-        AABB below = new AABB(feet.minX, feet.minY - LANDING_DEPTH, feet.minZ, feet.maxX, feet.minY, feet.maxZ);
-        return host.level().noCollision(entity, feet)
-                && host.level().getBlockCollisions(entity, below).iterator().hasNext();
     }
 
     /**

@@ -29,6 +29,8 @@ import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 public final class SiegeworksClientModEvents {
    @SubscribeEvent
    public static void clientSetup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
+      event.enqueueWork(() -> dev.architectury.registry.menu.MenuRegistry.registerScreenFactory(
+              me.mss1r.siegeworks.registry.SiegeworksMenus.CASTING.get(), CastingScreen::new));
       event.enqueueWork(() -> dev.architectury.event.events.client.ClientTickEvent.CLIENT_POST.register(SiegeUpdateNotifier::tick));
    }
 

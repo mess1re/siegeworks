@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:full_scale",
+  "display": {
+    "icon": {
+      "item": "siegeworks:giant_cannon_ball"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.gift_for_a_king.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.gift_for_a_king.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

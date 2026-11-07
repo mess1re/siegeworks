@@ -19,6 +19,13 @@ ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
+modId="epicfight"
+mandatory=false
+versionRange="${epicfight_range}"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.${mod_id}]]
 modId="minecraft"
 mandatory=true
 versionRange="${minecraft_range}"

@@ -1,0 +1,50 @@
+{
+  "ready": {
+    "position": [
+      -7,
+      -9,
+      20
+    ],
+    "rotation": [
+      -50,
+      -8,
+      0
+    ]
+  },
+  "aim": {
+    "position": [
+      0,
+      -3.5,
+      18
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ]
+  },
+  "loading": {
+    "position": [
+      -13,
+      -13,
+      20
+    ],
+    "rotation": [
+      -95,
+      48,
+      0
+    ]
+  },
+  "ignition": {
+    "position": [
+      3,
+      1,
+      17
+    ],
+    "rotation": [
+      0,
+      15,
+      0
+    ]
+  }
+}

@@ -25,19 +25,21 @@ public final class SiegeAttackPolicy {
             return Result.reject();
         }
 
-        if (directAttacker == null || directAttacker instanceof SiegeProjectile) {
-            return Result.apply(amount);
-        }
-
-        String directEntityId = BuiltInRegistries.ENTITY_TYPE.getKey(directAttacker.getType()).toString();
-        return Result.apply(amount * (float) rules.multiplierForEntity(directEntityId));
+        return Result.apply(amount);
     }
 
     private static boolean isAllowed(Entity attacker, Entity directAttacker, DamageSource source,
                                      SiegeDamageRules rules) {
+        if (source.is(me.mss1r.axiomata.ballistics.damage.StructureDamage.BOLTS)
+                || source.is(me.mss1r.axiomata.ballistics.damage.StructureDamage.SOLID_PROJECTILES)
+                || source.is(me.mss1r.axiomata.ballistics.damage.StructureDamage.FRAGMENTS)
+                || source.is(me.mss1r.axiomata.ballistics.damage.StructureDamage.LIGHT_PROJECTILES)) return true;
+
         if (directAttacker instanceof SiegeProjectile) {
             return true;
         }
+        if (directAttacker instanceof me.mss1r.siegeworks.entity.base.AbstractSiegeEntity
+                && source.is(me.mss1r.axiomata.ballistics.ProjectileCombat.PHYSICAL_IMPACT)) return true;
 
         if (directAttacker != null && rules.allowsEntity(entityId(directAttacker))) {
             return true;
@@ -52,7 +54,7 @@ public final class SiegeAttackPolicy {
             return true;
         }
 
-        if ((source.is(DamageTypes.EXPLOSION) || source.is(DamageTypes.PLAYER_EXPLOSION))
+        if (source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)
                 && rules.allowsDamageType("explosion")) {
             return true;
         }

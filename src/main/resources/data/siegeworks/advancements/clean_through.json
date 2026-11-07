@@ -1,0 +1,23 @@
+{
+  "parent": "siegeworks:full_scale",
+  "display": {
+    "icon": {
+      "item": "siegeworks:arcballista_spawner"
+    },
+    "title": {
+      "translate": "advancement.siegeworks.clean_through.title"
+    },
+    "description": {
+      "translate": "advancement.siegeworks.clean_through.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

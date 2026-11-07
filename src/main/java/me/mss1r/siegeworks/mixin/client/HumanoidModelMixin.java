@@ -49,6 +49,12 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
                 ? mountedSiege
                 : null;
 
+        if (siege == null && me.mss1r.siegeworks.client.firearm.FirearmAnimation.INSTANCE.pose(
+                (HumanoidModel<?>) (Object) this, entity, age, headPitch)) {
+            siegeworks$hasAppliedPose = true;
+            return;
+        }
+
         ResolvedSiegePose pose = SiegePoseResolver.resolve(entity, siege, age);
         if (pose != null) {
             SiegePoseApplicator.apply(

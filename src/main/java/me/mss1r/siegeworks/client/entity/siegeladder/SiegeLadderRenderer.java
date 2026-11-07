@@ -11,6 +11,37 @@ public class SiegeLadderRenderer extends SiegeConstructionRenderer<SiegeLadderEn
     }
 
     @Override
+    public void render(SiegeLadderEntity entity, float yaw, float partialTick,
+                       com.mojang.blaze3d.vertex.PoseStack poses,
+                       net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        poses.pushPose();
+        var carried = entity.renderedCarryPose(partialTick);
+        if (carried != null) {
+            // The dispatcher already applied the ladder's interpolated position.
+            // Replace that origin with this frame's carrier grip, without moving the entity.
+            var delta = carried.foot().subtract(entity.getPosition(partialTick));
+            poses.translate(delta.x, delta.y, delta.z);
+        }
+        super.render(entity, yaw, partialTick, poses, buffers, light);
+        poses.popPose();
+    }
+
+    @Override
+    //? if <1.21 {
+    /*protected void applyRotations(SiegeLadderEntity entity, com.mojang.blaze3d.vertex.PoseStack poses,
+                                  float age, float yaw, float partialTick) {
+        var carried = entity.renderedCarryPose(partialTick);
+        super.applyRotations(entity, poses, age, carried == null ? yaw : carried.yaw(), partialTick);
+    }
+    *///?} else {
+    protected void applyRotations(SiegeLadderEntity entity, com.mojang.blaze3d.vertex.PoseStack poses,
+                                  float age, float yaw, float partialTick, float scale) {
+        var carried = entity.renderedCarryPose(partialTick);
+        super.applyRotations(entity, poses, age, carried == null ? yaw : carried.yaw(), partialTick, scale);
+    }
+    //?}
+
+    @Override
     public boolean shouldShowName(SiegeLadderEntity animatable) {
         return false;
     }

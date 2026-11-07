@@ -1,7 +1,7 @@
 package me.mss1r.siegeworks.entity.projectile;
 
+import me.mss1r.siegeworks.gameplay.advancement.SiegeAdvancement;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpacts;
-import me.mss1r.siegeworks.gameplay.ballistics.ProjectilePhysics;
 import me.mss1r.siegeworks.gameplay.ballistics.ProjectileImpactEffects;
 import me.mss1r.axiomata.ballistics.ProjectileSweep;
 import me.mss1r.siegeworks.gameplay.ballistics.BoltPinningController;
@@ -169,6 +169,7 @@ public abstract class AbstractBoltProjectile extends SiegeProjectile {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (penetratedTarget != null) tag.putUUID("PenetratedTarget", penetratedTarget);
         tag.putBoolean(TAG_IN_GROUND, inGround);
         tag.putFloat(TAG_RENDER_YAW, getRenderYaw());
         tag.putFloat(TAG_RENDER_PITCH, getRenderPitch());
@@ -204,6 +205,7 @@ public abstract class AbstractBoltProjectile extends SiegeProjectile {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        penetratedTarget = tag.hasUUID("PenetratedTarget") ? tag.getUUID("PenetratedTarget") : null;
         inGround = tag.getBoolean(TAG_IN_GROUND);
         setNoGravity(inGround);
         if (tag.contains(TAG_RENDER_YAW)) {
@@ -389,6 +391,8 @@ public abstract class AbstractBoltProjectile extends SiegeProjectile {
                 6, 0.08D, 0.08D, 0.08D, 0.025D);
     }
 
+    private UUID penetratedTarget;
+
     @Override
     protected void onHitEntity(EntityHitResult entityHitResult) {
         Entity hitTarget = entityHitResult.getEntity();
@@ -399,10 +403,13 @@ public abstract class AbstractBoltProjectile extends SiegeProjectile {
         }
 
         rememberHitTarget(hitTarget);
-        double speed = getDeltaMovement().length();
-        ProjectilePhysicsProfile physics = getPhysicsProfile();
-        float damage = ProjectilePhysics.entityDamage(physics, (float) getBaseDamage(), speed, target);
-        damageTarget(hitTarget, damage);
+        var result = impactTarget(hitTarget, entityHitResult.getLocation());
+        if (result != null && result.damageApplied() && !(target instanceof AbstractSiegeEntity)) {
+            if (penetratedTarget != null && !penetratedTarget.equals(target.getUUID())) {
+                SiegeAdvancement.CLEAN_THROUGH.award(creditedShooter(serverLevel));
+            }
+            if (result.physics().passedThrough()) penetratedTarget = target.getUUID();
+        }
         Vec3 movement = getDeltaMovement();
         Vec3 direction = movement.lengthSqr() > 1.0E-6D ? movement.normalize() : lastFlightMovement.normalize();
 
@@ -413,10 +420,16 @@ public abstract class AbstractBoltProjectile extends SiegeProjectile {
                 impact.x, impact.y + target.getBbHeight() * 0.35D, impact.z,
                 10, 0.12D, 0.12D, 0.12D, 0.04D);
 
-        if (!target.isAlive()) {
-            continueAfterLethalHit(target, physics, speed, direction);
+        if (result != null && result.physics().passedThrough()) {
+            clearEmbeddedBlockPos();
+            clearStructureAttachment();
+            clearTargetAttachment();
+            setNoGravity(false);
+            inGround = false;
+            continueThrough(result.physics());
             return;
         }
+        if (!target.isAlive()) { discard(); return; }
 
         if (target instanceof AbstractSiegeEntity siege) {
             embedBoltInStructure(siege, impact, direction);
@@ -432,37 +445,8 @@ public abstract class AbstractBoltProjectile extends SiegeProjectile {
             return;
         }
 
-        applyBoltImpulse(target, direction, speed);
         attachBoltToTarget(target, impact, direction);
     }
-
-    private void continueAfterLethalHit(LivingEntity target, ProjectilePhysicsProfile physics,
-                                        double speed, Vec3 direction) {
-        double remainingSpeed = ProjectilePhysics.remainingEntityPenetrationSpeed(this, target, speed);
-        if (remainingSpeed <= 0.0D || hitTargetCount() >= getMaxEntityPierces()) {
-            discard();
-            return;
-        }
-
-        clearEmbeddedBlockPos();
-        clearStructureAttachment();
-        clearTargetAttachment();
-        setNoGravity(false);
-        inGround = false;
-        setDeltaMovement(direction.scale(remainingSpeed));
-        setBaseDamage(Math.max(1.0D, getBaseDamage() * (remainingSpeed / Math.max(0.001D, speed))));
-        setPos(getX() + direction.x * 0.6D, getY() + direction.y * 0.6D, getZ() + direction.z * 0.6D);
-        hasImpulse = true;
-    }
-
-    protected int getMaxEntityPierces() {
-        return 4;
-    }
-
-    protected double getBoltKnockback(double speed) {
-        return Math.min(1.65D, 0.35D + speed * 0.18D);
-    }
-
     protected int getEmbeddedLifetimeTicks() {
         return EMBEDDED_LIFETIME_TICKS;
     }
@@ -898,21 +882,7 @@ public abstract class AbstractBoltProjectile extends SiegeProjectile {
                 vector.z * cos - vector.x * sin);
     }
 
-    private void applyBoltImpulse(LivingEntity target, Vec3 direction, double speed) {
-        Vec3 horizontal = new Vec3(direction.x, 0.0D, direction.z);
-        if (horizontal.lengthSqr() < 1.0E-6D) {
-            horizontal = direction;
-        }
-
-        Vec3 impulse = horizontal.normalize().scale(getBoltKnockback(speed)).add(0.0D, 0.08D, 0.0D);
-        target.setDeltaMovement(target.getDeltaMovement().add(impulse));
-        target.hasImpulse = true;
-        target.hurtMarked = true;
-    }
-
-    protected double getPinSearchDistance() {
-        return PIN_SEARCH_DISTANCE;
-    }
+    protected double getPinSearchDistance() { return PIN_SEARCH_DISTANCE; }
 
     private record AttachmentFrame(String groupName, int partIndex,
                                    Vec3 localPosition, Vec3 localDirection) {

@@ -1,0 +1,341 @@
+{
+  "textures": {
+    "0": "siegeworks:item/firearm_ramrod",
+    "particle": "siegeworks:item/firearm_ramrod"
+  },
+  "texture_size": [
+    16,
+    32
+  ],
+  "elements": [
+    {
+      "name": "shaft",
+      "from": [
+        7.85,
+        -3.35,
+        7.85
+      ],
+      "to": [
+        8.15,
+        19.4,
+        8.15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0.0,
+            1,
+            11.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0.0,
+            1,
+            11.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0.0,
+            1,
+            11.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0.0,
+            1,
+            11.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0.0,
+            1,
+            11.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0.0,
+            1,
+            11.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "head",
+      "from": [
+        7.78,
+        -4,
+        7.78
+      ],
+      "to": [
+        8.22,
+        -3.35,
+        8.22
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0.0,
+            9,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            0.0,
+            9,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            0.0,
+            9,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            0.0,
+            9,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            0.0,
+            9,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            0.0,
+            9,
+            1.0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "grip",
+      "from": [
+        7.81,
+        19.4,
+        7.81
+      ],
+      "to": [
+        8.19,
+        20,
+        8.19
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            0.0,
+            13,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            12,
+            0.0,
+            13,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            12,
+            0.0,
+            13,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            12,
+            0.0,
+            13,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            12,
+            0.0,
+            13,
+            1.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            12,
+            0.0,
+            13,
+            1.0
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ],
+  "gui_light": "front",
+  "display": {
+    "gui": {
+      "rotation": [
+        0,
+        0,
+        -40
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        90
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        -40
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        0,
+        -15
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        0,
+        15
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  }
+}

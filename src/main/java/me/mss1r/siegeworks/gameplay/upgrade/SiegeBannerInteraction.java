@@ -1,5 +1,6 @@
 package me.mss1r.siegeworks.gameplay.upgrade;
 
+import me.mss1r.siegeworks.gameplay.advancement.SiegeAdvancement;
 import me.mss1r.siegeworks.entity.base.AbstractSiegeEntity;
 import me.mss1r.siegeworks.gameplay.ownership.SiegeAccess;
 import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
@@ -35,6 +36,7 @@ public final class SiegeBannerInteraction {
                 return InteractionResult.SUCCESS;
             }
             if (!player.getAbilities().instabuild) stack.shrink(1);
+            if (rack.isFull()) SiegeAdvancement.FLY_YOUR_COLOURS.award(player);
             level.playSound(null, siege.blockPosition(), SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 1, 1);
             player.displayClientMessage(Component.translatable(messages + ".banner_installed", slot + 1, rack.size()), true);
         } else {

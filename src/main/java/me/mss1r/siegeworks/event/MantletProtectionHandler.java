@@ -25,9 +25,9 @@ public final class MantletProtectionHandler {
             return incoming;
         }
 
-        boolean explosion = source.is(DamageTypes.EXPLOSION) || source.is(DamageTypes.PLAYER_EXPLOSION);
+        boolean explosion = source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION);
         Entity directEntity = source.getDirectEntity();
-        boolean projectile = directEntity instanceof Projectile;
+        boolean projectile = source.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE);
         if (!projectile && !explosion) {
             return incoming;
         }

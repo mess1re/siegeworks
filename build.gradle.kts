@@ -94,18 +94,32 @@ tasks.named<ProcessResources>("processResources") {
     filesMatching(listOf("pack.mcmeta", "siegeworks.mixins.json", "siegeworks.recruits.mixins.json")) { expand(props) }
     if (stonecutter.current.parsed >= "1.21") {
         includeEmptyDirs = false
+        filesMatching("data/*/advancements/*.json") {
+            filter { line -> if (line.contains("\"icon\":")) line.replace("\"item\":", "\"id\":") else line }
+        }
         filesMatching(listOf("data/*/recipes/*.json", "data/*/recipe/*.json")) {
+            val source = file.readText()
+            val stonecutting = source.contains("\"minecraft:stonecutting\"")
+            val stonecuttingCount = Regex("\"count\"\\s*:\\s*(\\d+)").find(source)?.groupValues?.get(1) ?: "1"
             var insideResult = false
             filter { line ->
-                if (line.contains("\"result\"")) insideResult = true
-                if (insideResult && line.contains("\"item\"")) {
+                if (stonecutting && line.contains("\"result\"")) {
+                    val id = Regex("\"result\"\\s*:\\s*\"([^\"]+)\"").find(line)?.groupValues?.get(1)
+                    if (id != null) "  \"result\": { \"id\": \"$id\", \"count\": $stonecuttingCount }" else line
+                } else if (stonecutting && line.contains("\"count\"")) {
+                    ""
+                } else if (insideResult && line.contains("\"item\"")) {
                     insideResult = false
                     line.replace("\"item\"", "\"id\"")
-                } else line
+                } else {
+                    if (line.contains("\"result\"")) insideResult = true
+                    line
+                }
             }
         }
         eachFile {
             path = path
+                .replace("/advancements/", "/advancement/")
                 .replace("/recipes/", "/recipe/")
                 .replace("/loot_tables/", "/loot_table/")
                 .replace("/structures/", "/structure/")
@@ -114,6 +128,8 @@ tasks.named<ProcessResources>("processResources") {
         }
     }
 }
+
+apply(from = rootProject.file("gradle/round-shot-models.gradle.kts"))
 
 
 if (minecraftVersion == "1.21.1") {

@@ -11,6 +11,8 @@
     "LadderTraversalNavigationMixin",
     "LadderTraversalPushMixin",
     "RecruitsPathNodeEvaluatorMixin",
+    "RoundShotStackMixin",
+    "RoundShotQuickMoveMixin",
     "SiegeMovementMixin"
   ],
   "client": [
@@ -20,7 +22,10 @@
     "client.HumanoidModelMixin",
     "client.ItemInHandLayerMixin",
     "client.MouseHandlerMixin",
-    "client.PlayerRendererMixin"
+    "client.PlayerRendererMixin",
+    "client.FirearmViewMixin",
+    "client.FirearmStanceMixin",
+    "client.FirearmHandsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

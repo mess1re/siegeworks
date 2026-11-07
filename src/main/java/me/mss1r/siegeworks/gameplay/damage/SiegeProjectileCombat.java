@@ -13,27 +13,14 @@ public final class SiegeProjectileCombat {
     }
 
     public static boolean mayHit(SiegeProjectile projectile, Entity target) {
-        Entity attacker = responsibleAttacker(projectile);
-        Entity logicalTarget = logicalTarget(target);
-        return logicalTarget != logicalTarget(projectile.getOwner())
-                && logicalTarget != logicalTarget(attacker)
-                && !isFriendlyFireProtected(attacker, logicalTarget);
+        return mayHit(projectile.getOwner(), responsibleAttacker(projectile), target);
     }
 
-    public static boolean damage(SiegeProjectile projectile, Entity target,
-                                 float damage, boolean breakShield) {
-        LivingEntity livingTarget = livingTarget(target);
-        if (livingTarget == null) {
-            return false;
-        }
-        if (breakShield) {
-            breakBlockingShield(livingTarget);
-        }
-
-        if (projectile.getOwner() instanceof AbstractSiegeEntity) {
-            return target.hurt(target.damageSources().thrown(projectile, responsibleAttacker(projectile)), damage);
-        }
-        return target.hurt(target.damageSources().generic(), damage);
+    public static boolean mayHit(@Nullable Entity machine, @Nullable Entity attacker, Entity target) {
+        Entity logicalTarget = logicalTarget(target);
+        return logicalTarget != logicalTarget(machine)
+                && logicalTarget != logicalTarget(attacker)
+                && !isFriendlyFireProtected(attacker, logicalTarget);
     }
 
     public static Entity responsibleAttacker(SiegeProjectile projectile) {
@@ -77,7 +64,4 @@ public final class SiegeProjectileCombat {
         return attacker.isAlliedTo(target);
     }
 
-    private static void breakBlockingShield(LivingEntity target) {
-        me.mss1r.axiomata.ballistics.ProjectileCombat.breakBlockingShield(target);
-    }
 }

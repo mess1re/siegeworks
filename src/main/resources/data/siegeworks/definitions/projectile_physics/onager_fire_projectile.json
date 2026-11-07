@@ -1,8 +1,26 @@
 {
-  "formatVersion": 2,
-  "mass": 10.0,
+  "formatVersion": 3,
+  "mass": 10,
   "diameter": 0.25,
-  "hardness": 1.0,
-  "entity": { "damage": 1.55, "armorPiercing": 0.4, "structure": 0.7 },
-  "shock": { "radius": 9.5, "damage": 0.48 }
+  "hardness": 1,
+  "material": {
+    "density": 2000,
+    "strength": 5000000,
+    "drag": 1000,
+    "fractureEnergy": 10000,
+    "surfaceEnergy": 100,
+    "fragmentSize": 0.025,
+    "ejectionFraction": 0.15
+  },
+  "fragmentBlock": "minecraft:terracotta",
+  "casingMass": 2.5,
+  "directHit": {
+    "armorPiercing": 0.4,
+    "damageType": "axiomata:solid_projectile"
+  },
+  "blast": {
+    "energy": 0,
+    "radius": 9.5,
+    "damage": 28.799999999999997
+  }
 }

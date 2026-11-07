@@ -16,12 +16,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public interface SiegeworksBlocks {
     DeferredRegister<Block> BLOCKS = DeferredRegister.create(Siegeworks.MOD_ID, Registries.BLOCK);
+    RegistrySupplier<Block> CASTING_TABLE = BLOCKS.register("casting_table", () ->
+            new me.mss1r.siegeworks.block.CastingTableBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD)
+                    .strength(2.5F).sound(SoundType.WOOD).noOcclusion()));
 
     RegistrySupplier<Block> CANNON_BALL = BLOCKS.register("cannon_ball", () ->
-            new StackedProjectileBlock(projectileProperties().strength(5.0F, 6.0F), smallProjectileShapes()));
+            new me.mss1r.siegeworks.block.CaliberShotBlock(projectileProperties().strength(5.0F, 6.0F), largeProjectileShapes()));
+
+    RegistrySupplier<Block> STONE_CANNON_BALL = BLOCKS.register("stone_cannon_ball", () ->
+            new StackedProjectileBlock(projectileProperties().sound(SoundType.STONE).strength(2.0F, 6.0F),
+                    scaledProjectileShapes(120)));
 
     RegistrySupplier<Block> GIANT_CANNON_BALL = BLOCKS.register("giant_cannon_ball", () ->
-            new StackedProjectileBlock(projectileProperties().strength(12.0F, 18.0F), largeProjectileShapes()));
+            new StackedProjectileBlock(projectileProperties().sound(SoundType.STONE).strength(12.0F, 18.0F), largeProjectileShapes()));
 
     RegistrySupplier<Block> GRAPESHOT = BLOCKS.register("grapeshot", () ->
             new StackedProjectileBlock(projectileProperties().strength(3.0F, 4.0F), largeProjectileShapes()));
@@ -40,21 +47,21 @@ public interface SiegeworksBlocks {
                 .noOcclusion();
     }
 
-    private static VoxelShape[] smallProjectileShapes() {
-        VoxelShape center = Block.box(6.5D, 0.0D, 6.5D, 9.5D, 3.0D, 9.5D);
-        VoxelShape left = Block.box(4.0D, 0.0D, 6.5D, 7.0D, 3.0D, 9.5D);
-        VoxelShape right = Block.box(9.0D, 0.0D, 6.5D, 12.0D, 3.0D, 9.5D);
-        VoxelShape rearLeft = Block.box(3.5D, 0.0D, 3.5D, 6.5D, 3.0D, 6.5D);
-        VoxelShape rearRight = Block.box(9.5D, 0.0D, 3.5D, 12.5D, 3.0D, 6.5D);
-        VoxelShape front = Block.box(6.5D, 0.0D, 9.5D, 9.5D, 3.0D, 12.5D);
-        VoxelShape frontLeft = Block.box(3.5D, 0.0D, 9.5D, 6.5D, 3.0D, 12.5D);
-        VoxelShape frontRight = Block.box(9.5D, 0.0D, 9.5D, 12.5D, 3.0D, 12.5D);
-        return new VoxelShape[] {
-                center,
-                Shapes.or(left, right),
-                Shapes.or(rearLeft, rearRight, front),
-                Shapes.or(rearLeft, rearRight, frontLeft, frontRight)
-        };
+    private static VoxelShape[] scaledProjectileShapes(int caliber) {
+        VoxelShape[] shapes = largeProjectileShapes();
+        for (int i = 0; i < shapes.length; i++) {
+            double scale = me.mss1r.siegeworks.gameplay.ammunition.RoundShotSize.scale(caliber, i + 1);
+            VoxelShape scaled = Shapes.empty();
+            for (var box : shapes[i].toAabbs()) {
+                scaled = Shapes.or(scaled, Shapes.box(
+                        0.5D + (box.minX - 0.5D) * scale, box.minY * scale,
+                        0.5D + (box.minZ - 0.5D) * scale,
+                        0.5D + (box.maxX - 0.5D) * scale, box.maxY * scale,
+                        0.5D + (box.maxZ - 0.5D) * scale));
+            }
+            shapes[i] = scaled.optimize();
+        }
+        return shapes;
     }
 
     private static VoxelShape[] largeProjectileShapes() {

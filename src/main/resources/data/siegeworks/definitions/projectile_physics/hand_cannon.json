@@ -1,0 +1,22 @@
+{
+  "formatVersion": 3,
+  "mass": 0.03267256359733386,
+  "diameter": 0.02,
+  "hardness": 12,
+  "material": {
+    "density": 7800,
+    "strength": 300000000,
+    "drag": 7800,
+    "fractureEnergy": 5000000,
+    "surfaceEnergy": 20000,
+    "fragmentSize": 0.005,
+    "ejectionFraction": 0.15
+  },
+  "fragmentBlock": "minecraft:iron_block",
+  "directHit": {
+    "armorPiercing": 0.7,
+    "damageType": "axiomata:solid_projectile",
+    "damage": 40,
+    "referenceSpeed": 220
+  }
+}

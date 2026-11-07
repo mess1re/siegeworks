@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " I ",
+    "PPP",
+    "L L"
+  ],
+  "key": {
+    "I": {
+      "tag": "siegeworks:iron_blocks"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "result": {
+    "item": "siegeworks:casting_table",
+    "count": 1
+  }
+}

@@ -22,6 +22,9 @@ import java.util.List;
 
 public final class SiegeworksFabricClient implements ClientModInitializer {
     @Override public void onInitializeClient() {
+        dev.architectury.registry.menu.MenuRegistry.registerScreenFactory(
+                me.mss1r.siegeworks.registry.SiegeworksMenus.CASTING.get(),
+                me.mss1r.siegeworks.client.CastingScreen::new);
         me.mss1r.siegeworks.client.SiegeUpdateNotifier.register();
         ParticleProviders.register(SiegeworksParticles.SET);
         HudRenderCallback.EVENT.register((graphics, delta) -> {
@@ -39,6 +42,9 @@ public final class SiegeworksFabricClient implements ClientModInitializer {
             }
             addBolts(helper, renderer, context);
         });
+        var firearmRenderer = new me.mss1r.siegeworks.client.firearm.FirearmItemRenderer();
+        BuiltinItemRendererRegistry.INSTANCE.register(me.mss1r.siegeworks.registry.SiegeworksItems.HAND_CANNON.get(), firearmRenderer::renderByItem);
+        BuiltinItemRendererRegistry.INSTANCE.register(me.mss1r.siegeworks.registry.SiegeworksItems.ARQUEBUS.get(), firearmRenderer::renderByItem);
         var itemRenderer = SiegeDeploymentItemRenderer.create();
         for (var item : BuiltInRegistries.ITEM) {
             if (item instanceof SiegeDeploymentItem && !(item instanceof SiegeLadderDeploymentItem)) {

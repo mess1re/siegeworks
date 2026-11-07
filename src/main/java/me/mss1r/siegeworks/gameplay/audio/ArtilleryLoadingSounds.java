@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
 
 public final class ArtilleryLoadingSounds {
     private static final int POWDER = 0;
@@ -19,27 +20,28 @@ public final class ArtilleryLoadingSounds {
     public static void playStage(ServerLevel level, AbstractSiegeEntity siege, int stage, boolean heavy) {
         float weight = heavy ? 1.2F : 1.0F;
         float pitchScale = heavy ? 0.78F : 1.0F;
+        Vec3 position = siege.position().add(0, .8, 0);
 
         switch (stage) {
             case POWDER -> play(level, siege, SoundEvents.SAND_PLACE,
                     0.72F * weight, 0.82F * pitchScale);
-            case RAM_CHARGE, RAM_PROJECTILE -> {
-                play(level, siege, SoundEvents.WOOD_HIT,
-                        0.72F * weight, 0.72F * pitchScale);
-                play(level, siege, SoundEvents.CHAIN_STEP,
-                        0.28F * weight, 0.76F * pitchScale);
-            }
-            case AMMUNITION -> {
-                play(level, siege, SoundEvents.STONE_PLACE,
-                        0.9F * weight, 0.68F * pitchScale);
-                play(level, siege, SoundEvents.ANVIL_LAND,
-                        0.18F * weight, 1.45F * pitchScale);
-            }
+            case RAM_CHARGE, RAM_PROJECTILE -> playRamStroke(level, position, weight, pitchScale);
+            case AMMUNITION -> playAmmunition(level, position, weight, pitchScale);
             case PRIME -> play(level, siege, SoundEvents.FLINTANDSTEEL_USE,
                     0.72F * weight, 0.92F * pitchScale);
             default -> {
             }
         }
+    }
+
+    public static void playRamStroke(ServerLevel level, Vec3 position, float weight, float pitchScale) {
+        level.playSound(null, position.x, position.y, position.z, SoundEvents.CHAIN_STEP,
+                SoundSource.BLOCKS, .28F * weight, .76F * pitchScale);
+    }
+
+    public static void playAmmunition(ServerLevel level, Vec3 position, float weight, float pitchScale) {
+        level.playSound(null, position.x, position.y, position.z, SoundEvents.LANTERN_PLACE,
+                SoundSource.BLOCKS, .9F * weight, pitchScale);
     }
 
     private static void play(ServerLevel level, AbstractSiegeEntity siege,

@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "combat",
   "pattern": [
-    "N",
-    "S",
-    "F"
+    "  N",
+    " S ",
+    "F  "
   ],
   "key": {
     "N": {
