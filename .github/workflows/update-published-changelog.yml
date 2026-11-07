@@ -13,6 +13,10 @@ on:
       curseforge_files:
         description: Comma-separated existing CurseForge file IDs
         type: string
+      update_names:
+        description: Normalize the selected Modrinth release titles
+        type: boolean
+        default: false
       dry_run:
         description: Check the targets without changing their changelogs
         type: boolean
@@ -33,6 +37,8 @@ jobs:
       RELEASE_TAG: ${{ inputs.tag }}
       MODRINTH_VERSIONS: ${{ inputs.modrinth_versions }}
       CURSEFORGE_FILES: ${{ inputs.curseforge_files }}
+      UPDATE_NAMES: ${{ inputs.update_names }}
+      MOD_NAME: Siegeworks
       DRY_RUN: ${{ inputs.dry_run }}
       MODRINTH_PROJECT_ID: ipPcxTnH
       CURSEFORGE_PROJECT_ID: '1713906'
@@ -55,6 +61,7 @@ jobs:
               raise ValueError('The existing release has no notes')
           tag = os.environ['RELEASE_TAG']
           dry_run = os.environ['DRY_RUN'] == 'true'
+          update_names = os.environ['UPDATE_NAMES'] == 'true'
           mr_ids = [s.strip() for s in os.environ['MODRINTH_VERSIONS'].split(',') if s.strip()]
           cf_ids = [s.strip() for s in os.environ['CURSEFORGE_FILES'].split(',') if s.strip()]
           if not mr_ids and not cf_ids:
@@ -90,14 +97,20 @@ jobs:
                   raise ValueError('Version belongs to another project: ' + version_id)
               if version['version_number'] != tag and not version['version_number'].startswith(tag + '+'):
                   raise ValueError('Version does not match the release: ' + version_id)
+              if update_names and (len(version['loaders']) != 1 or len(version['game_versions']) != 1):
+                  raise ValueError('Ambiguous loader or Minecraft version: ' + version_id)
               targets.append((url, version))
               print('Selected Modrinth', version_id, version['version_number'])
 
           for url, before in targets:
+              changes = {'changelog': notes}
+              if update_names:
+                  loader = {'forge': 'Forge', 'neoforge': 'NeoForge', 'fabric': 'Fabric'}[before['loaders'][0]]
+                  changes['name'] = f"{os.environ['MOD_NAME']} {tag} - {loader} {before['game_versions'][0]}"
               if not dry_run:
-                  request(url, mr_headers, 'PATCH', json.dumps({'changelog': notes}).encode())
+                  request(url, mr_headers, 'PATCH', json.dumps(changes).encode())
                   after = request(url, mr_headers)
-                  assert after['changelog'] == notes
+                  assert all(after[key] == value for key, value in changes.items())
                   assert after['files'] == before['files'], 'Version files changed'
               print('Checked' if dry_run else 'Updated', 'Modrinth', before['id'])
 
