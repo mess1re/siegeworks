@@ -1,38 +1,28 @@
 package me.mss1r.siegeworks.client.projectile;
 
-import me.mss1r.siegeworks.Siegeworks;
-import me.mss1r.siegeworks.platform.MinecraftVersionCompat;
-import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import me.mss1r.siegeworks.entity.projectile.TrebuchetProjectile;
 import me.mss1r.siegeworks.item.SiegeAmmo;
-import me.mss1r.siegeworks.client.projectile.TrebuchetProjectileModel;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProjectile> {
-    private final EntityModel<Entity> model;
-
     public TrebuchetProjectileRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.model = new TrebuchetProjectileModel(TrebuchetProjectileModel.getTexturedModelData().bakeRoot());
     }
 
+    @Override
     public void render(TrebuchetProjectile entity, float yaw, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, int light) {
         BlockState stoneState = SiegeAmmo.projectileBlockState(entity.getTextureName());
-        if (stoneState != null && (entity.getType() == SiegeworksEntities.ONAGER_PROJECTILE.get()
-                || entity.getType() == SiegeworksEntities.TREBUCHET_PROJECTILE.get())) {
+        if (stoneState != null) {
             poseStack.pushPose();
             // A load keeps tumbling forward after release, around the axis perpendicular to its flight.
             float heading = Mth.rotLerp(tickDelta, entity.yRotO, entity.getYRot());
@@ -48,21 +38,8 @@ public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProject
             Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
                     stoneState, poseStack, multiBufferSource, light, OverlayTexture.NO_OVERLAY);
             poseStack.popPose();
-            return;
         }
-
-        poseStack.pushPose();
-        if (entity.getType() == SiegeworksEntities.TREBUCHET_PROJECTILE.get()) {
-            poseStack.scale(1.5F, 1.5F, 1.5F);
-        }
-
-        VertexConsumer vertexConsumer = multiBufferSource.getBuffer(RenderType.armorCutoutNoCull(this.getTextureLocation(entity)));
-        //? if <1.21 {
-        /*model.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-        *///?} else {
-        model.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
-        //?}
-        poseStack.popPose();
+        super.render(entity, yaw, tickDelta, poseStack, multiBufferSource, light);
     }
 
     /**
@@ -86,14 +63,8 @@ public class TrebuchetProjectileRenderer extends EntityRenderer<TrebuchetProject
         poseStack.popPose();
     }
 
+    @Override
     public ResourceLocation getTextureLocation(TrebuchetProjectile entity) {
-        String textureName = entity.getTextureName();
-        if (textureName == null || textureName.isBlank()) {
-            textureName = "stone";
-        }
-        if ("fire".equals(textureName)) {
-            return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/block/fire_projectile.png");
-        }
-        return MinecraftVersionCompat.id(Siegeworks.MOD_ID, "textures/entity/trebuchet_projectile_" + textureName + ".png");
+        return InventoryMenu.BLOCK_ATLAS;
     }
 }

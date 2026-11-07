@@ -22,11 +22,12 @@ import me.mss1r.siegeworks.client.entity.siegeladder.SiegeLadderRenderer;
 import me.mss1r.siegeworks.client.entity.siegetower.SiegeTowerRenderer;
 import me.mss1r.siegeworks.client.entity.towercrossbow.TowerCrossbowRenderer;
 import me.mss1r.siegeworks.client.entity.trebuchet.TrebuchetRenderer;
-import me.mss1r.siegeworks.client.projectile.CannonBallRenderer;
-import me.mss1r.siegeworks.client.projectile.StoneCannonBallRenderer;
+import me.mss1r.siegeworks.client.projectile.RoundShotRenderer;
+import me.mss1r.siegeworks.block.CaliberShotBlock;
+import me.mss1r.siegeworks.gameplay.ammunition.RoundShotSize;
+import me.mss1r.siegeworks.registry.SiegeworksBlocks;
 import me.mss1r.siegeworks.client.projectile.CrossbowBoltRenderer;
 import me.mss1r.siegeworks.client.projectile.FireArrowRenderer;
-import me.mss1r.siegeworks.client.projectile.GiantCannonBallRenderer;
 import me.mss1r.siegeworks.client.projectile.ScattershotProjectileRenderer;
 import me.mss1r.siegeworks.client.projectile.SingijeonRenderer;
 import me.mss1r.siegeworks.client.projectile.TrebuchetProjectileRenderer;
@@ -80,10 +81,14 @@ public final class SiegeworksClient {
 
     private static void registerEntityRenderers() {
         register(SiegeworksEntities.FIREARM_BALL, InvisibleEntityRenderer::new);
-        register(SiegeworksEntities.CANNON_BALL, CannonBallRenderer::new);
-        register(SiegeworksEntities.STONE_CANNON_BALL, StoneCannonBallRenderer::new);
+        register(SiegeworksEntities.CANNON_BALL, context -> new RoundShotRenderer<>(context,
+                SiegeworksBlocks.CANNON_BALL.get().defaultBlockState()
+                        .setValue(CaliberShotBlock.CALIBER, RoundShotSize.MAX_CALIBER / RoundShotSize.STEP)));
+        register(SiegeworksEntities.STONE_CANNON_BALL, context -> new RoundShotRenderer<>(context,
+                SiegeworksBlocks.GIANT_CANNON_BALL.get().defaultBlockState()));
         register(SiegeworksEntities.SCATTERSHOT_PROJECTILE, ScattershotProjectileRenderer::new);
-        register(SiegeworksEntities.GIANT_CANNON_BALL_PROJECTILE, GiantCannonBallRenderer::new);
+        register(SiegeworksEntities.GIANT_CANNON_BALL_PROJECTILE, context -> new RoundShotRenderer<>(context,
+                SiegeworksBlocks.GIANT_CANNON_BALL.get().defaultBlockState()));
         register(SiegeworksEntities.SERPENTINE_ENTITY,
                 context -> new FieldGunRenderer<>(context, "serpentine"));
         register(SiegeworksEntities.CULVERIN_ENTITY,
