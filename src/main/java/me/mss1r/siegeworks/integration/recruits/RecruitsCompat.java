@@ -1,6 +1,7 @@
 package me.mss1r.siegeworks.integration.recruits;
 
 import com.talhanation.recruits.Main;
+import com.talhanation.recruits.CommandEvents;
 import com.talhanation.recruits.config.RecruitsServerConfig;
 import com.talhanation.recruits.ClaimEvents;
 import com.talhanation.recruits.FactionEvents;
@@ -138,6 +139,14 @@ public final class RecruitsCompat {
         int applied = 0;
         for (AbstractRecruitEntity recruit : nearbyRecruits) {
             if (!isSelectedAndCommandable(player, recruit, selectedGroups)) {
+                continue;
+            }
+
+            if (action == RecruitsSiegeCommandC2SPayload.ACTION_RETURN_TO_MOUNT) {
+                if (recruit.getMountUUID() != null) {
+                    CommandEvents.onMountButton(player.getUUID(), recruit, null, recruit.getGroup());
+                    applied++;
+                }
                 continue;
             }
 

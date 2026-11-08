@@ -3,7 +3,6 @@ package me.mss1r.siegeworks.gametest;
 import com.talhanation.recruits.entities.RecruitEntity;
 import com.talhanation.recruits.entities.AbstractRecruitEntity;
 import com.talhanation.recruits.entities.ai.RecruitMeleeAttackGoal;
-import com.talhanation.recruits.init.ModEntityTypes;
 import me.mss1r.siegeworks.gameplay.firearm.FirearmActions;
 import me.mss1r.siegeworks.gameplay.firearm.FirearmLoad;
 import me.mss1r.siegeworks.gameplay.firearm.FirearmStack;
@@ -145,8 +144,8 @@ public final class RecruitsFirearmGameTests {
     public static void recruitsReturnToTheirFirearmAfterMelee(GameTestHelper helper) {
         Zombie target = target(helper);
         for (AbstractRecruitEntity recruit : new AbstractRecruitEntity[]{
-                ModEntityTypes.RECRUIT.get().create(helper.getLevel()),
-                ModEntityTypes.CROSSBOWMAN.get().create(helper.getLevel())}) {
+                RecruitsTestSuites.<RecruitEntity>entityType("recruit").create(helper.getLevel()),
+                RecruitsTestSuites.<AbstractRecruitEntity>entityType("crossbowman").create(helper.getLevel())}) {
             ItemStack weapon = new ItemStack(SiegeworksItems.ARQUEBUS.get());
             ItemStack sword = new ItemStack(Items.IRON_SWORD);
             recruit.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 2, 2))));
@@ -224,7 +223,7 @@ public final class RecruitsFirearmGameTests {
     }
 
     private static final class TestRecruit extends RecruitEntity {
-        TestRecruit(Level level) { super(ModEntityTypes.RECRUIT.get(), level); }
+        TestRecruit(Level level) { super(RecruitsTestSuites.<RecruitEntity>entityType("recruit"), level); }
         RecruitsFirearmGoal firearmGoal() {
             return goalSelector.getAvailableGoals().stream().map(goal -> goal.getGoal())
                     .filter(RecruitsFirearmGoal.class::isInstance).map(RecruitsFirearmGoal.class::cast)

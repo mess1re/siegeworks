@@ -2,17 +2,19 @@ package me.mss1r.siegeworks.mixin;
 
 import me.mss1r.axiomata.collision.system.StructurePathfindingSystem;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.BlockGetter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //? if <1.21 {
-/*import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-*///?}
+/*import net.minecraft.world.level.pathfinder.BlockPathTypes;
+*///?} else {
+import net.minecraft.world.level.pathfinder.PathType;
+//?}
 
-/** Recruits 1.20.1 replaces vanilla classification; 1.21.1 inherits Axiomata's vanilla hook. */
+/** Official Recruits replaces path classification; the multiloader port inherits Axiomata's vanilla hook on 1.21.1. */
 @Pseudo
 @Mixin(targets = "com.talhanation.recruits.entities.ai.navigation.RecruitsPathNodeEvaluator")
 public abstract class RecruitsPathNodeEvaluatorMixin {
@@ -26,5 +28,15 @@ public abstract class RecruitsPathNodeEvaluatorMixin {
             cir.setReturnValue(BlockPathTypes.BLOCKED);
         }
     }
-    *///?}
+    *///?} else {
+    @Inject(method = "getBlockPathType(Lnet/minecraft/world/level/BlockGetter;IIILnet/minecraft/world/entity/Mob;)Lnet/minecraft/world/level/pathfinder/PathType;",
+            at = @At("RETURN"), cancellable = true, remap = false, require = 0)
+    private void siegeworks$blockStructureNodes(BlockGetter level, int x, int y, int z, Mob mob,
+                                                CallbackInfoReturnable<PathType> cir) {
+        if (cir.getReturnValue() != PathType.BLOCKED
+                && StructurePathfindingSystem.blocked(mob, x, y, z)) {
+            cir.setReturnValue(PathType.BLOCKED);
+        }
+    }
+    //?}
 }

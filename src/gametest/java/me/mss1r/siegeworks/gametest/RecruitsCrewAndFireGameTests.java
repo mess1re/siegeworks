@@ -2,12 +2,12 @@ package me.mss1r.siegeworks.gametest;
 
 import com.talhanation.recruits.CommandEvents;
 import com.talhanation.recruits.entities.SiegeEngineerEntity;
-import com.talhanation.recruits.init.ModEntityTypes;
 import me.mss1r.siegeworks.entity.siege.SiegeTowerEntity;
 import me.mss1r.siegeworks.entity.siege.TowerCrossbowEntity;
 import me.mss1r.siegeworks.integration.recruits.RecruitsCompat;
 import me.mss1r.siegeworks.integration.recruits.SiegeworksRecruitController;
 import me.mss1r.siegeworks.integration.recruits.network.RecruitsTowerCrewC2SPayload;
+import me.mss1r.siegeworks.integration.recruits.network.RecruitsSiegeCommandC2SPayload;
 import me.mss1r.siegeworks.registry.SiegeworksEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -22,8 +22,59 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public final class RecruitsCrewAndFireGameTests {
+    @GameTest(template = "empty")
+    public static void returnCommandRestoresSavedMountOnlyForCommandedGroups(GameTestHelper helper) {
+        Vec3 origin = Vec3.atCenterOf(helper.absolutePos(new BlockPos(8, 2, 8)));
+        ServerPlayer commander = SiegeGameTestPlayers.create(helper.getLevel());
+        commander.setPos(origin);
+        UUID group = UUID.randomUUID();
+        TowerCrossbowEntity crossbow = SiegeworksEntities.TOWER_CROSSBOW_ENTITY.get().create(helper.getLevel());
+        crossbow.setPos(origin);
+        crossbow.claimOwnership(commander.getUUID());
+        helper.getLevel().addFreshEntity(crossbow);
+        SiegeEngineerEntity selected = engineer(helper, commander, origin);
+        SiegeEngineerEntity otherGroup = engineer(helper, commander, origin.add(2, 0, 0));
+        SiegeEngineerEntity foreign = engineer(helper, commander, origin.add(4, 0, 0));
+        SiegeEngineerEntity distant = engineer(helper, commander, origin.add(205, 0, 0));
+        var units = List.of(selected, otherGroup, foreign, distant);
+        for (var unit : units) {
+            unit.setGroupUUID(group);
+            unit.setMountUUID(Optional.of(crossbow.getUUID()));
+            unit.setShouldMount(false);
+            unit.dismount = 180;
+        }
+        otherGroup.setGroupUUID(UUID.randomUUID());
+        foreign.setOwnerUUID(Optional.of(UUID.randomUUID()));
+        helper.assertTrue(selected.startRiding(crossbow, true), "Engineer could not man the crossbow");
+        var buffer = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+        RecruitsSiegeCommandC2SPayload packet;
+        try {
+            RecruitsSiegeCommandC2SPayload.encode(new RecruitsSiegeCommandC2SPayload(
+                    RecruitsSiegeCommandC2SPayload.ACTION_RETURN_TO_MOUNT, List.of(group)), buffer);
+            packet = RecruitsSiegeCommandC2SPayload.decode(buffer);
+        } finally {
+            buffer.release();
+        }
+        RecruitsCompat.handleSiegeCommand(commander, packet.action(), packet.groupIds(),
+                packet.targetPos(), packet.targetEntityId(), packet.siegeTypeId());
+        helper.assertTrue(selected.getVehicle() == crossbow, "Return dismounted the seated engineer");
+        selected.stopRiding();
+        selected.setShouldMount(false);
+        selected.dismount = 180;
+        RecruitsCompat.handleSiegeCommand(commander, packet.action(), packet.groupIds(),
+                packet.targetPos(), packet.targetEntityId(), packet.siegeTypeId());
+        helper.assertTrue(selected.getShouldMount() && selected.dismount == 0
+                && crossbow.getUUID().equals(selected.getMountUUID()), "Return lost the saved mount or did not issue boarding");
+        helper.assertTrue(!otherGroup.getShouldMount() && !foreign.getShouldMount() && !distant.getShouldMount(),
+                "Return affected another group, another owner or an out-of-range recruit");
+        units.forEach(net.minecraft.world.entity.Entity::discard);
+        crossbow.discard();
+        helper.succeed();
+    }
+
     @GameTest(template = "empty")
     public static void crewCommandFillsPushBarsBeforeInterior(GameTestHelper helper) {
         assertTowerCrew(helper, false);
@@ -179,7 +230,7 @@ public final class RecruitsCrewAndFireGameTests {
     }
 
     private static SiegeEngineerEntity engineer(GameTestHelper helper, ServerPlayer commander, Vec3 position) {
-        SiegeEngineerEntity engineer = ModEntityTypes.SIEGE_ENGINEER.get().create(helper.getLevel());
+        SiegeEngineerEntity engineer = RecruitsTestSuites.<SiegeEngineerEntity>entityType("siege_engineer").create(helper.getLevel());
         engineer.setPos(position);
         engineer.setNoAi(true);
         engineer.setOwnerUUID(Optional.of(commander.getUUID()));

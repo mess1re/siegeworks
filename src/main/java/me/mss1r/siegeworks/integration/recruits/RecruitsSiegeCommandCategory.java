@@ -86,9 +86,8 @@ final class RecruitsSiegeCommandCategory implements ICommandCategory {
             layout.add("crew", hasActiveGroup,
                     () -> sendTargetedCommand(groups,
                             RecruitsSiegeCommandC2SPayload.ACTION_CREW_MACHINE, target.getId()));
-            layout.add("return", hasActiveGroup,
-                    () -> forEachActiveGroup(groups, group ->
-                            me.mss1r.siegeworks.platform.SiegeClientPlatform.returnToMount(player.getUUID(), group.getUUID())));
+            layout.addGeneric("return", hasActiveGroup, groups,
+                    RecruitsSiegeCommandC2SPayload.ACTION_RETURN_TO_MOUNT, null);
         }
 
         if (selectedType != null) {

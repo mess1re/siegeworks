@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Fixed the Return command crash and recruit pathfinding with the official NeoForge port.
 - Siegeworks advancements now load correctly on Minecraft 1.21.1.
 
 ## 0.1.0-beta.11

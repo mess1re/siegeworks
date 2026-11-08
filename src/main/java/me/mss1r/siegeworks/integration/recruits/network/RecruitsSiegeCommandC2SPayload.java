@@ -37,6 +37,7 @@ public record RecruitsSiegeCommandC2SPayload(int action, List<UUID> groupIds, Bl
     public static final int ACTION_FLAP_CLOSE = 20;
     public static final int ACTION_CREW_MACHINE = 21;
     public static final int ACTION_RETURN_TOWER = 22;
+    public static final int ACTION_RETURN_TO_MOUNT = 23;
     public static final int NO_TARGET_ENTITY = -1;
     private static final int MAX_GROUPS = 64;
 
