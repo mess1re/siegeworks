@@ -1,3 +1,22 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.io.FilterReader
+import java.io.Reader
+import java.io.StringReader
+
+class AdvancementIconFilter(reader: Reader) : FilterReader(convert(reader)) {
+    companion object {
+        private fun convert(reader: Reader): Reader {
+            val advancement = JsonSlurper().parse(reader) as Map<*, *>
+            val display = advancement["display"] as? Map<*, *>
+            @Suppress("UNCHECKED_CAST")
+            val icon = display?.get("icon") as? MutableMap<String, Any?>
+            if (icon != null && icon.containsKey("item")) icon["id"] = icon.remove("item")
+            return StringReader(JsonOutput.prettyPrint(JsonOutput.toJson(advancement)))
+        }
+    }
+}
+
 plugins {
     id("dev.architectury.loom")
     id("architectury-plugin")
@@ -84,6 +103,7 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.named<ProcessResources>("processResources") {
+    inputs.file(rootProject.file("build.gradle.kts")).withPropertyName("resourceConversionRules")
     val props = mapOf(
         "pack_format" to project.property("mod.pack_format"),
         "java_compatibility" to "JAVA_$javaVersion",
@@ -95,7 +115,7 @@ tasks.named<ProcessResources>("processResources") {
     if (stonecutter.current.parsed >= "1.21") {
         includeEmptyDirs = false
         filesMatching("data/*/advancements/*.json") {
-            filter { line -> if (line.contains("\"icon\":")) line.replace("\"item\":", "\"id\":") else line }
+            filter(AdvancementIconFilter::class.java)
         }
         filesMatching(listOf("data/*/recipes/*.json", "data/*/recipe/*.json")) {
             val source = file.readText()

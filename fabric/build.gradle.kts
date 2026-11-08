@@ -333,6 +333,7 @@ val portableScenarios = objects.sourceDirectorySet("portableScenarios", "Shared 
     include("**/ManualRecipeGameTests.java")
     include("**/SharedGameTests.java")
     include("**/RecruitsTestSuites.java")
+    include("**/RecruitsFirearmGameTests.java")
     include("**/GameTestQuiet.java")
     include("**/RecruitsCrewAndFireGameTests.java")
     include("**/RecruitsLadderTrafficGameTests.java")

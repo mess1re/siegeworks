@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0-beta.12
+
+### Added
+
+- Villager Recruits can load and fire hand cannons and arquebuses using supplies from their inventory.
+
+### Fixed
+
+- Siegeworks advancements now load correctly on Minecraft 1.21.1.
+
 ## 0.1.0-beta.11
 
 ### Added

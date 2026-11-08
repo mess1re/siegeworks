@@ -67,15 +67,15 @@ public class FirearmItem extends Item {
     }
 
     @Override public void onUseTick(Level level, LivingEntity user, ItemStack stack, int remaining) {
-        if (!level.isClientSide && user instanceof Player player) FirearmActions.tick(player, stack, this);
+        if (!level.isClientSide) FirearmActions.tick(user, stack, this);
     }
 
     @Override public void releaseUsing(ItemStack stack, Level level, LivingEntity user, int remaining) {
-        if (!level.isClientSide && user instanceof Player player) FirearmActions.cancel(player, stack);
+        if (!level.isClientSide) FirearmActions.cancel(user, stack);
     }
 
     @Override public void inventoryTick(ItemStack stack, Level level, Entity holder, int slot, boolean selected) {
-        if (!level.isClientSide && holder instanceof Player player) {
+        if (!level.isClientSide && holder instanceof LivingEntity player) {
             if (!player.isUsingItem() || player.getUseItem() != stack) FirearmActions.cancel(player, stack);
             if (player.isUnderWater()) {
                 var load = FirearmStack.load(stack);

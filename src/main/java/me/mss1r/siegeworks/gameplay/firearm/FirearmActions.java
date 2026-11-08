@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -38,7 +39,7 @@ public final class FirearmActions {
     // Stroke starts measured from the ramrod's motion relative to the barrel.
     // Fractions follow the animation when its playback duration changes.
 
-    private static final Map<Player, Session> SESSIONS = new WeakHashMap<>();
+    private static final Map<LivingEntity, Session> SESSIONS = new WeakHashMap<>();
     private static final class Session {
         final ItemStack weapon, material;
         final FirearmLoad.Operation operation;
@@ -93,12 +94,12 @@ public final class FirearmActions {
         });
         PlayerEvent.PLAYER_QUIT.register(FirearmActions::cancelActive);
         EntityEvent.LIVING_DEATH.register((entity, source) -> {
-            if (entity instanceof Player player && !player.level().isClientSide) cancelActive(player);
+            if (!entity.level().isClientSide) cancelActive(entity);
             return EventResult.pass();
         });
     }
 
-    private static void cancelActive(Player player) {
+    public static void cancelActive(LivingEntity player) {
         var session = SESSIONS.get(player);
         if (session != null) cancel(player, session.weapon);
     }
@@ -160,7 +161,7 @@ public final class FirearmActions {
         return best;
     }
 
-    private static FirearmLoad.Operation operation(FirearmLoad load, FirearmItem item, ItemStack material) {
+    public static FirearmLoad.Operation operation(FirearmLoad load, FirearmItem item, ItemStack material) {
         if (material.isEmpty()) return null;
         boolean matchlock = item.matchlock();
         if (load.accepts(RAM, matchlock) && material.is(SiegeworksItems.FIREARM_RAMROD.get())) return RAM;
@@ -183,12 +184,13 @@ public final class FirearmActions {
         return -1;
     }
 
-    public static FirearmLoad.FireRequirement fireRequirement(Player player, FirearmItem item) {
-        boolean igniter = item.matchlock() || player.getOffhandItem().is(Items.FLINT_AND_STEEL) || hotbarIgniter(player) >= 0;
+    public static FirearmLoad.FireRequirement fireRequirement(LivingEntity player, FirearmItem item) {
+        boolean igniter = item.matchlock() || player.getOffhandItem().is(Items.FLINT_AND_STEEL)
+                || player instanceof Player human && hotbarIgniter(human) >= 0;
         return FirearmStack.load(player.getMainHandItem()).fireRequirement(item.matchlock(), igniter);
     }
 
-    private static void start(Player player, ItemStack stack, FirearmLoad.Operation operation, HotbarSwap swap) {
+    private static void start(LivingEntity player, ItemStack stack, FirearmLoad.Operation operation, HotbarSwap swap) {
         long time = player.level().getGameTime();
         SESSIONS.put(player, new Session(stack, player.getOffhandItem(), operation, time, swap));
         MinecraftVersionCompat.editCustomData(stack, tag -> {
@@ -197,17 +199,32 @@ public final class FirearmActions {
         });
     }
 
-    public static void requestFire(Player player) {
+    /** Begins an AI-controlled loading operation, or aiming when operation is null. */
+    public static boolean beginOperation(LivingEntity user, FirearmLoad.Operation operation) {
+        if (user.level().isClientSide || user.isUsingItem()
+                || !(user.getMainHandItem().getItem() instanceof FirearmItem item)) return false;
+        ItemStack stack = user.getMainHandItem();
+        var load = FirearmStack.load(stack);
+        if (operation == null ? load.charge() != FirearmLoad.Charge.READY
+                : operation == FIRE || operation(load, item, user.getOffhandItem()) != operation) return false;
+        cancelActive(user);
+        start(user, stack, operation, null);
+        user.startUsingItem(InteractionHand.MAIN_HAND);
+        return true;
+    }
+
+    public static void requestFire(LivingEntity player) {
         var session = SESSIONS.get(player);
         if (session == null || session.operation != null || !player.isUsingItem()
                 || player.getUseItem() != session.weapon || player.getMainHandItem() != session.weapon
                 || !(session.weapon.getItem() instanceof FirearmItem item)) return;
         if (fireRequirement(player, item) != FirearmLoad.FireRequirement.NONE) {
-            player.displayClientMessage(nextActionHint(player, item), true);
+            if (player instanceof Player human) human.displayClientMessage(nextActionHint(human, item), true);
             return;
         }
-        int slot = item.matchlock() || player.getOffhandItem().is(Items.FLINT_AND_STEEL) ? -1 : hotbarIgniter(player);
-        start(player, session.weapon, FIRE, HotbarSwap.take(player, slot));
+        int slot = item.matchlock() || player.getOffhandItem().is(Items.FLINT_AND_STEEL) ? -1
+                : player instanceof Player human ? hotbarIgniter(human) : -1;
+        start(player, session.weapon, FIRE, player instanceof Player human ? HotbarSwap.take(human, slot) : null);
         // A lit match is already an ignition source; commit the trigger press now.
         if (item.matchlock()) tick(player, session.weapon, item);
     }
@@ -236,15 +253,15 @@ public final class FirearmActions {
         };
     }
 
-    public static void tick(Player player, ItemStack stack, FirearmItem item) {
+    public static void tick(LivingEntity player, ItemStack stack, FirearmItem item) {
         var session = SESSIONS.get(player);
         if (session == null || session.weapon != stack || player.getMainHandItem() != stack) {
             player.stopUsingItem(); return;
         }
         if (session.operation == null) return;
         int age = (int) (player.level().getGameTime() - session.start);
-        if (age % 4 == 0) {
-            player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+        if (age % 4 == 0 && player instanceof Player human) {
+            human.displayClientMessage(net.minecraft.network.chat.Component.translatable(
                     "firearm.siegeworks.action_progress",
                     net.minecraft.network.chat.Component.translatable("firearm.siegeworks.action."
                             + session.operation.name().toLowerCase(java.util.Locale.ROOT)),
@@ -261,7 +278,7 @@ public final class FirearmActions {
         if (!session.committed) {
             boolean needsOffhand = session.operation != FIRE || !item.matchlock();
             ItemStack material = player.getOffhandItem();
-            if (session.swap != null && !session.swap.intact(player)
+            if (session.swap != null && (!(player instanceof Player human) || !session.swap.intact(human))
                     || needsOffhand && (!MinecraftVersionCompat.isSameItemAndData(material, session.material)
                     || material.getCount() < session.material.getCount())) {
                 player.stopUsingItem(); cancel(player, stack); return;
@@ -275,7 +292,7 @@ public final class FirearmActions {
                     player.stopUsingItem(); cancel(player, stack); return;
                 }
                 FirearmStack.save(stack, load.complete(session.operation, item.matchlock()));
-                if (!player.getAbilities().instabuild) {
+                if (!(player instanceof Player human) || !human.getAbilities().instabuild) {
                     switch (session.operation) {
                         case POWDER, BALL, INSERT_MATCH -> material.shrink(1);
                         case RAM, LIGHT_MATCH -> MinecraftVersionCompat.damageHeldItem(material, 1, player, InteractionHand.OFF_HAND);
@@ -304,7 +321,7 @@ public final class FirearmActions {
         }
     }
 
-    private static void playLoadingSounds(Player player, Session session, int age, boolean matchlock) {
+    private static void playLoadingSounds(LivingEntity player, Session session, int age, boolean matchlock) {
         if (!(player.level() instanceof ServerLevel level)) return;
         Vec3 position = player.position().add(0, 1, 0);
         switch (session.operation) {
@@ -349,12 +366,12 @@ public final class FirearmActions {
         session.soundTick = age;
     }
 
-    public static void cancel(Player player, ItemStack stack) {
+    public static void cancel(LivingEntity player, ItemStack stack) {
         var session = SESSIONS.get(player);
         if (session != null && session.weapon == stack) {
             SESSIONS.remove(player);
-            if (session.swap != null) session.swap.restore(player);
-            if (session.operation != null) player.displayClientMessage(net.minecraft.network.chat.Component.empty(), true);
+            if (session.swap != null && player instanceof Player human) session.swap.restore(human);
+            if (session.operation != null && player instanceof Player human) human.displayClientMessage(net.minecraft.network.chat.Component.empty(), true);
         }
         if (MinecraftVersionCompat.customData(stack).contains("FirearmAction")) {
             MinecraftVersionCompat.editCustomData(stack, tag -> {
@@ -363,7 +380,7 @@ public final class FirearmActions {
         }
     }
 
-    private static boolean shoot(Player player, FirearmItem item) {
+    private static boolean shoot(LivingEntity player, FirearmItem item) {
         if (!(player.level() instanceof ServerLevel level)) return false;
         var physics = SiegeProfileCatalogs.PROJECTILES.get(item.profile());
         double speed = physics.directHit().referenceSpeed().orElse(0.0);
@@ -374,7 +391,9 @@ public final class FirearmActions {
         var hit = level.clip(new ClipContext(eye, muzzle, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (hit.getType() != HitResult.Type.MISS) muzzle = eye;
         FirearmProjectile shot = new FirearmProjectile(SiegeworksEntities.FIREARM_BALL.get(), level);
-        shot.setPhysicsProfile(item.profile()); shot.setOwner(player); shot.reachBlocksAs(player.getUUID());
+        shot.setPhysicsProfile(item.profile()); shot.setOwner(player);
+        shot.reachBlocksAs(player instanceof Player ? player.getUUID()
+                : me.mss1r.siegeworks.api.SiegePlayerAttributionRegistry.playerOwnerOf(player));
         shot.setFiredFromArquebus(item.matchlock());
         shot.setBaseDamage(physics.directHit().damage().get()); shot.setReferenceSpeed(speed);
         shot.setPos(muzzle.x, muzzle.y, muzzle.z);

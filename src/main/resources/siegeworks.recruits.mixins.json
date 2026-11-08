@@ -4,7 +4,9 @@
   "package": "me.mss1r.siegeworks.mixin",
   "compatibilityLevel": "${java_compatibility}",
   "mixins": [
-    "RecruitsStrategicFireMixin"
+    "RecruitsStrategicFireMixin",
+    "RecruitsFirearmMixin",
+    "RecruitsFirearmMeleeMixin"
   ],
   "client": [
     "client.RecruitsGameRendererMixin"
